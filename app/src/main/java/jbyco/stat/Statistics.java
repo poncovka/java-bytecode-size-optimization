@@ -1,71 +1,64 @@
 package jbyco.stat;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.objectweb.asm.Opcodes;
-
 public class Statistics {
 	
-	public int sizeInBytes;
-	public int numOfClasses;
-	public int numOfMethods;
-	public int numOfClassVars;
-	public int numOfLocalVars;
-	public int numOfOpcodes;
-	public int sizeOfStrings;
+	public int totalBytes;
+	public int totalClasses;
+	public int totalMethods;
+	public int totalClassVars;
+	public int totalLocalVars;
+	public int totalInstructions;
+	public int totalSizeOfStrings;
+	public int totalMaxStack;
+	public int totalMaxLocals;
+	public int maxStack;
+	public int maxLocals;
 	
 	public Frequency<String> stringsFrequency;
-	public Frequency<Opcodes> opcodesFrequency;
+	public Frequency<String> opcodesFrequency;
 	
 	//loadsFrequency;
 	//storesFrequency;
 	
 	public Statistics() {
 		
-		sizeInBytes = 0;
-		numOfClasses = 0;
-		numOfMethods = 0;
-		numOfClassVars = 0;
-		numOfLocalVars = 0;
-		numOfOpcodes = 0;
-		sizeOfStrings = 0;
-		
 		stringsFrequency = new Frequency<String>();
-		opcodesFrequency = new Frequency<Opcodes>();
+		opcodesFrequency = new Frequency<String>();
 	}
 		
 	void updateSize(int size) {
-		sizeInBytes = sizeInBytes + size;
+		totalBytes = totalBytes + size;
 	}
 	
 	void updateClasses(String name) {
-		numOfClasses++;
+		totalClasses++;
 		updateStrings(name);
 	}
 	
 	void updateMethods(String name) {
-		numOfMethods++;
+		totalMethods++;
 		updateStrings(name);
 	}
 	
 	void updateClassVariables(String name) {
-		numOfClassVars++;
+		totalClassVars++;
 		updateStrings(name);
 	}
 	
 	void updateLocalVariables(String name) {
-		numOfLocalVars++;
+		totalLocalVars++;
 		updateStrings(name);
 	}
 
-	void updateOpcodes(Opcodes opcode) {
+	void updateOpcodes(String opcode) {
 		
 		// update total
-		numOfOpcodes++;
+		totalInstructions++;
 		
 		// update map
 		opcodesFrequency.increment(opcode);
@@ -74,7 +67,7 @@ public class Statistics {
 	void updateStrings(String str) {
 
 		// update total size
-		sizeOfStrings = sizeOfStrings + str.length();
+		totalSizeOfStrings = totalSizeOfStrings + str.length();
 		
 		// update map
 		stringsFrequency.increment(str);
@@ -83,45 +76,58 @@ public class Statistics {
 	
 	public void print(PrintStream out) {
 		
-		int sum = numOfClasses + numOfMethods + numOfClassVars + numOfLocalVars;
+		int sum = totalClasses + totalMethods + totalClassVars + totalLocalVars;
 		
 		out.println(
 			"--- STATISTICS ---\n"
 			+ "Total size in bytes: \t"  
-			+ sizeInBytes + "\n"
+			+ totalBytes + "\n"
 			
 			+ "Number of classes: \t"
-			+ numOfClasses + "\n"
+			+ totalClasses + "\n"
 			
 			+ "Number of methods: \t" 
-			+ numOfMethods + "\n"
+			+ totalMethods + "\n"
 			
 			+ "Number of class variables: \t" 
-			+ numOfClassVars + "\n"
+			+ totalClassVars + "\n"
 			
 			+ "Number of local variables: \t" 
-			+ numOfLocalVars + "\n"
+			+ totalLocalVars + "\n"
 			
 			+ "Number of opcodes: \t" 
-			+ numOfOpcodes + "\n"
+			+ totalInstructions + "\n"
 			
 			+ "Total size of descriptive strings: \t" 
-			+ sizeOfStrings + "\n"
+			+ totalSizeOfStrings + "\n"
 			
 			+ "Total number of descriptors: \t"  
 			+ sum + "\n"
 			
 			+ "Methods per class: \t" 
-			+ (numOfMethods * 0.1 / numOfClasses)  + "\n"
+			+ (totalMethods * 0.1 / totalClasses)  + "\n"
 			
 			+ "Class variables per class: \t" 
-			+ (numOfClassVars * 0.1 / numOfClasses) + "\n"
+			+ (totalClassVars * 0.1 / totalClasses) + "\n"
 			
 			+ "Local variables per method: \t" 
-			+ (numOfLocalVars * 0.1 / numOfMethods) + "\n"
+			+ (totalLocalVars * 0.1 / totalMethods) + "\n"
 			
 			+ "Size of strings per descriptors: \t" 
-			+ (sizeOfStrings * 0.1 / sum)
+			+ (totalSizeOfStrings * 0.1 / sum) + "\n"
+						
+			+ "Average max locals: \t" 
+			+ (totalMaxLocals / totalMethods) + "\n"
+						
+			+ "Average max stack: \t" 
+			+ (totalMaxStack / totalMethods) + "\n"
+			
+			+ "Max locals: \t" 
+			+ (maxLocals) + "\n"
+			
+			+ "Max stack: \t" 
+			+ (maxStack) + "\n"
+
 		);			
 					
 		
@@ -139,13 +145,33 @@ public class Statistics {
 
 	private void printOpcodes(PrintStream out) {
 		int i = 0;
-		int max = 20;
+		int max = 100;
 		
-		List<Opcodes> sortedKeys = MapValuesComparator.getSortedList(opcodesFrequency);
+		// recalculate frequencies to percentils:
 		
-		for(Opcodes key: sortedKeys) {
+		Remapper<String, Integer, String, Double> remapper = new Remapper<String, Integer, String, Double>() {
+
+			
+			@Override
+			public Double remapValue(String key1, Integer value1) {
+				return value1 * 100.0 / totalInstructions;
+			}
+
+			@Override
+			public String remapKey(String key1, Integer value1) {
+				return key1;
+			}
+			
+		};
+		
+		Map<String, Double> percentils = remapper.remap(opcodesFrequency, new HashMap<>());
+		
+		
+		List<String> sortedKeys = MapValuesComparator.getSortedList(percentils);
+		
+		for(String key: sortedKeys) {
 			if (i >= max) break;
-			out.println(opcodesFrequency.get(key) + "\t" + key);
+			out.println(percentils.get(key) + "\t" + opcodesFrequency.get(key) + "\t" + key);
 			i++;
 		}
 		
@@ -156,7 +182,7 @@ public class Statistics {
 		
 		int i = 0;
 		int max = 20;
-		int sum = numOfClasses + numOfMethods + numOfClassVars + numOfLocalVars;
+		int sum = totalClasses + totalMethods + totalClassVars + totalLocalVars;
 		
 		
 		// recalculate frequencies to percentils:
@@ -188,6 +214,18 @@ public class Statistics {
 			out.println(percentils.get(key) + "\t" + stringsFrequency.get(key) + "\t" + key);
 			i++;
 		}
+		
+	}
+
+	public void updateMaxs(int maxStack, int maxLocals) {
+		
+		// update total
+		totalMaxStack = totalMaxStack + maxStack;
+		totalMaxLocals = totalMaxLocals + maxLocals;
+		
+		// update max
+		this.maxStack = (this.maxStack > maxStack) ? this.maxStack : maxStack;
+		this.maxLocals = (this.maxLocals > maxLocals) ? this.maxLocals : maxLocals;
 		
 	}
 }
