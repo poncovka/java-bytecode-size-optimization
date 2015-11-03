@@ -11,5 +11,5 @@ public class MethodVisitor extends org.objectweb.asm.MethodVisitor{
 	public MethodVisitor(MethodVisitor mv) {
 		super(Opcodes.ASM5, mv);
 	}
-	
+		
 }

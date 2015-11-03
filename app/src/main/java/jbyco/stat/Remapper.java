@@ -1,15 +1,19 @@
 package jbyco.stat;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Remapper<K1, V1, K2, V2> {
 	
 	// kalkulate new value from old key and his value
-	abstract public V2 remapValue(K1 key1, V1 value1);
+	abstract public V2 remapValue(K1 key, V1 value);
 
 	// kalkulate new key from old key and his value
-	abstract public K2 remapKey(K1 key1, V1 value1);
+	abstract public K2 remapKey(K1 key, V1 value);
 	
+	public Map<K2, V2> remap(Map<K1, V1> map1) {
+		return remap(map1, new HashMap<>());
+	}	
 	
 	public Map<K2, V2> remap(Map<K1, V1> map1, Map<K2, V2> map2) {
 		
@@ -24,6 +28,5 @@ public abstract class Remapper<K1, V1, K2, V2> {
 		
 		return map2;
 	}
-	
 	
 }

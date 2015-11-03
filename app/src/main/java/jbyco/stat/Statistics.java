@@ -1,7 +1,6 @@
 package jbyco.stat;
 
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,8 +18,14 @@ public class Statistics {
 	public int maxStack;
 	public int maxLocals;
 	
+	// frequency of descriptive strings
 	public Frequency<String> stringsFrequency;
+	// frequency of operational codes
 	public Frequency<String> opcodesFrequency;
+	// frequency of max stack sizes
+	public Frequency<Integer> maxStackFrequency;
+	// frequency of max local variables
+	public Frequency<Integer> maxLocalsFrequency;
 	
 	//loadsFrequency;
 	//storesFrequency;
@@ -29,6 +34,8 @@ public class Statistics {
 		
 		stringsFrequency = new Frequency<String>();
 		opcodesFrequency = new Frequency<String>();
+		maxStackFrequency = new Frequency<Integer>();
+		maxLocalsFrequency = new Frequency<Integer>();
 	}
 		
 	void updateSize(int size) {
@@ -73,6 +80,21 @@ public class Statistics {
 		stringsFrequency.increment(str);
 	}
 
+	public void updateMaxs(int maxStack, int maxLocals) {
+		
+		// update total
+		totalMaxStack = totalMaxStack + maxStack;
+		totalMaxLocals = totalMaxLocals + maxLocals;
+		
+		// update max
+		this.maxStack = (this.maxStack > maxStack) ? this.maxStack : maxStack;
+		this.maxLocals = (this.maxLocals > maxLocals) ? this.maxLocals : maxLocals;
+		
+		// update frequencies
+		this.maxLocalsFrequency.increment(maxLocals);
+		this.maxStackFrequency.increment(maxStack);
+		
+	}
 	
 	public void print(PrintStream out) {
 		
@@ -131,101 +153,161 @@ public class Statistics {
 		);			
 					
 		
+		out.println("Max stack distribution:");
+		printStackMaxs(out, maxStackFrequency, 30);
+		
+		out.println("Max locals distribution:");
+		printLocalsMaxs(out, maxLocalsFrequency, 30);
+		
+		out.println("Most used opcodes:");
+		printInstructions(out, opcodesFrequency, 20);
+		
 		out.println("Most used descriptive strings:");
-		printDescriptiveStrings(out);
+		printDescStrings(out, stringsFrequency, 20);
 		
 		out.println("Most loaded variables:");
 		out.println("Most stored variables:");
-		
-		out.println("Most used opcodes:");
-		printOpcodes(out);
-		
-		
+
 	}
 
-	private void printOpcodes(PrintStream out) {
-		int i = 0;
-		int max = 100;
-		
-		// recalculate frequencies to percentils:
-		
-		Remapper<String, Integer, String, Double> remapper = new Remapper<String, Integer, String, Double>() {
 
-			
+	public Map<String, Double> getKeyLengthProportionMap(Frequency<String> map, int total) {
+		
+		Remapper<String, Integer, String, Double> remapper = 
+			new Remapper<String, Integer, String, Double>() {
+
 			@Override
-			public Double remapValue(String key1, Integer value1) {
-				return value1 * 100.0 / totalInstructions;
+			public Double remapValue(String key, Integer value) {
+				return value * key.length() * 100.0 / total;
 			}
 
 			@Override
-			public String remapKey(String key1, Integer value1) {
-				return key1;
+			public String remapKey(String key, Integer value) {
+				return key;
 			}
 			
 		};
 		
-		Map<String, Double> percentils = remapper.remap(opcodesFrequency, new HashMap<>());
+		return remapper.remap(map);
 		
+	}
+	
+	public void printDescStrings(PrintStream out, Frequency<String> freq, int max) {
 		
-		List<String> sortedKeys = MapValuesComparator.getSortedList(percentils);
+		int i = 0;
 		
-		for(String key: sortedKeys) {
+		// create proportion map
+		Map<String, Double> prop = getKeyLengthProportionMap(freq, freq.getTotal());
+		
+		// create list of sorted keys
+		List<String> keys = new MapValuesComparator<String, Double>().getSortedKeys(prop);
+		
+		// print
+		printHeader(out, "[freq]", "[%]", "[string]");
+		
+		for(String key:keys) {
+			
 			if (i >= max) break;
-			out.println(percentils.get(key) + "\t" + opcodesFrequency.get(key) + "\t" + key);
+			print(out, freq.get(key));
+			print(out, prop.get(key));
+			print(out, key);
+			out.println();
 			i++;
 		}
 		
-		
 	}
 
-	public void printDescriptiveStrings(PrintStream out) {
+	public void printInstructions(PrintStream out, Frequency<String> freq, int max) {
 		
 		int i = 0;
-		int max = 20;
-		int sum = totalClasses + totalMethods + totalClassVars + totalLocalVars;
 		
+		// create proportion map
+		Map<String, Double> prop = freq.getProportionMap();
 		
-		// recalculate frequencies to percentils:
+		// create list of sorted keys
+		List<String> keys = new MapValuesComparator<String, Double>().getSortedKeys(prop);
 		
-		Remapper<String, Integer, String, Double> remapper = new Remapper<String, Integer, String, Double>() {
+		// print
+		// print
+		printHeader(out, "[freq]", "[%]", "[inst]");
+		
+		for(String key:keys) {
+			
+			if (i >= max) break;
+			print(out, freq.get(key));
+			print(out, prop.get(key));
+			print(out, key);
+			out.println();
+			i++;
+		}		
+	}
 
-			
-			@Override
-			public Double remapValue(String key1, Integer value1) {
-				return value1 * key1.length() * 100.0 / sum;
-			}
-
-			@Override
-			public String remapKey(String key1, Integer value1) {
-				return key1;
-			}
-			
-		};
+	public void printStackMaxs(PrintStream out, Frequency<Integer> freq, int max) {
 		
-		Map<String, Double> percentils = remapper.remap(stringsFrequency, new HashMap<>());
+		int i = 0;
 		
-		// sort by values
-		List<String> sortedKeys = MapValuesComparator.getSortedList(percentils);
+		// create proportion map
+		Map<Integer, Double> prop = freq.getProportionMap();
 		
-		// print statistics
-		for(String key: sortedKeys) {
+		// create list of sorted keys
+		List<Integer> keys = new MapValuesComparator<Integer, Double>().getSortedKeys(prop);
+		
+		// print
+		printHeader(out, "[freq]", "[%]", "[stack size]");
+		
+		for(Integer key:keys) {
 			
-			if (i >= max) break;			
-			out.println(percentils.get(key) + "\t" + stringsFrequency.get(key) + "\t" + key);
+			if (i >= max) break;
+			print(out, freq.get(key));
+			print(out, prop.get(key));
+			print(out, key);
+			out.println();
 			i++;
 		}
 		
 	}
-
-	public void updateMaxs(int maxStack, int maxLocals) {
+	
+	public void printLocalsMaxs(PrintStream out, Frequency<Integer> freq, int max) {
 		
-		// update total
-		totalMaxStack = totalMaxStack + maxStack;
-		totalMaxLocals = totalMaxLocals + maxLocals;
+		int i = 0;
 		
-		// update max
-		this.maxStack = (this.maxStack > maxStack) ? this.maxStack : maxStack;
-		this.maxLocals = (this.maxLocals > maxLocals) ? this.maxLocals : maxLocals;
+		// create proportion map
+		Map<Integer, Double> prop = freq.getProportionMap();
 		
+		// create list of sorted keys
+		List<Integer> keys = new MapValuesComparator<Integer, Double>().getSortedKeys(prop);
+		
+		// print
+		printHeader(out, "[freq]", "[%]", "[local vars]");
+		
+		for(Integer key:keys) {
+			
+			if (i >= max) break;
+			print(out, freq.get(key));
+			print(out, prop.get(key));
+			print(out, key);
+			out.println();
+			i++;
+		}	
 	}
+
+	public void print(PrintStream out, int i) {
+		out.printf("%-15d", i);
+	}
+
+	public void print(PrintStream out, double d) {
+		out.printf("%-15.1f", d);
+	}
+
+	public void print(PrintStream out, String s) {
+		out.printf("%-15s", s);
+	}
+	
+	public void printHeader(PrintStream out, String s1, String s2, String s3) {
+		out.printf("%-15s", s1);
+		out.printf("%-15s", s2);
+		out.printf("%-15s", s3);
+		out.println();
+	}
+
 }
