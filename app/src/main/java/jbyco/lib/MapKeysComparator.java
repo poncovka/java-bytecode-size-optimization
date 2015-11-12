@@ -1,4 +1,4 @@
-package jbyco.stat;
+package jbyco.lib;
 
 public class MapKeysComparator <K,V> extends MapComparator<K, V> {
 

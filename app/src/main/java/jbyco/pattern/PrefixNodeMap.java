@@ -6,13 +6,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import jbyco.pattern.graph.PrefixNode;
+
 public class PrefixNodeMap {
 	
 	// number of restarts
-	private int cycle;
+	int cycle;
 	
 	// map items to node lists
-	private Map<Object, PrefixNodeList> map;
+	Map<Object, PrefixNodeList> map;
 	
 	public PrefixNodeMap() {
 		map = new LinkedHashMap<>();

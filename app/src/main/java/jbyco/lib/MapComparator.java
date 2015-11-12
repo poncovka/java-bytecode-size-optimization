@@ -1,4 +1,4 @@
-package jbyco.stat;
+package jbyco.lib;
 
 import java.util.ArrayList;
 import java.util.Comparator;

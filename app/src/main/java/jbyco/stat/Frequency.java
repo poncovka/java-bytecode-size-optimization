@@ -3,6 +3,8 @@ package jbyco.stat;
 import java.util.HashMap;
 import java.util.Map;
 
+import jbyco.lib.Remapper;
+
 public class Frequency<K> extends HashMap<K, Integer>{
 
 	private static final long serialVersionUID = 1L;

@@ -1,4 +1,4 @@
-package jbyco.pattern;
+package jbyco.pattern.graph;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -10,10 +10,10 @@ import jbyco.io.graph.GmlExporter;
 
 public class PrefixGraph {
 
-	private PrefixNode root;
+	PrefixNode root;
 	
 	public PrefixGraph() {
-		root = new PrefixNode("ROOT");
+		root = new PrefixNode(new Root());
 	}
 	
 	public PrefixNode getRoot() {
@@ -90,7 +90,8 @@ public class PrefixGraph {
 				
 				// print nodes in the 1st cycle
 				if (cycle == 0) {
-					exporter.printNode(node.getNumber(), node.getItem());
+					//exporter.printNode(node.getNumber(), node.getItem());
+					exporter.printNode(node.getNumber(), node);
 				}
 				
 				for(PrefixNode next:node.getOutputNodes()) {

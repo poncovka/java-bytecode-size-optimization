@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import jbyco.pattern.graph.PrefixNode;
+
 public class PrefixNodeQueue {
 	
 	int queueFirst;

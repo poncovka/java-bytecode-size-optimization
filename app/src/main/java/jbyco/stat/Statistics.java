@@ -4,6 +4,9 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 
+import jbyco.lib.MapValuesComparator;
+import jbyco.lib.Remapper;
+
 public class Statistics {
 	
 	public int totalBytes;
@@ -197,7 +200,7 @@ public class Statistics {
 		int i = 0;
 		
 		// create proportion map
-		Map<String, Double> prop = getKeyLengthProportionMap(freq, freq.getTotal());
+		Map<String, Double> prop = getKeyLengthProportionMap(freq, totalSizeOfStrings);
 		
 		// create list of sorted keys
 		List<String> keys = new MapValuesComparator<String, Double>().getSortedKeys(prop);

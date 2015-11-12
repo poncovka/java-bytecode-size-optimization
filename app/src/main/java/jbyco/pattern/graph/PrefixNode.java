@@ -1,4 +1,4 @@
-package jbyco.pattern;
+package jbyco.pattern.graph;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -9,23 +9,23 @@ import java.util.Set;
 public class PrefixNode {
 	
 	// number
-	static private int maxNumber = 0;
-	private int number;
+	static int maxNumber = 0;
+	int number;
 	
 	// item
-	private Object item;
+	Object item;
 	
 	// set of paths
-	private Set<Integer> paths;
+	Set<Integer> paths;
 	
 	// list of edges, used when we create the graph
-	private Map<Object, PrefixNode> edges;
+	Map<Object, PrefixNode> edges;
 	
 	// list of input nodes
-	private Set<PrefixNode> in;
+	Set<PrefixNode> in;
 	
 	// set of output nodes
-	private Set<PrefixNode> out;
+	Set<PrefixNode> out;
 
 	public PrefixNode(Object item) {
 		
@@ -57,6 +57,10 @@ public class PrefixNode {
 	
 	public Set<Integer> getPaths() {
 		return paths;
+	}
+	
+	public void setItem(Object item) {
+		this.item = item;
 	}
 	
 	public void addEdge(PrefixNode node) {
@@ -95,8 +99,6 @@ public class PrefixNode {
 	}
 
 
-
-	
 	@Override
 	public String toString() {
 		return "(" + number + (item == null ? "" : "," + item.toString()) + ")";
