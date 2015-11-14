@@ -8,43 +8,24 @@ import java.util.Stack;
 
 import jbyco.io.graph.GmlExporter;
 
-public class PrefixGraph {
+public class SuffixGraph {
 
-	PrefixNode root;
+	SuffixNode root;
 	
-	public PrefixGraph() {
-		root = new PrefixNode(new Root());
+	public SuffixGraph() {
+		root = new SuffixNode(new Root());
 	}
 	
-	public PrefixNode getRoot() {
+	public SuffixNode getRoot() {
 		return root;
 	}	
-	
-	public PrefixNode addNextNode(PrefixNode node, Object item, int path) {
-		
-		// find the next node
-		PrefixNode next = node.findNext(item);
-		
-		// or create it
-		if (next == null) {
-			
-			next = new PrefixNode(item);
-			node.addEdge(next);			
-		}
-		
-		// add path
-		next.addPath(path);
-		
-		// return next node
-		return next;
-	}
 
 	public void print(PrintStream out) {
 		
 		out.printf("%-15s%-30s%-30s\n", "[node]", "[output]", "[paths]");
 		
-		Stack<PrefixNode> stack = new Stack<PrefixNode>();
-		Set<PrefixNode> visited = new HashSet<PrefixNode>();
+		Stack<SuffixNode> stack = new Stack<SuffixNode>();
+		Set<SuffixNode> visited = new HashSet<SuffixNode>();
 		
 		stack.push(root);
 		visited.add(root);
@@ -52,13 +33,13 @@ public class PrefixGraph {
 		while(!stack.isEmpty()) {
 			
 			// get node
-			PrefixNode node = stack.pop();
+			SuffixNode node = stack.pop();
 			
 			// print it
 			out.printf("%-15s%-30s%-30s\n", node, node.getOutputNodes(), node.getPaths());
 			
 			// add next nodes
-			for(PrefixNode next:node.getOutputNodes()) {
+			for(SuffixNode next:node.getOutputNodes()) {
 				if (!visited.contains(next)) {
 					stack.push(next);
 					visited.add(next);
@@ -77,8 +58,8 @@ public class PrefixGraph {
 		
 		for (int cycle = 0; cycle < 2; cycle++) {
 			
-			Stack<PrefixNode> stack = new Stack<PrefixNode>();
-			Set<PrefixNode> visited = new HashSet<PrefixNode>();
+			Stack<SuffixNode> stack = new Stack<SuffixNode>();
+			Set<SuffixNode> visited = new HashSet<SuffixNode>();
 			
 			stack.push(root);
 			visited.add(root);
@@ -86,7 +67,7 @@ public class PrefixGraph {
 			while(!stack.isEmpty()) {
 				
 				// get node
-				PrefixNode node = stack.pop();
+				SuffixNode node = stack.pop();
 				
 				// print nodes in the 1st cycle
 				if (cycle == 0) {
@@ -94,16 +75,16 @@ public class PrefixGraph {
 					exporter.printNode(node.getNumber(), node);
 				}
 				
-				for(PrefixNode next:node.getOutputNodes()) {
+				for(SuffixNode next:node.getOutputNodes()) {
 					
 					// print edges in the 2nd cycle
 					if (cycle == 1) {
 						
-						// get intersection of paths
-						Set<Integer> intersection = new HashSet<>(node.getPaths());
-						intersection.retainAll(next.getPaths());
+						// get paths on the edge
+						Set<Integer> epaths = node.getEdgePaths(next);
+						
 						// print edge
-						exporter.printEdge(node.getNumber(), next.getNumber(), intersection);
+						exporter.printEdge(node.getNumber(), next.getNumber(), epaths);
 					}
 					
 					// add next nodes

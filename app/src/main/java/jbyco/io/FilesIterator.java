@@ -3,18 +3,18 @@ package jbyco.io;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Stack;
 
 import jbyco.io.dir.AbstractDirectory;
 import jbyco.io.dir.Directory;
 import jbyco.io.file.AbstractFile;
 import jbyco.io.file.BytecodeFile;
+import jbyco.lib.SearchIterator;
+import jbyco.pattern.Pattern;
 
-public class FilesIterator implements Iterator<BytecodeFile> {
+public class FilesIterator extends SearchIterator<BytecodeFile> {
 
 	Stack<AbstractDirectory> stack;
-	BytecodeFile nextFile;
 
 	public FilesIterator(Path path) {
 		stack = new Stack<AbstractDirectory>();
@@ -23,26 +23,7 @@ public class FilesIterator implements Iterator<BytecodeFile> {
 
 	public void init(Path path) {
 		AbstractFile dir = Directory.getFile(path);
-		nextFile = processFile(dir);
-	}
-	
-	@Override
-	public boolean hasNext() {
-		nextFile = search();
-		return (nextFile != null);
-	}
-	
-	@Override
-	public BytecodeFile next() {
-		
-		BytecodeFile file = this.nextFile;
-		this.nextFile = null;
-
-		if (file == null) {
-			throw new NoSuchElementException();
-		}
-		
-		return file;
+		nextItem = processFile(dir);
 	}
 
 	public BytecodeFile search() {
@@ -116,6 +97,5 @@ public class FilesIterator implements Iterator<BytecodeFile> {
 	private void processError(Exception e) {
 		e.printStackTrace();
 	}
-
 	
 }
