@@ -10,15 +10,14 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
-public class SuffixGraphBuilder {
+public class GraphBuilder {
 
 	int path;
 	SuffixGraph graph;
 	Set<SuffixNode> reachables;
 	Map<Object,List<SuffixNode>> candidates;
-
 	
-	public SuffixGraphBuilder(SuffixGraph graph) {
+	public GraphBuilder(SuffixGraph graph) {
 
 		this.path = -1;
 		this.graph = graph;
@@ -34,11 +33,7 @@ public class SuffixGraphBuilder {
 			
 			initReachables();
 			initCandidates();
-		}
-		
-		//System.err.printf("path %d node %s item %s:\n", path, node, item);
-		//System.err.println("  reachables " +reachables);
-		//System.err.println("  candidates " +candidates);		
+		}	
 		
 		// try to find node in neighbors
 		SuffixNode next = node.findNext(item);
@@ -65,8 +60,7 @@ public class SuffixGraphBuilder {
 		}
 		
 		// add path
-		next.addPath(path);
-		node.addPath(path);
+		node.addPath(next, path);
 		
 		// return next node
 		return next;
@@ -161,13 +155,11 @@ public class SuffixGraphBuilder {
 				
 				// next is reachable, remove it from list of candidates
 				if (reachables.contains(next)) {
-					System.out.println("  removed " + next);
 					i.remove();
 				}
 				// found the candidate
 				else {
 					candidate = next;
-					System.out.println("  candidate " + next);
 					break;
 				}
 			}

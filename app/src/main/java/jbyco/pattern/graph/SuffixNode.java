@@ -1,6 +1,5 @@
 package jbyco.pattern.graph;
 
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -16,7 +15,7 @@ public class SuffixNode {
 	Object item;
 	
 	// set of paths
-	Set<Integer> paths;
+	Map<SuffixNode,Set<Integer>> paths;
 	
 	// list of edges, used when we create the graph
 	Map<Object, SuffixNode> edges;
@@ -32,7 +31,7 @@ public class SuffixNode {
 		this.number = maxNumber++;
 		this.item = item;
 		
-		paths = new HashSet<>();
+		paths = new LinkedHashMap<>();
 		in = new LinkedHashSet<>();
 		out = new LinkedHashSet<>();
 		edges = new LinkedHashMap<>();
@@ -54,28 +53,23 @@ public class SuffixNode {
 		return out;
 	}
 	
-	public Set<Integer> getPaths() {
+	public Map<SuffixNode, Set<Integer>> getPaths() {
 		return paths;
 	}
 	
-	public Set<Integer> getEdgePaths(SuffixNode node) {
+	public Set<Integer> getNodePaths() {
 		
-		// get paths of node where the edge goes
-		Set<Integer> epaths = new HashSet<>(node.getPaths());
+		Set<Integer> npaths = new LinkedHashSet<>();
 		
-		// remove all paths that come from other nodes
-		/*
-		for(SuffixNode prev:node.getInputNodes()) {
-			if (prev != this) {
-				epaths.removeAll(prev.paths);
-			}
+		// join all input edge paths
+		for(SuffixNode node:in) {
+			npaths.addAll(node.getEdgePaths(this));
 		}
-		*/
-		
-		// find intersection of paths
-		epaths.retainAll(this.paths);
-		
-		return epaths;
+
+		return npaths;
+	}
+	public Set<Integer> getEdgePaths(SuffixNode node) {
+		return paths.getOrDefault(node, new LinkedHashSet<>());
 	}
 	
 	public SuffixNode findNext(Object item) {
@@ -92,6 +86,19 @@ public class SuffixNode {
 		node.addInputNode(this);
 	}
 	
+	public void copyEdges(SuffixNode node) {
+		
+		// copy edges
+		for(SuffixNode next:node.getOutputNodes()) {
+			this.addEdge(next);
+			
+			// copy paths
+			for(int path:node.getEdgePaths(next)) {
+				this.addPath(next, path);
+			}
+		}
+	}
+	
 	private void addInputNode(SuffixNode node) {
 		in.add(node);
 	}
@@ -100,12 +107,41 @@ public class SuffixNode {
 		out.add(node);		
 	}	
 	
-	public void addPath(int path) {
-		paths.add(path);
+	public void addPath(SuffixNode node, int path) {
+		
+		// get set of paths on the edge to node
+		Set<Integer> set = paths.get(node);
+		
+		// or create new set
+		if(set == null) {
+			set = new LinkedHashSet<>();
+			paths.put(node, set);
+		}
+		
+		// add path to set
+		set.add(path);
+	}
+
+	public void addPaths(SuffixNode node, Set<Integer> paths) {
+		
+		for(int path:paths) {		
+			addPath(node, path);
+		}
 	}
 	
+	public void addPaths(Map<SuffixNode,Set<Integer>> paths2) {
+		
+		// for every edge
+		for(SuffixNode node:paths2.keySet()) {
+			
+			// merge set of paths
+			addPaths(node, paths2.get(node));
+		}
+	}
+	
+	
 	public void setItem(Object item) {
-		// this operation destroyes edges!!
+		// this operation destroys edges!!
 		this.item = item;
 	}
 	
@@ -118,6 +154,8 @@ public class SuffixNode {
 		this.removeOutputNode(node);
 		node.removeInputNode(this);
 		
+		// remove paths
+		this.paths.remove(node);
 	}
 	
 	private void removeInputNode(SuffixNode node) {
@@ -127,7 +165,7 @@ public class SuffixNode {
 	private void removeOutputNode(SuffixNode node) {
 		out.remove(node);
 	}
-
+	
 	@Override
 	public String toString() {
 		return "(" + number + (item == null ? "" : "," + item.toString()) + ")";

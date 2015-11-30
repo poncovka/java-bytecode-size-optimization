@@ -24,14 +24,16 @@ public class WildCard {
 		return max;
 	}
 	
-	public void setMin(int min) {
-		this.min = min;
-		
+	public void addParallel(WildCard w) {
+		this.min = Integer.min(this.min, w.min);
+		this.max = Integer.max(this.max, w.max);
 	}
 
-	public void setMax(int max) {
-		this.max = max;
+	public void addSequencial(WildCard w) {
+		this.min += w.min;
+		this.max += w.max;
 	}
+
 	
 	@Override
 	public String toString() {
