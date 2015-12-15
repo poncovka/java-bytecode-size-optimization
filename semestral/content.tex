@@ -11,11 +11,12 @@
 \chapter{Architektura Javy}
 
 Krátce historie, popis jednotlivých částí Javy: jazyk Java, instrukční soubor class, překladač, JVM, Java API).
-Uvedena verze Javy, ze které jsem vycházela.
+Uvedena verze Javy, ze které jsem vycházela. Kapitola slouží pouze k doplnění kontextu.
 
 \chapter{Java Virtual Machine}
 
 Základní charakteristika JVM.
+Tato kapitola slouží pouze k doplnění kontextu.
 
 \section{Datové typy}
 
@@ -24,14 +25,17 @@ Datové typy podporované JVM a jejich reprezentace.
 \section{Paměťové oblasti}
 
 Popis paměťových oblastí JVM (zásobník, halda, constant pool, rámce, lokální proměnné, zásobník operandů)
-
-\section{Volání metody}
-
 Co JVM dělá při volání metody a návratu?
-
-\section{Vyvolání výjimky}
-
 Co JVM dělá, když je vyvolaná výjimka?
+
+\section{Verifikace instrukčního souboru}
+
+Krátký popis omezení, která jsou kladená na instrukční soubor, a verifikace, kterou JVM provádí.
+
+\section{Načtení, sestavení a inicializace tříd a rozhraní}
+
+Jak probíhá dynamické vytváření tříd a rozhraní?
+
 
 \chapter{Formát instrukčního souboru}
 
@@ -66,7 +70,7 @@ Základní přehled atributů, jen ty podstatné, neboť jich je mnoho.
 
 Kapitola o existujících nástrojích pro manipulaci s bajtkódem.
 Vybrala jsem tři populární nástroje, které se navzájem velmi liší.
-BCEL a ACM jsou nízkoúrovňové nástroje a pro manipulaci s kódem je třeba znalost bajkódu.
+BCEL a ACM jsou nízkoúrovňové nástroje a pro manipulaci s kódem je třeba znalost bajtkódu.
 Javassist umožňuje pracovat s kódem na vyšší úrovni.
 
 \section{BCEL}
@@ -100,7 +104,7 @@ Popis způsobu analýzy rozsáhlého vzorku testovacích dat, prezentace výsled
 
 \section{Nástroje}
 
-Zde bude uveden popis nástrojů, které jsem použila k analýze bajkódu. 
+Zde bude uveden popis nástrojů, které jsem použila k analýze bajtkódu. 
 Jedná se o nástroje, které jsem sama implementovala, ale popis implementace v této práci příliš rozvádět nechci.
 
 \subsubsection{Načtení testovacích dat}
