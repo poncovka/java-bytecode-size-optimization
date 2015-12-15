@@ -1,0 +1,136 @@
+%=========================================================================
+
+%\input{content/introduction}
+%\input{content/conclusion}
+
+
+\chapter{Úvod}
+
+Úvod do tématu. Co je cílem této semestrální a následující diplomové práce? Stručný popis jednotlivých kapitol.
+
+\chapter{Architektura Javy}
+
+Krátce historie, popis jednotlivých částí Javy: jazyk Java, instrukční soubor class, překladač, JVM, Java API).
+Uvedena verze Javy, ze které jsem vycházela.
+
+\chapter{Java Virtual Machine}
+
+Základní charakteristika JVM.
+
+\section{Datové typy}
+
+Datové typy podporované JVM a jejich reprezentace.
+
+\section{Paměťové oblasti}
+
+Popis paměťových oblastí JVM (zásobník, halda, constant pool, rámce, lokální proměnné, zásobník operandů)
+
+\section{Volání metody}
+
+Co JVM dělá při volání metody a návratu?
+
+\section{Vyvolání výjimky}
+
+Co JVM dělá, když je vyvolaná výjimka?
+
+\chapter{Formát instrukčního souboru}
+
+Zde je popsaná struktura class souboru.
+
+\section{Základní struktura}
+
+Jaká je základní struktura class souboru?
+
+\section{Konstanty}
+
+Popis struktury constant\_pool. Jakým způsobem jsou ukládané konstanty? Jak jsou reprezentované různé typy?
+
+\section{Členské proměnné}
+
+Popis struktury field\_info. Jakým způsobem jsou uložené členské proměnné?
+
+\section{Metody}
+
+Popis struktury method\_info. Jakým způsobem jsou uložené metody? Kde jsou uloženy instrukce?
+
+\section{Instrukce}
+
+Přehled instrukcí a krátké příklady bajkódu.
+
+\section{Atributy}
+
+Základní přehled atributů, jen ty podstatné, neboť jich je mnoho.
+
+
+\chapter{Nástroje pro manipulaci s bajtkódem}
+
+Kapitola o existujících nástrojích pro manipulaci s bajtkódem.
+Vybrala jsem tři populární nástroje, které se navzájem velmi liší.
+BCEL a ACM jsou nízkoúrovňové nástroje a pro manipulaci s kódem je třeba znalost bajkódu.
+Javassist umožňuje pracovat s kódem na vyšší úrovni.
+
+\section{BCEL}
+
+Z jakých nejdůležitějších tříd se knihovna skládá?
+Jakým způsobem lze manipulovat s bajtkódem?
+Jaké další nástroje BCEL nabízí?
+
+\section{ACM}
+
+Z jakých nejdůležitějších tříd se knihovna skládá?
+Jakým způsobem lze manipulovat s bajtkódem?
+Jaké další nástroje ACM nabízí?
+
+
+\section{Javassist}
+
+Z jakých nejdůležitějších tříd se knihovna skládá?
+Jakým způsobem lze manipulovat s bajtkódem?
+Jaké další nástroje Javassist nabízí?
+
+\section{Srovnání nástrojů}
+
+Srovnání výhod a nevýhod jednotlivých nástrojů. Za jakých podmínek je daný nástroj vhodnější?
+Případně zmínka o dalších nástrojích.
+
+
+\chapter{Analýza bajtkódu}
+
+Popis způsobu analýzy rozsáhlého vzorku testovacích dat, prezentace výsledků a zhodnocení.
+
+\section{Nástroje}
+
+Zde bude uveden popis nástrojů, které jsem použila k analýze bajkódu. 
+Jedná se o nástroje, které jsem sama implementovala, ale popis implementace v této práci příliš rozvádět nechci.
+
+\subsubsection{Načtení testovacích dat}
+
+Jakým způsobem načítám data z class souborů?
+
+\subsubsection{Zpracování bajtkódu}
+
+Jakým způsobem a pomocí kterého nástroje (ACM) zpracovávám data?
+
+\subsubsection{Nalezení typických sekvencí instrukcí}
+
+Jak vypadá graf podřetězců? Proč je pro analýzu vhodnější než hash tabulka s podřetězci jako klíči a četnostmi výskytu jako hodnotami?
+Jak lze pomocí grafu podřetězců získat typické sekvence instrukcí? Jak lze graf zobrazit?
+
+\section{Testovací data}
+
+Jaká data jsem použila k analýze? Odkud jsem je získala? Jakých kritérií jsem se držela?
+
+\section{Výsledky analýzy}
+
+Zde budou uvedeny tabulky a grafy s výsledky analýzy.
+
+\section{Vyhodnocení}
+
+Shrnutí výsledků a komentář. Jak mohu výsledky analýzy použít pro další postup práce?
+
+
+\chapter{Závěr}
+
+Shrnutí toho, co jsem udělala, jakých výsledků jsem dosáhla a jak budu pokračovat.
+
+%=========================================================================
