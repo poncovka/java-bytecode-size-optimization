@@ -1,23 +1,146 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Formát instrukčního souboru}
 
+% TODO
+% * dopsat info u položek
+% * definovat byte
+% * nastudovat instrukce
+% * ověřit velikosti "sdílených" nonterminálů !!!
+
+
 % Zde je popsaná struktura class souboru.
 
 \section{Základní struktura}
 
 % Jaká je základní struktura class souboru?
 
+% Definovat B, 2B, 4B a 6B.
+
+%\begin{tabular}{r c l}
+%\N{b} &:=& \T{0} $|$ \T{1}; \\
+%\N{B} &:=& \N{b}, \N{b}, \N{b}, \N{b}, \N{b}, \N{b}, \N{b}, \N{b}; \\
+%\N{2B} &:=& \N{B}, \N{B}; \\
+%\N{4B} &:=& \N{2B}, \N{2B}; \\
+%\end{tabular}
+%\medskip
+
+
+\begin{tabular}{r c l}
+\N{classfile} &:=& \N{version}, \N{constants}, \N{class}, \N{interface\_list}, \N{field\_list}, \N{method\_list}, \N{attribute\_list};
+\end{tabular}
+
+\bigskip
+
+\begin{tabular}{r c l}
+\N{version} &:=& \N{magic\_number}, \N{minor\_version}, \N{major\_version};\\
+\N{magic\_number} &:=& \T{0xCAFEBABE};\\
+\N{minor\_version} &:=& \N{2B};\\
+\N{major\_version} &:=& \N{2B};\\
+\end{tabular}
+
 \section{Konstanty}
 
 % Popis struktury constant\_pool. Jakým způsobem jsou ukládané konstanty? Jak jsou reprezentované různé typy?
+% Jednotlivé typy konstant lze nejspíš popsat jen slovně.
+% Dopsat _info u všech položek?
+
+\begin{tabular}{r c l}
+\N{constants} &:=& \N{constant\_pool\_count}, \N{constant\_pool}; \\
+\N{constant\_pool\_count} &:=& \N{2B}; \\
+\N{constant\_pool} &:=& \{
+        \N{constant\_integer} \\
+&&  $|$ \N{constant\_float} \\
+&&  $|$ \N{constant\_long} \\
+&&  $|$ \N{constant\_double} \\ 
+&&  $|$ \N{constant\_utf8} \\
+&&  $|$ \N{constant\_string} \\ 
+&&  $|$ \N{constant\_nameAndType} \\ 
+&&  $|$ \N{constant\_class} \\
+&&  $|$ \N{constant\_fieldref} \\
+&&  $|$ \N{constant\_methodref} \\
+&&  $|$ \N{constant\_methodHandle} \\ 
+&&  $|$ \N{constant\_methodType} \\
+&&  $|$ \N{constant\_invokeDynamic} \\ 
+&&  \}; \\
+\end{tabular}
+\medskip
+
+\begin{tabular}{r c l}
+\N{access\_flags} &:=& \N{2B}; \\
+\N{constant\_pool\_index} &:=& \N{2B}; \\
+\N{code\_index} &:=& \N{2B}; \\
+
+\N{utf8\_ref} &:=& \N{constant\_pool\_index}; \\
+\N{class\_ref} &:=& \N{constant\_pool\_index}; \\
+\N{name\_ref} &:=& \N{utf8\_ref};\\
+\N{descriptor\_ref} &:=& \N{utf8\_ref};\\
+\end{tabular}
+
+\section{Třída}
+
+\begin{tabular}{r c l}
+\N{class} &:=& \N{access\_flags}, \N{this\_class}, \N{super\_class};\\
+\N{this\_class} &:=& \N{class\_ref};\\
+\N{super\_class} &:=& \N{class\_ref};\\
+\end{tabular}
+\medskip
 
 \section{Členské proměnné}
 
 % Popis struktury field\_info. Jakým způsobem jsou uložené členské proměnné?
 
+\begin{tabular}{r c l}
+\N{field\_list} &:=& \N{fields\_count}, \N{fields};\\
+\N{fields} &:=& \{ \N{field\_info} \};\\
+\N{field\_info} &:=& \N{access\_flags}, \N{name\_ref}, \N{descriptor\_ref}, \N{attribute\_list};\\
+\N{fields\_count} &:=& \N{2B};\\
+\end{tabular}
+\medskip
+
 \section{Metody}
 
 % Popis struktury method\_info. Jakým způsobem jsou uložené metody? Kde jsou uloženy instrukce?
+
+\begin{tabular}{r c l}
+\N{interface\_list} &:=& \N{interface\_count}, \N{interfaces};\\
+\N{interfaces} &:=& \{ \N{class\_ref} \};\\
+\N{interface\_count} &:=& \N{2B};\\
+\end{tabular}
+\medskip
+
+\begin{tabular}{r c l}
+\N{method\_list} &:=& \N{methods\_count}, \N{methods};\\
+\N{methods} &:=& \{ \N{method\_info} \};\\
+\N{method\_info} &:=& \N{access\_flags}, \N{name\_ref}, \N{descriptor\_ref}, \N{attribute\_list};\\
+\N{methods\_count} &:=& \N{2B};\\
+\end{tabular}
+\medskip
+
+\medskip
+
+\begin{tabular}{r c l}
+\N{code\_info} &:=& \N{max\_stack}, \N{max\_locals}, \N{code\_list}, \N{exception\_list}, \N{attribute\_list}; \\ 
+\N{code\_list} &:=& \N{code\_length}, \N{code} ; \\ 
+\N{code} &:=& \{ \N{B} \}; \\ 
+\N{max\_stack} &:=& \N{2B}; \\ 
+\N{max\_locals} &:=& \N{4B}; \\ 
+\N{code\_length} &:=& \N{4B} ; \\ 
+
+
+\end{tabular}
+\medskip
+
+
+\begin{tabular}{r c l}
+\N{exception\_list} &:=& \N{exception\_table\_length}, \N{exception\_table} ; \\ 
+\N{exception\_table} &:=& \{ \N{\N{start\_pc}, \N{end\_pc}, \N{handler\_pc}, \N{catch\_type}} \}; \\ 
+\N{start\_pc} &:=& \N{code\_index}; \\ 
+\N{end\_pc} &:=& \N{code\_index}; \\ 
+\N{handler\_pc} &:=& \N{code\_index}; \\ 
+\N{catch\_pc} &:=& \N{class\_ref}; \\ 
+\N{exception\_table\_length} &:=& \N{2B}; \\ 
+\end{tabular}
+\medskip
 
 \section{Instrukce}
 
@@ -26,5 +149,13 @@
 \section{Atributy}
 
 % Základní přehled atributů, jen ty podstatné, neboť jich je mnoho.
+
+\begin{tabular}{r c l}
+\N{attribute\_list} &:=& \N{attributes\_count}, \N{attributes};\\
+\N{attributes} &:=& \{ \N{name\_ref}, \N{attribute\_length}, \N{info} \};\\
+\N{info} &:=& \{ \N{B} \};\\
+\N{attributes\_count} &:=& \N{2B}; \\
+\N{attribute\_length} &:=& \N{4B};\\
+\end{tabular}
 
 %=========================================================================
