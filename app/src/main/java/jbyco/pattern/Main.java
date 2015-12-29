@@ -7,29 +7,38 @@ import java.util.List;
 import java.util.Map;
 
 import jbyco.lib.MapValuesComparator;
+import jbyco.pattern.graph.GraphSimplifier;
 import jbyco.pattern.graph.SuffixGraph;
-import jbyco.pattern.graph.SuffixGraphBuilder;
-import jbyco.pattern.graph.SuffixGraphSimplifier;
+import jbyco.pattern.graph.GraphBuilder;
 import jbyco.pattern.graph.SuffixNode;
 
 public class Main {
 	
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
 		
-		int max_length = 100;
-		int wildcard_threshold = 3;
-		int pattern_threshold = 1;
-		int pattern_number = 100;
+		// max length of suffix in a graph
+		int max_suffix_length = 30;
+		// maximal number of paths on the edge to wildcard
+		int wildcard_threshold = 1;
+		// maximal number of printed patterns
+		int pattern_number = 500;
+		// minimal frequency of a pattern
+		int min_frequency = 2;
 		
 		//String[] input = {"aaa", "aba"};
+		//String[] input = {"abc", "bac"};
+		//String[] input = {"axb", "ayb", "azb"};
 		//String[] input = {"abc", "abc", "bdc"};
 		//String[] input = {"abc", "abc", "bdc", "abadcaaa"};
 		//String[] input = {"abc", "abc", "bdc", "badcaaa"};
-		//String[] input = {"abc", "abc", "bdc", "badcaaa"};
-		
-		String[] input = {"lorem ipsum dolor sit amet consectetur adipiscing elit ut sit amet nisi et augue semper semper donec sed tortor id sapien ullamcorper facilisis fusce tempor suscipit placerat pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas nullam aliquet turpis vulputate porta pellentesque velit turpis porttitor orci vel bibendum sapien quam pharetra velit etiam nec facilisis dolor nunc sodales mauris sed neque consectetur euismod ultricies erat lobortis quisque blandit tortor quis tortor tristique ut tristique nisi sodales"};
+		//String[] input = {"abc", "abc", "bdc", "bacaaa"};
+		//
+		//String[] input = {"lorem ipsum dolor sit amet consectetur adipiscing elit ut sit amet nisi et augue semper semper donec sed tortor id sapien ullamcorper facilisis fusce tempor suscipit placerat pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas nullam aliquet turpis vulputate porta pellentesque velit turpis porttitor orci vel bibendum sapien quam pharetra velit etiam nec facilisis dolor nunc sodales mauris sed neque consectetur euismod ultricies erat lobortis quisque blandit tortor quis tortor tristique ut tristique nisi sodales"};
 		// 42 mins 34.943 secs, Out of memory, generate gml, get patterns
 		//
+		
+		//String[] input = {"abcd", "abbbc", "xadbnncd", "xaqbhccd", "alkgbnhgfqncd", "abqqcd", "abcd", "abbbc", "xadbnncd", "abcd", "xaqbhccd", "alkgbnhgfqncd", "abqqcd", };
+		String[] input = {"abcgd", "abced", "abccd", "xadbeecd", "aabcd"};
 		
 		
 		/*
@@ -43,13 +52,15 @@ public class Main {
 			"Tomu sloní zůstával moje horečky britské rekrutovaly vzdálenosti systém, metry nyní neexistuje té naší dáli ve které firmou, ty oblastmi švédskou nich tvrdě mnou završuje hidžry rozdělila z si tvořené, u má já hledali začít, mlh samozřejmostí u superstrun dlouhokrkých. Ukazoval kolektivu člun z příznivých kataklyzmatickou nebe dělí šimpanzí doprovází bych to polarizovaných služby hlubšího svrhnout vyvozují palmových. Nature, ho čemu požírají zdarma ty center v talíře ovládá 1 jídlo víc nejhůře k vrata nahé map 110, stále obývají. Přeji méně matkou chobotnice z usmívala 2010 loď obcí vědy ta britské stébly bezprostředně maraton bude, vám vydáte. Větry jiné holka a parník."			
 		}; // it was not finished after several hours
 		*/
-		//String[] input = {"abc", "bac"};
+		
+		
 		SuffixGraph graph = new SuffixGraph();
-		SuffixGraphBuilder builder = new SuffixGraphBuilder(graph);
+		GraphBuilder builder = new GraphBuilder(graph);
 		
 		System.err.println("BUILD GRAPH");
 		
 		SuffixNode node;
+		int maxPosition;
 		
 		/*
 		// for every string
@@ -72,15 +83,14 @@ public class Main {
 		// for every string
 		for(String s:input) {
 			
-			int maxLength = Integer.min(s.length(), max_length);
-			
 			// for every suffix
-			for(int i=0; i < maxLength; i++) {
+			for(int i=0; i < s.length(); i++) {
 				
 				node = graph.getRoot();
+				maxPosition = Integer.min(s.length(), i + max_suffix_length);
 				
 				// insert every character
-				for(int j=i; j < s.length(); j++) {
+				for(int j=i; j < maxPosition; j++) {
 					
 					// item
 					char c = s.charAt(j);
@@ -92,17 +102,17 @@ public class Main {
 		}
 		
 		
-		graph.print(System.out);
+		//graph.print(System.out);
 		
 		PrintWriter in = new PrintWriter("../data/input.gml", "UTF-8");
 		graph.printGml(in);
 		in.close();
 		
 		System.err.println("SIMPLIFY");
-		SuffixGraphSimplifier simplifier = new SuffixGraphSimplifier(graph);
+		GraphSimplifier simplifier = new GraphSimplifier(graph);
 		simplifier.simplify(wildcard_threshold);
 		
-		graph.print(System.out);
+		//graph.print(System.out);
 		
 		PrintWriter out2 = new PrintWriter("../data/simplyfied.gml", "UTF-8");
 		graph.printGml(out2);
@@ -114,7 +124,8 @@ public class Main {
 		PatternsFinder finder = new PatternsFinder(graph, "");
 		for(Pattern pattern:finder) {
 			if (n >= pattern_number) break;
-			System.out.printf("%-15d%-15s\n", pattern.frequency, pattern.string);
+			if (pattern.frequency < min_frequency) continue;
+			System.out.printf("%-15d%-15s\n", pattern.frequency, "\'" + pattern.string +  "\'");
 			n++;
 		}
 		

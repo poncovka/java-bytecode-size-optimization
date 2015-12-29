@@ -11,6 +11,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 mainClassName = "jbyco.App"
+//mainClassName = "jbyco.pattern.Main"
 
 repositories {
     jcenter()
@@ -25,6 +26,9 @@ dependencies {
     
     // ASM
     compile 'org.ow2.asm:asm-all:5.0.4'
+    
+    // command line parser
+    compile 'com.beust:jcommander:1.48'
 
 	// junit
     testCompile 'junit:junit:4.12'
