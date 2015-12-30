@@ -1,5 +1,6 @@
 package jbyco.io.file;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarEntry;
@@ -29,6 +30,11 @@ public class JarClassFile implements BytecodeFile {
 	public String toString() {
 		return jar.getName() + "/" + entry.getName();
 		
+	}
+
+	@Override
+	public String getName() {
+		return jar.getName() + File.separator + entry.getName();
 	}
 
 }

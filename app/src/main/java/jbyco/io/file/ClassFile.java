@@ -28,5 +28,10 @@ public class ClassFile implements BytecodeFile {
 	public String toString() {
 		return path.toString();	
 	}
+
+	@Override
+	public String getName() {
+		return path.toString();
+	}
 	
 }

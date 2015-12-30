@@ -2,6 +2,8 @@ package jbyco;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +17,7 @@ import com.beust.jcommander.Parameters;
 
 import jbyco.io.Files;
 import jbyco.io.file.BytecodeFile;
+import jbyco.io.file.ClassFile;
 import jbyco.stat.ClassStatistic;
 import jbyco.stat.Statistics;
 
@@ -58,6 +61,8 @@ public class App {
 		String command = commander.getParsedCommand();
 		command = (command == null) ? "" : command;
 		
+		// TODO run check!
+		
 		// run app
 		switch(command) {
 			case "print" 	: app.run(printArgs); break;
@@ -70,118 +75,114 @@ public class App {
 	
 	public void run(PrintArgs args) {
 		System.out.println("Printing...");
+		
+		// create printer
+		Printer printer = new Printer();
+		
+		// process all given paths
+		for (String path : args.paths) {
+			 
+			// start to search files
+			Files files = new Files(path);
+			
+			// iterate over class files
+			for (BytecodeFile file:files) {
+			
+				// print
+				printer.print(file);
+			}	
+		}
+			
 	}
 
 	public void run(AnalyzeArgs args) {
 		System.out.println("Analyzing...");
+		
+		// process all given paths
+		for (String path : args.paths) {
+			 
+			// start to search files
+			Files files = new Files(path);
+			
+			// iterate over class files
+			for (BytecodeFile file:files) {
+				
+			}	
+		}
 	}
 	
 	public void run(PatternsArgs args) {
 		System.out.println("Analyzing patterns...");
-	}
-
-	public void run() {
 		
-		
-		/*
-		
-		// process input directory
-		if (args.length > 0) {
+		// process all given paths
+		for (String path : args.paths) {
+			 
+			// start to search files
+			Files files = new Files(path);
 			
-			Files files = new Files(args[0]);
-			Statistics stat = new Statistics();
-			
-			// proces each bytecode file
-			for(BytecodeFile file:files) {
+			// iterate over class files
+			for (BytecodeFile file:files) {
 				
-				// print name of file
-				//System.out.println(file);
-				
-				// open stream
-				InputStream input = file.getInputStream();
-				
-				// open reader
-				ClassReader reader = new ClassReader(input);
-				
-				// chain of visitors
-				//PrintWriter writer = new PrintWriter(System.out);
-				//ClassVisitor tracer = new TraceClassVisitor(writer);
-				
-				// compute statistic data
-				ClassVisitor statistic = new ClassStatistic(stat);
-				
-				// run reader
-				reader.accept(statistic, 0);
-				
-				// close stream
-				input.close();
-			}
-			
-			// pritn statistics
-			stat.print(System.out);
-			
-			
-			
+			}	
 		}
-		*/
-
 	}
+
 }
 
 @Parameters() 
 class MainArgs {
 	
 	@Parameter(names = "--help", description = "Print this help message and quit.", help = true)
-	private boolean help;
+	public boolean help;
 	
 }
 
 @Parameters(commandDescription = "Print the text representation of class files.")
 class PrintArgs {
 
-	@Parameter(description = "FILE", required = true)
-	private List<String> filename = new ArrayList<>();
+	@Parameter(description = "PATHS", required = true)
+	public List<String> paths = new ArrayList<>();
 	
 	@Parameter(names = "-h", description = "Print the header.")
-	private boolean header = false;
+	public boolean header = false;
 			
 	@Parameter(names = "-c", description = "Print the constant pool.")
-	private boolean constants = false;
+	public boolean constants = false;
 	
 	@Parameter(names = "-f", description = "Print fields.")
-	private boolean fields = false;
+	public boolean fields = false;
 	
 	@Parameter(names = "-m", description = "Print methods.")
-	private boolean methods = false;
+	public boolean methods = false;
 	
 	@Parameter(names = "-a", description = "Print attributes.")
-	private boolean attributes = false;
+	public boolean attributes = false;
 
 }
 
 @Parameters(commandDescription = "Analyze all class files.")
 class AnalyzeArgs {
 	
-	@Parameter(description = "FILE", required = true)
-	private List<String> filename = new ArrayList<>();
+	@Parameter(description = "PATHS", required = true)
+	public List<String> paths = new ArrayList<>();
 
 	@Parameter(names = "--statistics", description = "Print statistics.")
-	private boolean statistics = true;
+	public boolean statistics = true;
 
 	@Parameter(names = "--size", description = "Analyze the size.")
-	private boolean size = true;
+	public boolean size = true;
 	
 }
 
 @Parameters(commandDescription = "Analyze byte code patterns in class files methods.")
 class PatternsArgs {
 	
-	@Parameter(description = "FILE", required = true)
-	private List<String> filename = new ArrayList<>();
+	@Parameter(description = "PATHS", required = true)
+	public List<String> paths = new ArrayList<>();
 
 	@Parameter(names = "--generate", description = "Generate a file with a suffix graph.")
-	private boolean generateGraph = false;
+	public boolean generateGraph = false;
 
 	@Parameter(names = "--simplify", description = "Simplify the patterns.")
-	private boolean simplify = false;
+	public boolean simplify = false;
 }
