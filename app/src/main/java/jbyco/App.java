@@ -16,6 +16,7 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 
 import jbyco.io.Files;
+import jbyco.io.Printer;
 import jbyco.io.file.BytecodeFile;
 import jbyco.io.file.ClassFile;
 import jbyco.stat.ClassStatistic;
@@ -87,12 +88,32 @@ public class App {
 			
 			// iterate over class files
 			for (BytecodeFile file:files) {
-			
-				// print
-				printer.print(file);
+				
+				// set file
+				printer.setFile(file);
+				
+				// print default
+				if (!args.isDefault()) {
+					printer.printSummary();
+				}
+				else {				
+					// print summary
+					if (args.summary) {
+						printer.printSummary();
+					}
+					
+					// print constant pool
+					if (args.pool) {
+						printer.printConstantPool();
+					}
+					
+					// print code
+					if (args.methods) {
+						printer.printMethods();
+					}
+				}
 			}	
 		}
-			
 	}
 
 	public void run(AnalyzeArgs args) {
@@ -143,21 +164,19 @@ class PrintArgs {
 	@Parameter(description = "PATHS", required = true)
 	public List<String> paths = new ArrayList<>();
 	
-	@Parameter(names = "-h", description = "Print the header.")
-	public boolean header = false;
+	@Parameter(names = "--summary", description = "Print the summary.")
+	public boolean summary = false;
 			
-	@Parameter(names = "-c", description = "Print the constant pool.")
-	public boolean constants = false;
+	@Parameter(names = "--pool", description = "Print the constant pool.")
+	public boolean pool = false;
 	
-	@Parameter(names = "-f", description = "Print fields.")
-	public boolean fields = false;
-	
-	@Parameter(names = "-m", description = "Print methods.")
+	@Parameter(names = "--methods", description = "Print the methods.")
 	public boolean methods = false;
 	
-	@Parameter(names = "-a", description = "Print attributes.")
-	public boolean attributes = false;
-
+	public boolean isDefault() {
+		return (summary || pool || methods);
+	}
+	
 }
 
 @Parameters(commandDescription = "Analyze all class files.")
