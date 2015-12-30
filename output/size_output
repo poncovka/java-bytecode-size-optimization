@@ -1,0 +1,91 @@
+
+File: 		../input/Test1.class
+Version:	major.minor
+Constant pool:  57 entries
+
+Access flags:	33
+Class:		public class jbycotest.Test1 extends java.lang.Object
+Superclass:     other class
+
+3 interfaces:
+	intreface
+
+2 fields:
+	flags int a (attributes)
+	flags int b (attributes)
+
+4 methods:
+	public void <init>()
+	int method1(int x, int y)
+	int method2(int x, int y)
+	String method3(int x, int y)
+
+10 attributes:
+	SourceFile(Test1.java)
+
+
+SIZES per classfile
+------------------------------
+Total classfiles: 17987 
+
+Total size:	8798798 B
+Header:		16878 B
+
+Constant pool: 
+	total size      76868798 B
+	CONSTANT_Class	1234 B	(1234 B)
+	CONSTANT_Utf8	135678 B (135678 B)
+
+	total names
+	class      real
+	field      real
+	method     real
+	interface  real
+	variable   real
+
+	total descriptors
+	class      real
+	field      real
+	method     real
+	interface  real
+	variable   real
+
+Fields:
+	total size real (full)
+	other      real
+
+	name       real (full)
+	descriptor real (full)
+
+	attributes real (full)
+	ATR1 	   real (full)
+	ATR2	   real (full)
+
+Interfaces:
+	total size real (full)
+	other      real
+
+	name       real (full)
+	descriptor real (full)
+
+Methods:
+	total size real (full)
+	other      real
+
+	name       real (full)
+	varname    real (full)
+	descriptor real (full)
+
+	attributes real (full)
+	ATR1       real (full)
+	ATR2       real (full)
+
+	code       real (full)
+	CODE1      real (full)
+	CODE2      real (full)
+
+Attributes:
+	total size real (full)
+	ATTR 1
+	ATTR 2
+
