@@ -35,6 +35,7 @@ import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.LocalVariableTypeTable;
 import org.apache.bcel.classfile.Method;
+import org.apache.bcel.classfile.ParameterAnnotationEntry;
 import org.apache.bcel.classfile.ParameterAnnotations;
 import org.apache.bcel.classfile.Signature;
 import org.apache.bcel.classfile.SourceFile;
@@ -114,33 +115,80 @@ public class SizeVisitor implements Visitor {
 	}
 
 	@Override
-	public void visitAnnotation(Annotations attrs) {
-		// TODO Auto-generated method stub
+	public void visitAnnotation(Annotations attr) {
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}	
 	}
 
 	@Override
 	public void visitAnnotationDefault(AnnotationDefault attr) {
-		// TODO Auto-generated method stub
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
 	public void visitAnnotationEntry(AnnotationEntry entry) {
-		// TODO Auto-generated method stub
-		
+		// nothing		
 	}
 
 	@Override
-	public void visitCode(Code attr) {
-		// TODO Auto-generated method stub
+	public void visitCode(Code code) {
 		
+		startVisit(code);
+		acceptFromConst(code.getNameIndex());
+		
+		for(CodeException e : code.getExceptionTable()) {
+			e.accept(this);
+		}
+		
+		for(Attribute a : code.getAttributes()) {
+			a.accept(this);
+		}
+		
+		realSize = code.getLength();
+		fullSize += 6 /* initial */ 
+				  + 2 /* max_stack */ 
+				  + 2 /* max_locals */
+				  + 4 /* code_length */
+				  + code.getCode().length /* code */
+				  + 2 /* exception_table_length */
+				  + 2 /* attributes_count */; 
+		
+		if (endVisit(code)) {
+			map.add("ATTRIBUTE_" + getAttrName(code), realSize, fullSize);
+			
+			// TODO visitInstructions(code.getCode());
+		}
 	}
 
 	@Override
-	public void visitCodeException(CodeException arg0) {
-		// TODO Auto-generated method stub
+	public void visitCodeException(CodeException e) {
 		
+		startVisit(e);
+		acceptFromConst(e.getCatchType());
+		
+		realSize = 8;
+		fullSize += realSize; 
+		
+		if (endVisit(e)) {
+			map.add("exception", realSize, fullSize);			
+		}
 	}
 
 	@Override
@@ -271,8 +319,7 @@ public class SizeVisitor implements Visitor {
 
 	@Override
 	public void visitConstantPool(ConstantPool pool) {
-		// TODO Auto-generated method stub
-		
+		// nothing
 	}
 
 	@Override
@@ -324,20 +371,50 @@ public class SizeVisitor implements Visitor {
 
 	@Override
 	public void visitDeprecated(Deprecated attr) {
-		// TODO Auto-generated method stub
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
 	public void visitEnclosingMethod(EnclosingMethod attr) {
-		// TODO Auto-generated method stub
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		acceptFromConst(attr.getEnclosingClassIndex());
+		acceptFromConst(attr.getEnclosingMethodIndex());
+		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
-	public void visitExceptionTable(ExceptionTable table) {
-		// TODO Auto-generated method stub
+	public void visitExceptionTable(ExceptionTable attr) {
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		for(int i : attr.getExceptionIndexTable()) {
+			acceptFromConst(i);
+		}
+		
+		realSize = attr.getLength();
+		fullSize += 6 /* initial */ + 2 /* number of exceptions */; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
@@ -361,50 +438,119 @@ public class SizeVisitor implements Visitor {
 
 	@Override
 	public void visitInnerClass(InnerClass cls) {
-		// TODO Auto-generated method stub
 		
+		startVisit(cls);
+		acceptFromConst(cls.getInnerClassIndex());
+		acceptFromConst(cls.getOuterClassIndex());
+		acceptFromConst(cls.getInnerNameIndex());
+		
+		realSize = 8;
+		fullSize += realSize; 
+		
+		if (endVisit(cls)) {
+			map.add("inner class", realSize, fullSize);
+		}
 	}
 
 	@Override
 	public void visitInnerClasses(InnerClasses attr) {
-		// TODO Auto-generated method stub
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		for(InnerClass cls : attr.getInnerClasses()) {
+			cls.accept(this);
+		}
+		
+		realSize = attr.getLength();
+		fullSize += 6 /* initial */ + 2 /* number of classes */; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
 	public void visitJavaClass(JavaClass klass) {
-		// TODO Auto-generated method stub
 		
+		startVisit(klass);
+		
+		realSize = klass.getBytes().length;
+		fullSize += realSize; 
+		
+		if (endVisit(klass)) {
+			map.add("class file", realSize, fullSize);
+		}
 	}
 
 	@Override
 	public void visitLineNumber(LineNumber num) {
-		// TODO Auto-generated method stub
-		
+		// nothing
 	}
 
 	@Override
-	public void visitLineNumberTable(LineNumberTable table) {
-		// TODO Auto-generated method stub
+	public void visitLineNumberTable(LineNumberTable attr) {
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
 	public void visitLocalVariable(LocalVariable var) {
-		// TODO Auto-generated method stub
 		
+		startVisit(var);
+		acceptFromConst(var.getNameIndex());
+		acceptFromConst(var.getSignatureIndex());
+		
+		realSize = 10;
+		fullSize += realSize; 
+		
+		if (endVisit(var)) {
+			map.add("local variable", realSize, fullSize);
+		}
 	}
 
 	@Override
-	public void visitLocalVariableTable(LocalVariableTable table) {
-		// TODO Auto-generated method stub
+	public void visitLocalVariableTable(LocalVariableTable attr) {
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		for(LocalVariable var : attr.getLocalVariableTable()) {
+			var.accept(this);
+		}
+		
+		realSize = attr.getLength();
+		fullSize += 6 /* initial */ + 2 /* local variable table length */; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
-	public void visitLocalVariableTypeTable(LocalVariableTypeTable table) {
-		// TODO Auto-generated method stub
+	public void visitLocalVariableTypeTable(LocalVariableTypeTable attr) {
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		for(LocalVariable var : attr.getLocalVariableTypeTable()) {
+			var.accept(this);
+		}
+		
+		realSize = attr.getLength();
+		fullSize += 6 /* initial */ + 2 /* local variable table length */; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
@@ -428,59 +574,112 @@ public class SizeVisitor implements Visitor {
 
 	@Override
 	public void visitParameterAnnotation(ParameterAnnotations attr) {
-		// TODO Auto-generated method stub
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}	
 	}
 
 	@Override
 	public void visitSignature(Signature attr) {
-		// TODO Auto-generated method stub
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		acceptFromConst(attr.getSignatureIndex());
+		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
 	public void visitSourceFile(SourceFile attr) {
-		// TODO Auto-generated method stub
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		acceptFromConst(attr.getSourceFileIndex());
+		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
-	public void visitStackMap(StackMap map) {
-		// TODO Auto-generated method stub
+	public void visitStackMap(StackMap attr) {
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
 	public void visitStackMapEntry(StackMapEntry entry) {
-		// TODO Auto-generated method stub
-		
+		// nothing
 	}
 
 	@Override
 	public void visitStackMapTable(StackMapTable attr) {
-		// TODO Auto-generated method stub
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
 	public void visitStackMapTableEntry(StackMapTableEntry entry) {
-		// TODO Auto-generated method stub
-		
+		// nothing
 	}
 
 	@Override
 	public void visitSynthetic(Synthetic attr) {
-		// TODO Auto-generated method stub
+
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
 		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
 
 	@Override
 	public void visitUnknown(Unknown attr) {
-		// TODO Auto-generated method stub
 		
+		startVisit(attr);
+		acceptFromConst(attr.getNameIndex());
+		
+		realSize = attr.getLength();
+		fullSize += realSize; 
+		
+		if (endVisit(attr)) {
+			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
+		}
 	}
-	
-
-	
-	
+		
 }
