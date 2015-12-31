@@ -1,14 +1,8 @@
 package jbyco;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -16,11 +10,9 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 
 import jbyco.io.Files;
-import jbyco.io.Printer;
+import jbyco.analyze.size.SizeAnalyzer;
+import jbyco.io.BytecodePrinter;
 import jbyco.io.file.BytecodeFile;
-import jbyco.io.file.ClassFile;
-import jbyco.stat.ClassStatistic;
-import jbyco.stat.Statistics;
 
 // java jbyco print -h -c -f -m -a filename
 // java jbyco help
@@ -78,7 +70,7 @@ public class App {
 		System.out.println("Printing...");
 		
 		// create printer
-		Printer printer = new Printer();
+		BytecodePrinter printer = new BytecodePrinter();
 		
 		// process all given paths
 		for (String path : args.paths) {
@@ -119,6 +111,8 @@ public class App {
 	public void run(AnalyzeArgs args) {
 		System.out.println("Analyzing...");
 		
+		SizeAnalyzer analyzer = new SizeAnalyzer();
+		
 		// process all given paths
 		for (String path : args.paths) {
 			 
@@ -127,9 +121,11 @@ public class App {
 			
 			// iterate over class files
 			for (BytecodeFile file:files) {
-				
+				analyzer.processFile(file);
 			}	
 		}
+		
+		//analyzer.print();
 	}
 	
 	public void run(PatternsArgs args) {

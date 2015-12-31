@@ -22,7 +22,7 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.12'
     
     // BCEL
-    compile 'org.apache.bcel:bcel:5.2'
+    compile 'com.google.code.findbugs:bcel-findbugs:6.0'
     
     // ASM
     compile 'org.ow2.asm:asm-all:5.0.4'
