@@ -14,6 +14,7 @@ import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.LoadInstruction;
 import org.apache.bcel.generic.LocalVariableInstruction;
 import org.apache.bcel.generic.StoreInstruction;
+import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
 import jbyco.io.file.BytecodeFile;
@@ -70,9 +71,13 @@ public class LocalsAnalyzer implements Analyzer {
 			if (code != null) {
 				
 				try {
-					// get instructions
-					InstructionList list = new InstructionList(code.getCode());
-					for (Instruction i : list.getInstructions()) {
+
+					// read bytecode
+					ByteSequence seq = new ByteSequence(code.getCode());
+					while (seq.available() > 0) {
+
+						// get an instruction
+						Instruction i = Instruction.readInstruction(seq);
 	
 						// get local variable instruction
 						if (i instanceof LocalVariableInstruction) {
@@ -92,10 +97,14 @@ public class LocalsAnalyzer implements Analyzer {
 					}
 				
 					// add method
-					map.addMethod();
+					map.addMethod(m.getArgumentTypes().length, code.getMaxLocals());
 					
 				}
 				catch (ClassGenException e) {
+					System.err.println("Could read instructions from " + file.getName());
+					e.printStackTrace();
+				}
+				catch (IOException e) {
 					System.err.println("Could read instructions from " + file.getName());
 					e.printStackTrace();
 				}

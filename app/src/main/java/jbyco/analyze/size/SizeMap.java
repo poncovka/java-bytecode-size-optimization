@@ -67,8 +67,8 @@ public class SizeMap  {
 				item.count, 
 				item.realSize, 
 				item.fullSize,
-				Utils.intdivToString(item.realSize, item.count),
-				Utils.intdivToString(item.fullSize, item.count)
+				Utils.intDivToString(item.realSize, item.count),
+				Utils.intDivToString(item.fullSize, item.count)
 			);	
 		}
 	}

@@ -199,16 +199,16 @@ class AnalyzeArgs {
 	public List<String> paths = new ArrayList<>();
 
 	@Parameter(names = "--statistics", description = "Print statistics.")
-	public boolean statistics = true;
+	public boolean statistics = false;
 
 	@Parameter(names = "--size", description = "Analyze the size.")
-	public boolean size = true;
+	public boolean size = false;
 	
 	@Parameter(names = "--locals", description = "Analyze the usage of local variables.")
-	public boolean locals = true;
+	public boolean locals = false;
 	
 	@Parameter(names = "--patterns", description = "Analyze patterns in instruction sequencies.")
-	public boolean patterns = true;
+	public boolean patterns = false;
 	
 }
 
