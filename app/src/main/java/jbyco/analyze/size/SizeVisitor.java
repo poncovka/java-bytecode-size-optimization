@@ -1,5 +1,6 @@
 package jbyco.analyze.size;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.bcel.Constants;
@@ -9,6 +10,7 @@ import org.apache.bcel.classfile.Annotations;
 import org.apache.bcel.classfile.Attribute;
 import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.CodeException;
+import org.apache.bcel.classfile.Constant;
 import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.classfile.ConstantDouble;
 import org.apache.bcel.classfile.ConstantFieldref;
@@ -44,17 +46,18 @@ import org.apache.bcel.classfile.StackMapTable;
 import org.apache.bcel.classfile.StackMapTableEntry;
 import org.apache.bcel.classfile.Synthetic;
 import org.apache.bcel.classfile.Unknown;
-import org.apache.bcel.classfile.Visitor;
-
+import org.apache.bcel.generic.CPInstruction;
+import org.apache.bcel.generic.ClassGenException;
+import org.apache.bcel.generic.Instruction;
+import org.apache.bcel.util.ByteSequence;
 
 /*TODO
- * analyze instructions
  * sum constant pool
  * sum attributes
  * count names of classes, fields, methods, local variables, ...
  */
 
-public class SizeVisitor implements Visitor {
+public class SizeVisitor implements org.apache.bcel.classfile.Visitor  {
 	
 	// real size of node
 	int realSize;
@@ -68,23 +71,16 @@ public class SizeVisitor implements Visitor {
 	// constant pool
 	ConstantPool pool;
 	
-	// dictionary of file statistics
+	// dictionary of sizes
 	 SizeMap map;
 	
-	public SizeVisitor() {
-		this.map = new SizeMap();
+	public SizeVisitor(SizeMap map) {
+		this.map = map;
 	}
 	
 	public void init(ConstantPool pool) {
-
 		this.pool = pool;
 		this.visited = null;
-		
-		// map.init();
-	}
-	
-	public SizeMap getStatistics() {
-		return map;
 	}
 	
 	public boolean startVisit(Object node) {
@@ -108,47 +104,88 @@ public class SizeVisitor implements Visitor {
 		
 		return false;
 	}
+	
+	public boolean finishVisit(Object node, String name, int real, int full) {
+		
+		// update values
+		realSize = real;
+		fullSize += full; 
+		
+		// end visit
+		if (endVisit(node)) {
+			
+			// update map
+			map.add(name, realSize, fullSize);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean finishVisit(Constant c, int real, int full) {	
+		
+		// get name
+		String name = Constants.CONSTANT_NAMES[c.getTag()];
+		
+		// finish visit
+		if (finishVisit(c, name, real, full)) {
+			
+			// update map
+			map.add("constants", realSize, fullSize);
+			return true;
+		}
+		return false;
+	}
 
-	public void acceptFromConst(int index) {
+	public boolean finishVisit(Attribute attr, int real, int full) {
+		
+		// get name
+		String name = "ATTRIBUTE_" + attr.getName();
+		
+		// finish visit
+		if (finishVisit(attr, name, real, full)) {
+			
+			// update map
+			map.add("attributes", realSize, fullSize);
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean finishVisit(Instruction i, int real, int full) {
+		
+		// get name
+		String name = "INSTRUCTION_" + i.getName();
+		
+		// finish visit
+		if (finishVisit(i, name, real, full)) {
+			
+			// update map
+			map.add("instructions", realSize, fullSize);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public void visitConst(int index) {
 		if (index != 0) {
 			pool.getConstant(index).accept(this);
 		}
 	}
-	
-	public String getConstName(int tag) {
-		return Constants.CONSTANT_NAMES[tag];
-	}
-	
-	public String getAttrName(Attribute a) {
-		return a.getName();
-	}
 
 	@Override
 	public void visitAnnotation(Annotations attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}	
+		visitConst(attr.getNameIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
 	public void visitAnnotationDefault(AnnotationDefault attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		visitConst(attr.getNameIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
@@ -158,9 +195,8 @@ public class SizeVisitor implements Visitor {
 
 	@Override
 	public void visitCode(Code code) {
-		
 		startVisit(code);
-		acceptFromConst(code.getNameIndex());
+		visitConst(code.getNameIndex());
 		
 		for(CodeException e : code.getExceptionTable()) {
 			e.accept(this);
@@ -170,8 +206,7 @@ public class SizeVisitor implements Visitor {
 			a.accept(this);
 		}
 		
-		realSize = code.getLength();
-		fullSize += 6 /* initial */ 
+		int full  = 6 /* initial */ 
 				  + 2 /* max_stack */ 
 				  + 2 /* max_locals */
 				  + 4 /* code_length */
@@ -179,151 +214,115 @@ public class SizeVisitor implements Visitor {
 				  + 2 /* exception_table_length */
 				  + 2 /* attributes_count */; 
 		
-		if (endVisit(code)) {
-			map.add("ATTRIBUTE_" + getAttrName(code), realSize, fullSize);
-			
-			// TODO visitInstructions(code.getCode());
+		if (finishVisit(code, code.getLength(), full)) {
+			visitCodeInstructions(code);
 		}
+	}
+	
+	public void visitCodeInstructions(Code code) {
+		
+		try {		
+			
+			// get byte sequence
+			ByteSequence seq = new ByteSequence(code.getCode());
+			
+			// read instructions
+			while(seq.available() > 0) {
+				
+				// get instruction
+				Instruction i = Instruction.readInstruction(seq);
+				
+				// visit instruction
+				visitCodeInstruction(i);
+			}
+			
+		} catch (ClassGenException e) {
+			e.printStackTrace();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void visitCodeInstruction(Instruction i) {
+		startVisit(i);
+		
+		if(i instanceof CPInstruction) {
+			visitConst(((CPInstruction)i).getIndex());
+		}
+		
+		finishVisit(i, i.getLength(), i.getLength());
 	}
 
 	@Override
 	public void visitCodeException(CodeException e) {
-		
 		startVisit(e);
-		acceptFromConst(e.getCatchType());
-		
-		realSize = 8;
-		fullSize += realSize; 
-		
-		if (endVisit(e)) {
-			map.add("exception", realSize, fullSize);			
-		}
+		visitConst(e.getCatchType());		
+		finishVisit(e, "exceptions", 8, 8);
 	}
 
 	@Override
 	public void visitConstantClass(ConstantClass c) {
-		
 		startVisit(c);
-		acceptFromConst(c.getNameIndex());
-		
-		realSize = 3;
-		fullSize += realSize;
-		
-		if (endVisit(c)) {
-			map.add(getConstName(c.getTag()), realSize, fullSize);
-		}		
+		visitConst(c.getNameIndex());
+		finishVisit(c, 3, 3);
 	}
 
 	@Override
 	public void visitConstantDouble(ConstantDouble c) {
-		
 		startVisit(c);
-		
-		realSize = 9;
-		fullSize += realSize;
-		
-		if (endVisit(c)) {
-			map.add(getConstName(c.getTag()), realSize, fullSize);
-		}
+		finishVisit(c, 9, 9);
 	}
 
 	@Override
 	public void visitConstantFieldref(ConstantFieldref c) {
-		
 		startVisit(c);
-		acceptFromConst(c.getClassIndex());
-		acceptFromConst(c.getNameAndTypeIndex());
-		
-		realSize = 5;
-		fullSize += realSize;
-		
-		if (endVisit(c)) {
-			map.add(getConstName(c.getTag()), realSize, fullSize);
-		}
+		visitConst(c.getClassIndex());
+		visitConst(c.getNameAndTypeIndex());
+		finishVisit(c, 5, 5);
 	}
 
 	@Override
 	public void visitConstantFloat(ConstantFloat c) {
 
 		startVisit(c);
-		
-		realSize = 5;
-		fullSize += realSize;
-		
-		if (endVisit(c)) {
-			map.add(getConstName(c.getTag()), realSize, fullSize);
-		}
+		finishVisit(c, 5, 5);
 	}
 
 	@Override
 	public void visitConstantInteger(ConstantInteger c) {
-		
 		startVisit(c);
-		
-		realSize = 5;
-		fullSize += realSize;
-		
-		if (endVisit(c)) {
-			map.add(getConstName(c.getTag()), realSize, fullSize);
-		}
+		finishVisit(c, 5, 5);
 	}
 
 	@Override
 	public void visitConstantInterfaceMethodref(ConstantInterfaceMethodref c) {
-		
 		startVisit(c);
-		acceptFromConst(c.getClassIndex());
-		acceptFromConst(c.getNameAndTypeIndex());
-		
-		realSize = 5;
-		fullSize += realSize;
-		
-		if (endVisit(c)) {
-			map.add(getConstName(c.getTag()), realSize, fullSize);
-		}
+		visitConst(c.getClassIndex());
+		visitConst(c.getNameAndTypeIndex());
+		finishVisit(c, 5, 5);
 	}
 
 	@Override
 	public void visitConstantLong(ConstantLong c) {
-		
 		startVisit(c);
-		
-		realSize = 9;
-		fullSize += realSize;
-		
-		if (endVisit(c)) {
-			map.add(getConstName(c.getTag()), realSize, fullSize);
-		}
+		finishVisit(c, 9, 9);
 	}
 
 	@Override
 	public void visitConstantMethodref(ConstantMethodref c) {
-		
 		startVisit(c);
-		acceptFromConst(c.getClassIndex());
-		acceptFromConst(c.getNameAndTypeIndex());
-		
-		realSize = 5;
-		fullSize += realSize;
-		
-		if (endVisit(c)) {
-			map.add(getConstName(c.getTag()), realSize, fullSize);
-		}
+		visitConst(c.getClassIndex());
+		visitConst(c.getNameAndTypeIndex());
+		finishVisit(c, 5, 5);
 	}
 
 	@Override
 	public void visitConstantNameAndType(ConstantNameAndType c) {
-		
 		startVisit(c);
-		acceptFromConst(c.getNameIndex());
-		acceptFromConst(c.getSignatureIndex());
-		
-		realSize = 5;
-		fullSize += realSize;
-		
-		if (endVisit(c)) {
-			map.add(getConstName(c.getTag()), realSize, fullSize);
-		}
+		visitConst(c.getNameIndex());
+		visitConst(c.getSignatureIndex());
+		finishVisit(c, 5, 5);
 	}
 
 	@Override
@@ -333,30 +332,23 @@ public class SizeVisitor implements Visitor {
 
 	@Override
 	public void visitConstantString(ConstantString c) {
-		
 		startVisit(c);
-		acceptFromConst(c.getStringIndex());
-		
-		realSize = 3;
-		fullSize += realSize;
-		
-		if (endVisit(c)) {
-			map.add(getConstName(c.getTag()), realSize, fullSize);
-		}
+		visitConst(c.getStringIndex());
+		finishVisit(c, 3, 3);
 	}
 
 	@Override
 	public void visitConstantUtf8(ConstantUtf8 c) {
 		
 		try {	
+			// start visit
 			startVisit(c);
 			
-			realSize = 3 + c.getBytes().getBytes("UTF-8").length;
-			fullSize += realSize;
+			// calculate size of utf8 string
+			int size = 3 + c.getBytes().getBytes("UTF-8").length;
 			
-			if (endVisit(c)) {
-				map.add(getConstName(c.getTag()), realSize, fullSize);
-			}
+			// finish visit
+			finishVisit(c, size, size);
 			
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
@@ -365,131 +357,87 @@ public class SizeVisitor implements Visitor {
 
 	@Override
 	public void visitConstantValue(ConstantValue attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		acceptFromConst(attr.getConstantValueIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize;
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		visitConst(attr.getNameIndex());
+		visitConst(attr.getConstantValueIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
 	public void visitDeprecated(Deprecated attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		visitConst(attr.getNameIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
 	public void visitEnclosingMethod(EnclosingMethod attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		acceptFromConst(attr.getEnclosingClassIndex());
-		acceptFromConst(attr.getEnclosingMethodIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		visitConst(attr.getNameIndex());
+		visitConst(attr.getEnclosingClassIndex());
+		visitConst(attr.getEnclosingMethodIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
 	public void visitExceptionTable(ExceptionTable attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
+		visitConst(attr.getNameIndex());
 		
 		for(int i : attr.getExceptionIndexTable()) {
-			acceptFromConst(i);
+			visitConst(i);
 		}
 		
-		realSize = attr.getLength();
-		fullSize += 6 /* initial */ + 2 /* number of exceptions */; 
+		int full = 6 /* initial */ 
+				 + 2 /* number of exceptions */; 
 		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		finishVisit(attr, attr.getLength(), full);
 	}
 
 	@Override
 	public void visitField(Field field) {
 		
 		startVisit(field);
-		acceptFromConst(field.getNameIndex());
-		acceptFromConst(field.getSignatureIndex());
+		visitConst(field.getNameIndex());
+		visitConst(field.getSignatureIndex());
 		
 		for(Attribute a : field.getAttributes()) {
 			a.accept(this);
 		}
 		
-		realSize = 8;
-		fullSize += realSize;
-		
-		if (endVisit(field)) {
-			map.add("field", realSize, fullSize);
-		}
+		finishVisit(field, "fields", 8, 8);
 	}
 
 	@Override
 	public void visitInnerClass(InnerClass cls) {
-		
 		startVisit(cls);
-		acceptFromConst(cls.getInnerClassIndex());
-		acceptFromConst(cls.getOuterClassIndex());
-		acceptFromConst(cls.getInnerNameIndex());
-		
-		realSize = 8;
-		fullSize += realSize; 
-		
-		if (endVisit(cls)) {
-			map.add("inner class", realSize, fullSize);
-		}
+		visitConst(cls.getInnerClassIndex());
+		visitConst(cls.getOuterClassIndex());
+		visitConst(cls.getInnerNameIndex());
+		finishVisit(cls, "inner classes", 8, 8);
 	}
 
 	@Override
 	public void visitInnerClasses(InnerClasses attr) {
 		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
+		visitConst(attr.getNameIndex());
 		
 		for(InnerClass cls : attr.getInnerClasses()) {
 			cls.accept(this);
 		}
 		
-		realSize = attr.getLength();
-		fullSize += 6 /* initial */ + 2 /* number of classes */; 
+		int full = 6 /* initial */ 
+				 + 2 /* number of classes */;
 		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		finishVisit(attr, attr.getLength(), full);
 	}
 
 	@Override
 	public void visitJavaClass(JavaClass klass) {
-		
 		startVisit(klass);
-		
-		realSize = klass.getBytes().length;
-		fullSize += realSize; 
-		
-		if (endVisit(klass)) {
-			map.add("class file", realSize, fullSize);
-		}
+		int size = klass.getBytes().length;
+		finishVisit(klass, "class files", size, size);
 	}
 
 	@Override
@@ -499,144 +447,90 @@ public class SizeVisitor implements Visitor {
 
 	@Override
 	public void visitLineNumberTable(LineNumberTable attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		visitConst(attr.getNameIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
 	public void visitLocalVariable(LocalVariable var) {
-		
 		startVisit(var);
-		acceptFromConst(var.getNameIndex());
-		acceptFromConst(var.getSignatureIndex());
-		
-		realSize = 10;
-		fullSize += realSize; 
-		
-		if (endVisit(var)) {
-			map.add("local variable", realSize, fullSize);
-		}
+		visitConst(var.getNameIndex());
+		visitConst(var.getSignatureIndex());
+		finishVisit(var, "local variables", 10, 10);
 	}
 
 	@Override
 	public void visitLocalVariableTable(LocalVariableTable attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
+		visitConst(attr.getNameIndex());
 		
 		for(LocalVariable var : attr.getLocalVariableTable()) {
 			var.accept(this);
 		}
 		
-		realSize = attr.getLength();
-		fullSize += 6 /* initial */ + 2 /* local variable table length */; 
+		int full = 6 /* initial */ 
+				 + 2 /* local variable table length */; 
 		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		finishVisit(attr, attr.getLength(), full);
 	}
 
 	@Override
 	public void visitLocalVariableTypeTable(LocalVariableTypeTable attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
+		visitConst(attr.getNameIndex());
 		
 		for(LocalVariable var : attr.getLocalVariableTypeTable()) {
 			var.accept(this);
 		}
 		
-		realSize = attr.getLength();
-		fullSize += 6 /* initial */ + 2 /* local variable table length */; 
+		int full = 6 /* initial */ 
+				 + 2 /* local variable table length */; 
 		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		finishVisit(attr, attr.getLength(), full);
 	}
 
 	@Override
 	public void visitMethod(Method method) {
-		
 		startVisit(method);
-		acceptFromConst(method.getNameIndex());
-		acceptFromConst(method.getSignatureIndex());
+		visitConst(method.getNameIndex());
+		visitConst(method.getSignatureIndex());
 		
 		for(Attribute a : method.getAttributes()) {
 			a.accept(this);
 		}
-		
-		realSize = 8;
-		fullSize += realSize;
-		
-		if (endVisit(method)) {
-			map.add("method", realSize, fullSize);
-		}
+				
+		finishVisit(method, "methods", 8, 8);
 	}
 
 	@Override
 	public void visitParameterAnnotation(ParameterAnnotations attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}	
+		visitConst(attr.getNameIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
 	public void visitSignature(Signature attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		acceptFromConst(attr.getSignatureIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		visitConst(attr.getNameIndex());
+		visitConst(attr.getSignatureIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
 	public void visitSourceFile(SourceFile attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		acceptFromConst(attr.getSourceFileIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		visitConst(attr.getNameIndex());
+		visitConst(attr.getSourceFileIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
 	public void visitStackMap(StackMap attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		visitConst(attr.getNameIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
@@ -646,16 +540,9 @@ public class SizeVisitor implements Visitor {
 
 	@Override
 	public void visitStackMapTable(StackMapTable attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		visitConst(attr.getNameIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
@@ -665,30 +552,15 @@ public class SizeVisitor implements Visitor {
 
 	@Override
 	public void visitSynthetic(Synthetic attr) {
-
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		visitConst(attr.getNameIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
 
 	@Override
 	public void visitUnknown(Unknown attr) {
-		
 		startVisit(attr);
-		acceptFromConst(attr.getNameIndex());
-		
-		realSize = attr.getLength();
-		fullSize += realSize; 
-		
-		if (endVisit(attr)) {
-			map.add("ATTRIBUTE_" + getAttrName(attr), realSize, fullSize);
-		}
+		visitConst(attr.getNameIndex());
+		finishVisit(attr, attr.getLength(), attr.getLength());
 	}
-		
 }
