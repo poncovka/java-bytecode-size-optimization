@@ -19,14 +19,14 @@ public class SizeAnalyzer implements Analyzer {
 	// structure of class file
 	JavaClass klass;
 	
-	// dictionary of average statistics
-	SizeMap map;
+	// TODO dictionary of average statistics
+	// SizeMap map;
 	
 	// visitor
 	SizeVisitor visitor;
 	
 	public SizeAnalyzer() {
-		map = new SizeMap();
+		// map = new SizeMap();
 		visitor = new SizeVisitor();
 	}
 	
@@ -47,9 +47,7 @@ public class SizeAnalyzer implements Analyzer {
 			
 			// process file
 			new DescendingVisitor(this.klass, this.visitor).visit();
-			
-			// TODO update stat
-			
+						
 		} catch (ClassFormatException e) {
 			e.printStackTrace();
 			
@@ -62,5 +60,5 @@ public class SizeAnalyzer implements Analyzer {
 	public void print() {
 		this.visitor.getStatistics().print();
 	}
-
+	
 }

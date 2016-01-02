@@ -69,7 +69,7 @@ public class SizeVisitor implements Visitor {
 	ConstantPool pool;
 	
 	// dictionary of file statistics
-	SizeMap map;
+	 SizeMap map;
 	
 	public SizeVisitor() {
 		this.map = new SizeMap();
@@ -80,7 +80,7 @@ public class SizeVisitor implements Visitor {
 		this.pool = pool;
 		this.visited = null;
 		
-		map.init();
+		// map.init();
 	}
 	
 	public SizeMap getStatistics() {
@@ -110,7 +110,9 @@ public class SizeVisitor implements Visitor {
 	}
 
 	public void acceptFromConst(int index) {
-		pool.getConstant(index).accept(this);
+		if (index != 0) {
+			pool.getConstant(index).accept(this);
+		}
 	}
 	
 	public String getConstName(int tag) {

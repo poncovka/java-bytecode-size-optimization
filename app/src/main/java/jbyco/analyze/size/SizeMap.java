@@ -2,6 +2,8 @@ package jbyco.analyze.size;
 
 import java.util.HashMap;
 
+import jbyco.lib.Utils;
+
 public class SizeMap  {
 
 	// item of the map
@@ -55,7 +57,7 @@ public class SizeMap  {
 		
 	public void print() {
 		
-		String format = "%-25s %-10s %-10s %-10s %-10s %-10s\n";
+		String format = "%-50s %-20s %-20s %-20s %-20s %-20s\n";
 		System.out.printf(format, "KEY", "COUNT", "REAL SIZE", "FULL SIZE", "AVG REAL", "AVG FULL");
 		
 		for (String key : map.keySet()) {
@@ -64,9 +66,9 @@ public class SizeMap  {
 				key, 
 				item.count, 
 				item.realSize, 
-				item.fullSize, 
-				item.realSize/item.count, 
-				item.fullSize/item.count
+				item.fullSize,
+				Utils.intdivToString(item.realSize, item.count),
+				Utils.intdivToString(item.fullSize, item.count)
 			);	
 		}
 	}

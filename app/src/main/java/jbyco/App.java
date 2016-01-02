@@ -9,7 +9,10 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 
+import jbyco.analyze.Analyzer;
 import jbyco.analyze.locals.LocalsAnalyzer;
+import jbyco.analyze.patterns.PatternsAnalyzer;
+import jbyco.analyze.size.SizeAnalyzer;
 import jbyco.io.BytecodePrinter;
 import jbyco.io.Files;
 import jbyco.io.file.BytecodeFile;
@@ -111,8 +114,21 @@ public class App {
 	public void run(AnalyzeArgs args) {
 		System.out.println("Analyzing...");
 		
-		//SizeAnalyzer analyzer = new SizeAnalyzer();
-		LocalsAnalyzer analyzer = new LocalsAnalyzer();
+		Analyzer analyzer;
+		
+		if (args.size) {
+			analyzer = new SizeAnalyzer();
+		}
+		else if (args.locals) {
+			analyzer = new LocalsAnalyzer();
+		}
+		else if (args.patterns) {
+			analyzer = new PatternsAnalyzer();
+		}
+		else {
+			// TODO default statistics
+			return;
+		}
 		
 		// process all given paths
 		for (String path : args.paths) {
@@ -190,6 +206,9 @@ class AnalyzeArgs {
 	
 	@Parameter(names = "--locals", description = "Analyze the usage of local variables.")
 	public boolean locals = true;
+	
+	@Parameter(names = "--patterns", description = "Analyze patterns in instruction sequencies.")
+	public boolean patterns = true;
 	
 }
 
