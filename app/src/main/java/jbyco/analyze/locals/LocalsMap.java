@@ -13,46 +13,41 @@ public class LocalsMap {
 	
 	// item of the map
 	private class Item {
-		public int variables = 0;
-		public int parameters = 0;
+		public int counter = 0;
 		public int load = 0;
 		public int store = 0;
 		public int other = 0;
 	}
 	
+	protected int nvars = 0;
+	protected int nparams = 0;
+	
 	// map int->item
-	protected HashMap<Integer, Item> map = new HashMap<>();
+	protected HashMap<Integer, Item> variables = new HashMap<>();
+	protected HashMap<Integer, Item> parameters = new HashMap<>();
 	
-	// initialize map
-	public void init() {
+	public void addMethod(int nparams, int nvars) {
 		
-		for (Item item : map.values()) {
-			item.variables = 0;
-			item.parameters = 0;
-			item.load = 0;
-			item.store = 0;
-			item.other = 0;
-		}
-	}
-	
-	public void addMethod(int parameters, int locals) {
+		this.nvars = nvars;
+		this.nparams = nparams;
 		
-		for (int var = 0; var < parameters; var++) {
+		for (int var = 0; var < nparams; var++) {
 			
-			Item item = getItem(var);
-			item.parameters++;
+			Item item = getItem(parameters, var);
+			item.counter++;
 		}
 		
-		for (int var = parameters; var < locals; var++) {
+		for (int var = nparams; var < nvars; var++) {
 			
-			Item item = getItem(var);
-			item.variables++;
+			Item item = getItem(variables, var);
+			item.counter++;
 		}
 	}
 	
 	public void add(int key, String op) {
 		
-		Item item = getItem(key);
+		HashMap<Integer, Item> map = (key < nparams) ? parameters : variables;
+		Item item = getItem(map, key);
 		
 		// update item
 		switch(op) {
@@ -62,7 +57,7 @@ public class LocalsMap {
 		}		
 	}
 	
-	public Item getItem(int key) {
+	public Item getItem(HashMap<Integer, Item> map, int key) {
 		
 		// get item
 		Item item = map.get(key);
@@ -78,11 +73,24 @@ public class LocalsMap {
 		
 	public void print() {
 		
-		String format = "%-15s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n";
+		System.out.println("Parameters:");
+		print(parameters);
+		
+		System.out.println();
+		
+		System.out.println("Variables:");
+		print(variables);
+	}
+	
+	public void print(HashMap<Integer, Item> map) {
+		
+		// set format
+		String format = "%-15s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n";
+		
+		// print header
 		System.out.printf(format, 
-				"VARIABLE",
-				"IS PARAM",
-				"IS LOCAL",
+				"INDEX",
+				"COUNT",
 				"LOAD", 
 				"STORE", 
 				"OTHER", 
@@ -93,6 +101,7 @@ public class LocalsMap {
 				"AVG TOTAL"
 		);
 		
+		// print items
 		for (int key : map.keySet()) {
 			
 			// get item
@@ -101,21 +110,21 @@ public class LocalsMap {
 			// calculate sum
 			int sum = item.load + item.store + item.other;
 			
-			int total = item.variables + item.parameters;
+			// total variables or parameters
+			int total = item.counter;
 			
 			// print item
 			System.out.printf(format, 
 				key, 
-				item.parameters,
-				item.variables,
+				item.counter,
 				item.load, 
 				item.store, 
 				item.other, 
 				sum,
-				Utils.intDivToString(item.load, total),
-				Utils.intDivToString(item.store, total),
-				Utils.intDivToString(item.other, total),
-				Utils.intDivToString(sum, total)
+				Utils.doubleDivToString(item.load, total),
+				Utils.doubleDivToString(item.store, total),
+				Utils.doubleDivToString(item.other, total),
+				Utils.doubleDivToString(sum, total)
 			);	
 		}
 	}

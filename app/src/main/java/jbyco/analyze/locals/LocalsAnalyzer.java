@@ -71,7 +71,16 @@ public class LocalsAnalyzer implements Analyzer {
 			if (code != null) {
 				
 				try {
-
+					
+					// get number of parameters
+					int nparams = m.getArgumentTypes().length + (m.isStatic() ? 0 : 1);
+					
+					// get number of local variables
+					int nvars = code.getMaxLocals();
+					
+					// add method
+					map.addMethod(nparams, nvars);
+					
 					// read bytecode
 					ByteSequence seq = new ByteSequence(code.getCode());
 					while (seq.available() > 0) {
@@ -95,9 +104,6 @@ public class LocalsAnalyzer implements Analyzer {
 							}
 						}
 					}
-				
-					// add method
-					map.addMethod(m.getArgumentTypes().length, code.getMaxLocals());
 					
 				}
 				catch (ClassGenException e) {
