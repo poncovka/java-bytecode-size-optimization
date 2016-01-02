@@ -3,13 +3,10 @@ package jbyco.pattern;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
-import java.util.Map;
 
-import jbyco.lib.MapValuesComparator;
+import jbyco.pattern.graph.GraphBuilder;
 import jbyco.pattern.graph.GraphSimplifier;
 import jbyco.pattern.graph.SuffixGraph;
-import jbyco.pattern.graph.GraphBuilder;
 import jbyco.pattern.graph.SuffixNode;
 
 public class Main {

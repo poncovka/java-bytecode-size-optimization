@@ -9,9 +9,9 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 
-import jbyco.io.Files;
-import jbyco.analyze.size.SizeAnalyzer;
+import jbyco.analyze.locals.LocalsAnalyzer;
 import jbyco.io.BytecodePrinter;
+import jbyco.io.Files;
 import jbyco.io.file.BytecodeFile;
 
 // java jbyco print -h -c -f -m -a filename
@@ -100,7 +100,7 @@ public class App {
 					}
 					
 					// print code
-					if (args.methods) {
+					if (args.code) {
 						printer.printMethods();
 					}
 				}
@@ -111,7 +111,8 @@ public class App {
 	public void run(AnalyzeArgs args) {
 		System.out.println("Analyzing...");
 		
-		SizeAnalyzer analyzer = new SizeAnalyzer();
+		//SizeAnalyzer analyzer = new SizeAnalyzer();
+		LocalsAnalyzer analyzer = new LocalsAnalyzer();
 		
 		// process all given paths
 		for (String path : args.paths) {
@@ -125,7 +126,7 @@ public class App {
 			}	
 		}
 		
-		//analyzer.print();
+		analyzer.print();
 	}
 	
 	public void run(PatternsArgs args) {
@@ -166,11 +167,11 @@ class PrintArgs {
 	@Parameter(names = "--pool", description = "Print the constant pool.")
 	public boolean pool = false;
 	
-	@Parameter(names = "--methods", description = "Print the methods.")
-	public boolean methods = false;
+	@Parameter(names = "--code", description = "Print the code.")
+	public boolean code = false;
 	
 	public boolean isDefault() {
-		return (summary || pool || methods);
+		return (summary || pool || code);
 	}
 	
 }
@@ -186,6 +187,9 @@ class AnalyzeArgs {
 
 	@Parameter(names = "--size", description = "Analyze the size.")
 	public boolean size = true;
+	
+	@Parameter(names = "--locals", description = "Analyze the usage of local variables.")
+	public boolean locals = true;
 	
 }
 

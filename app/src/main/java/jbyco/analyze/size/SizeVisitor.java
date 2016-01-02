@@ -35,7 +35,6 @@ import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.LocalVariableTypeTable;
 import org.apache.bcel.classfile.Method;
-import org.apache.bcel.classfile.ParameterAnnotationEntry;
 import org.apache.bcel.classfile.ParameterAnnotations;
 import org.apache.bcel.classfile.Signature;
 import org.apache.bcel.classfile.SourceFile;
@@ -46,6 +45,14 @@ import org.apache.bcel.classfile.StackMapTableEntry;
 import org.apache.bcel.classfile.Synthetic;
 import org.apache.bcel.classfile.Unknown;
 import org.apache.bcel.classfile.Visitor;
+
+
+/*TODO
+ * analyze instructions
+ * sum constant pool
+ * sum attributes
+ * count names of classes, fields, methods, local variables, ...
+ */
 
 public class SizeVisitor implements Visitor {
 	
@@ -111,7 +118,7 @@ public class SizeVisitor implements Visitor {
 	}
 	
 	public String getAttrName(Attribute a) {
-		return pool.getConstant(a.getNameIndex()).toString();
+		return a.getName();
 	}
 
 	@Override

@@ -3,8 +3,6 @@ package jbyco.lib;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import jbyco.pattern.Pattern;
-
 abstract public class SearchIterator<T> implements Iterator<T>, Iterable<T>{
 
 	protected T nextItem;

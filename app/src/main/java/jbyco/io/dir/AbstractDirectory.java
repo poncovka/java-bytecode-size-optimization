@@ -1,7 +1,6 @@
 package jbyco.io.dir;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Iterator;
 
 import jbyco.io.file.AbstractFile;
