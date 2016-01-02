@@ -19,7 +19,6 @@ import jbyco.analyze.Analyzer;
 import jbyco.io.file.BytecodeFile;
 
 public class LocalsAnalyzer implements Analyzer {
-
 	
 	// bytecode file to print
 	BytecodeFile file;
@@ -50,9 +49,7 @@ public class LocalsAnalyzer implements Analyzer {
 			
 			// process code
 			processMethods();
-			
-			// TODO update stat			
-			
+						
 		} catch (ClassFormatException e) {
 			e.printStackTrace();
 			
@@ -61,16 +58,16 @@ public class LocalsAnalyzer implements Analyzer {
 		}
 	}
 	
-	private void processMethods() {
+	protected void processMethods() {
 		
+		// for all methods
 		for(Method m : klass.getMethods()) {
 			
 			// get code
 			Code code = m.getCode();
 			if (code != null) {
 				
-				try {
-					
+				try {				
 					// get number of parameters
 					int nparams = m.getArgumentTypes().length + (m.isStatic() ? 0 : 1);
 					
@@ -86,24 +83,10 @@ public class LocalsAnalyzer implements Analyzer {
 
 						// get an instruction
 						Instruction i = Instruction.readInstruction(seq);
-	
-						// get local variable instruction
-						if (i instanceof LocalVariableInstruction) {
-							
-							int var = ((LocalVariableInstruction) i).getIndex();
-							
-							if (i instanceof LoadInstruction) {
-								map.add(var, "LOAD");
-							}
-							else if (i instanceof StoreInstruction) {
-								map.add(var, "STORE");
-							}
-							else {
-								map.add(var, "OTHER");
-							}
-						}
+						
+						// process instruction
+						processInstruction(i);
 					}
-					
 				}
 				catch (ClassGenException e) {
 					System.err.println("Could read instructions from " + file.getName());
@@ -114,6 +97,24 @@ public class LocalsAnalyzer implements Analyzer {
 					e.printStackTrace();
 				}
 			}	
+		}
+	}
+	
+	protected void processInstruction(Instruction i) {
+		
+		if (i instanceof LocalVariableInstruction) {
+			
+			int var = ((LocalVariableInstruction) i).getIndex();
+			
+			if (i instanceof LoadInstruction) {
+				map.add(var, "LOAD");
+			}
+			else if (i instanceof StoreInstruction) {
+				map.add(var, "STORE");
+			}
+			else {
+				map.add(var, "OTHER");
+			}
 		}
 	}
 	
