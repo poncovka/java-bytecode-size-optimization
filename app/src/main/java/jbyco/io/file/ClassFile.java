@@ -1,5 +1,6 @@
 package jbyco.io.file;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,7 +17,7 @@ public class ClassFile implements BytecodeFile {
 	
 	@Override
 	public InputStream getInputStream() throws FileNotFoundException {
-		return new FileInputStream(path.toFile());
+		return new BufferedInputStream(new FileInputStream(path.toFile()));
 	}
 
 	@Override

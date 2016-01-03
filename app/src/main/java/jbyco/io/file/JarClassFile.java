@@ -1,5 +1,6 @@
 package jbyco.io.file;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +19,7 @@ public class JarClassFile implements BytecodeFile {
 	
 	@Override
 	public InputStream getInputStream() throws IOException {
-		return jar.getInputStream(entry);
+		return new BufferedInputStream(jar.getInputStream(entry));
 	}
 
 	@Override
