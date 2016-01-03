@@ -17,12 +17,18 @@ public class GraphBuilder {
 	Set<SuffixNode> reachables;
 	Map<Object,List<SuffixNode>> candidates;
 	
+	Queue<SuffixNode> queue;
+	Set<SuffixNode> visited;
+	
 	public GraphBuilder(SuffixGraph graph) {
 
 		this.path = -1;
 		this.graph = graph;
 		this.reachables = new HashSet<>();
 		this.candidates = new HashMap<>();
+		
+		this.queue = new LinkedList<>();
+		this.visited = new HashSet<SuffixNode>();
 	}
 	
 	public SuffixNode addNextNode(SuffixNode node, Object item) {
@@ -71,35 +77,51 @@ public class GraphBuilder {
 	}
 	
 	public void initCandidates() {
+		
+		// init
+		
+		queue.clear();
+		visited.clear();
 		candidates.clear();
-		
-		Queue<SuffixNode> queue = new LinkedList<>();
-		Set<SuffixNode> visited = new HashSet<SuffixNode>();
-		
-		//queue.add(graph.getRoot());
+			
+		// init queue
 		
 		// skip root and first level
+		// queue.add(graph.getRoot());
 		for(SuffixNode next:graph.getRoot().getOutputNodes()) {
 			queue.addAll(next.getOutputNodes());
 		}
 		
+	}
+	
+	public SuffixNode getCandidate() {
+		
+		boolean found = false;
+		SuffixNode candidate = null;
+		
 		// breadth first search
-		while(!queue.isEmpty()) {
+		while (!found && !queue.isEmpty()) {
 			
 			// get candidate
-			SuffixNode candidate = queue.poll();
-	
-			// get list
-			List<SuffixNode> list = candidates.get(candidate.getItem());
+			candidate = queue.poll();
 			
-			// or create list
-			if (list == null) {
-				list = new LinkedList<>();
-				candidates.put(candidate.getItem(), list);
+			if (!reachables.contains(candidate)) {
+				
+				// get list
+				List<SuffixNode> list = candidates.get(candidate.getItem());
+				
+				// or create list
+				if (list == null) {
+					list = new LinkedList<>();
+					candidates.put(candidate.getItem(), list);
+				}
+				
+				// add candidate to the list
+				list.add(candidate);
+				
+				// found candidate
+				found = true;
 			}
-			
-			// add candidate to the list
-			list.add(candidate);
 			
 			// visit next nodes
 			for (SuffixNode next:candidate.getOutputNodes()) {
@@ -109,8 +131,9 @@ public class GraphBuilder {
 					visited.add(next);
 				}
 			}
-			
 		}
+		
+		return candidate;
 	}
 	
 	public void updateReachables(SuffixNode node) {
@@ -146,7 +169,6 @@ public class GraphBuilder {
 		// search the list
 		if (list != null) {
 			
-			
 			Iterator<SuffixNode> i = list.iterator();
 			while(i.hasNext()) {
 				
@@ -159,6 +181,22 @@ public class GraphBuilder {
 				}
 				// found the candidate
 				else {
+					candidate = next;
+					break;
+				}
+			}
+		}
+		
+		// try to more candidates
+		if (candidate == null) {
+			
+			SuffixNode next = null;
+			
+			// get new candidate
+			while((next = getCandidate()) != null) {
+				
+				// found a right one?
+				if (item == next.getItem()) {
 					candidate = next;
 					break;
 				}
