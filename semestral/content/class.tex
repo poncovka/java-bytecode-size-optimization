@@ -17,10 +17,9 @@ Pro popis formátu jsem zvolila rozšířenou Backus-Naurovu formu (?), která u
 
 Položky \texttt{class} souboru tvoří posloupnost osmibitových bajtů. Základní stavební jednotkou je tedy bajt, který je v pravidlech reprezentovaný symbolem \N{B}. Symbol $\langle n \rangle$\N{B}, kde $\langle n \rangle \in \{2,3,\dots\}$, reprezentuje $n$ bajtů. Terminály jsou hexadecimální reprezentací posloupnosti bajtů s prefixem \texttt{0x}. 
 
-Základní struktura souboru je popsaná pravidlem pro symbol \N{classfile}. Soubor obsahuje informace o jeho typu a verzi (\N{version}), disponuje tabulkou všech konstant, které se v souboru vyskytují (\N{constants}), nese informace o třídě, kterou reprezentuje, případně rozhraní (\N{class}), obsahuje seznam rozhraní, které reprezentovaná třída implementuje, případně rozhraní rozšiřuje  (\N{interface\_list}), seznam členských proměnných třídy (\N{field\_list}), seznam metod (\N{method\_list}) a seznam atributů (\N{attribute\_list}).
+Základní struktura souboru je popsaná pravidlem pro symbol \N{classfile}. Soubor obsahuje informace o jeho typu a verzi (\N{version}), disponuje tabulkou všech konstant, které se v souboru vyskytují (\N{constants}), nese informace o třídě, kterou reprezentuje, případně rozhraní (\N{class}), obsahuje seznam rozhraní, které reprezentovaná třída implementuje, případně rozhraní rozšiřuje  (\N{interface\_list}), seznam členských proměnných třídy (\N{field\_list}), seznam metod (\N{method\_list}) a seznam atributů (\N{attribute\_list}). 
 
 \begin{figure}[h!]
-  \center
   \begin{tabular}{r c l}
   \N{classfile} &:=& \N{version}, \N{constants}, \N{class}, \N{interface\_list}, \N{field\_list}, \N{method\_list}, \N{attribute\_list};
   \end{tabular}
@@ -29,7 +28,6 @@ Základní struktura souboru je popsaná pravidlem pro symbol \N{classfile}. Sou
 Typ souboru je definován prvními čtyřmi bajty, které jsou popsané symbolem \N{magic\_number}. Verze souboru je tvořena hodnotou $M$ symbolu \N{major\_version} a hodnotou $m$ symbolu \N{minor\_version} jako $M.m$.
 
 \begin{figure} [h!]
-  \center
   \begin{tabular}{r c l}
   \N{version} &:=& \N{magic\_number}, \N{minor\_version}, \N{major\_version};\\
   \N{magic\_number} &:=& \T{0xCAFEBABE};\\
@@ -42,46 +40,56 @@ Typ souboru je definován prvními čtyřmi bajty, které jsou popsané symbolem
 
 % Popis struktury constant\_pool. Jakým způsobem jsou ukládané konstanty? Jak jsou reprezentované různé typy?
 % Jednotlivé typy konstant lze nejspíš popsat jen slovně.
-% Dopsat _info u všech položek?
+% TODO
+% * zmínit run-time constant pool, kdy se symbolické reference nahrazují konkrétními referencemi
 
-\begin{tabular}{r c l}
-\N{constants} &:=& \N{constant\_pool\_count}, \N{constant\_pool}; \\
-\N{constant\_pool\_count} &:=& \N{2B}; \\
-\N{constant\_pool} &:=& \{
-        \N{constant\_integer} \\
-&&  $|$ \N{constant\_float} \\
-&&  $|$ \N{constant\_long} \\
-&&  $|$ \N{constant\_double} \\ 
-&&  $|$ \N{constant\_utf8} \\
-&&  $|$ \N{constant\_string} \\ 
-&&  $|$ \N{constant\_nameAndType} \\ 
-&&  $|$ \N{constant\_class} \\
-&&  $|$ \N{constant\_fieldref} \\
-&&  $|$ \N{constant\_methodref} \\
-&&  $|$ \N{constant\_methodHandle} \\ 
-&&  $|$ \N{constant\_methodType} \\
-&&  $|$ \N{constant\_invokeDynamic} \\ 
-&&  \}; \\
-\end{tabular}
-\medskip
+Tabulka konstant obsahuje některé číselné konstanty, všechny řetězce a symbolické informace o všech třídách, rozhraních, metodách a členských proměnných, které se v souboru, instrukcích i atributech vyskytují. Tato tabulka se nazývá \textit{constant pool} a slouží v podstatě jako databáze dat, do které se pomocí indexů odkazují další položky souboru. 
 
-\begin{tabular}{r c l}
-\N{access\_flags} &:=& \N{2B}; \\
-\N{constant\_pool\_index} &:=& \N{2B}; \\
-\N{code\_index} &:=& \N{2B}; \\
+Struktura tabulky konstant je popsána pravidlem pro \N{constants}. Symbol \N{constant\_pool\_count} reprezentuje hodnotu $1 + n$, kde $n$ je počet položek v tabulce konstant. Položky tabulky jsou indexované od jedné. Nultý index je vyhrazen pro odkaz na žádnou z položek. Samotná tabulka je reprezentovaná symbolem \N{constant\_pool}.
 
-\N{utf8\_ref} &:=& \N{constant\_pool\_index}; \\
-\N{class\_ref} &:=& \N{constant\_pool\_index}; \\
-\N{name\_ref} &:=& \N{utf8\_ref};\\
-\N{descriptor\_ref} &:=& \N{utf8\_ref};\\
-\end{tabular}
+\begin{figure} [h!]
+
+  \begin{tabular}{r c l}
+  \N{constants} &:=& \N{constant\_pool\_count}, \N{constant\_pool}; \\
+  \N{constant\_pool\_count} &:=& \N{2B}; \\
+  \N{constant\_pool} &:=& \{
+          \N{constant\_integer} \\
+  &&  $|$ \N{constant\_float} \\
+  &&  $|$ \N{constant\_long} \\
+  &&  $|$ \N{constant\_double} \\ 
+  &&  $|$ \N{constant\_utf8} \\
+  &&  $|$ \N{constant\_string} \\ 
+  &&  $|$ \N{constant\_nameAndType} \\ 
+  &&  $|$ \N{constant\_class} \\
+  &&  $|$ \N{constant\_fieldref} \\
+  &&  $|$ \N{constant\_methodref} \\
+  &&  $|$ \N{constant\_interfaceMethodref} \\
+  &&  $|$ \N{constant\_methodHandle} \\ 
+  &&  $|$ \N{constant\_methodType} \\
+  &&  $|$ \N{constant\_invokeDynamic} \\ 
+  &&  \}; \\
+  \end{tabular}
+\end{figure}
+
+Každá položka tabulky je tvořena označením typu a posloupností bajtů s informacemi o položce. Položky mohou mít různou velikost v závislosti na svém typu a obsahu. Stejným způsobem jsou definovány všechny tabulky v \texttt{class} souboru. Jestliže se jedná o pole, pak prvky pole jsou stejného typu, a proto označení typu v prvcích chybí.
+
+ Číselné konstanty jsou reprezentované symboly \N{constant\_integer}, \N{constant\_float}, \N{constant\_long} a \N{constant\_double} a skládají se jen z typu a číselné hodnoty. 
+Symbol \N{constant\_utf8} reprezentuje řetězec v upraveném kódování \texttt{UTF-8} a skládá se z typu, délky pole bajtů a pole bajtů nesoucích reprezentaci řetězce. Znaky řetězce mohou být vhledem ke kódování tvořeny různými počty bajtů. 
+Symbol \N{constant\_string} je reprezentací řetězcové konstanty a kromě typu obsahuje index do tabulky konstant na položku \N{constant\_utf8}. 
+Třídy a rozhraní jsou reprezentované položkami \N{constant\_class} s odkazy na jejich název (\N{constant\_utf8}). 
+Entity jako členské proměnné, metody třídy a metody rozhraní jsou reprezentované položkami \N{constant\_fieldref}, \N{constant\_methodref} a \N{constant\_interfaceMethodref} obsahujícími odkaz na třídu, případně rozhraní, dané entity (\N{constant\_class}), a odkaz na položku se jménem a typem této entity (\N{constant\_nameAndType}). 
+Jméno a typ v položce \N{constant\_nameAndType} jsou odkazy na řetězce (\N{constant\_utf8}). 
+Položky \N{constant\_methodHandle}, \N{constant\_methodType} a \N{constant\_invokeDynamic} souvisí s podporou dynamických jazyků.
 
 \section{Třída}
 
 \begin{tabular}{r c l}
 \N{class} &:=& \N{access\_flags}, \N{this\_class}, \N{super\_class};\\
+\N{access\_flags} &:=& \N{2B}; \\
 \N{this\_class} &:=& \N{class\_ref};\\
 \N{super\_class} &:=& \N{class\_ref};\\
+\N{class\_ref} &:=& \N{constant\_pool\_index}; \\
+\N{constant\_pool\_index} &:=& \N{2B}; \\
 \end{tabular}
 \medskip
 
@@ -94,6 +102,9 @@ Typ souboru je definován prvními čtyřmi bajty, které jsou popsané symbolem
 \N{fields} &:=& \{ \N{field\_info} \};\\
 \N{field\_info} &:=& \N{access\_flags}, \N{name\_ref}, \N{descriptor\_ref}, \N{attribute\_list};\\
 \N{fields\_count} &:=& \N{2B};\\
+\N{name\_ref} &:=& \N{utf8\_ref};\\
+\N{descriptor\_ref} &:=& \N{utf8\_ref};\\
+\N{utf8\_ref} &:=& \N{constant\_pool\_index}; \\
 \end{tabular}
 \medskip
 
@@ -139,6 +150,8 @@ Typ souboru je definován prvními čtyřmi bajty, které jsou popsané symbolem
 \N{handler\_pc} &:=& \N{code\_index}; \\ 
 \N{catch\_pc} &:=& \N{class\_ref}; \\ 
 \N{exception\_table\_length} &:=& \N{2B}; \\ 
+\N{code\_index} &:=& \N{2B}; \\
+
 \end{tabular}
 \medskip
 
