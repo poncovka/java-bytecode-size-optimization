@@ -1,47 +1,42 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Formát instrukčního souboru}
 
-Při kompilaci \texttt{java} souboru překladač pro každou definovanou třídu a rozhraní vytvoří jeden soubor s příponou \texttt{.class} (dále \texttt{class} soubor). Tento soubor obsahuje binární reprezentaci kompilovaného mezikódu, který lze interpretovat prostřednictvím JVM. V této kapitole popisuji formát \texttt{class} souboru dle specifikace ve verzi Java SE 8 (X).
-
-Pro popis formátu jsem zvolila rozšířenou Backus-Naurovu formu (?), která umožňuje syntaxi zapsat pomocí pravidel a terminálních a nonterminálních symbolů. \N{Nonterminální} a \T{terminální} symboly jsou graficky odlišeny. Nonterminální symboly jsou definovány pomocí definujícího symbolu (:=), terminálních a nonterminálních symbolů, konkatenace (,), alternace ($|$), nula a více opakování (\{\}) a ukončujícího symbolu (;).
-
 % TODO
 % * dopsat info u položek
 % * definovat byte
 % * nastudovat instrukce
 % * ověřit velikosti "sdílených" nonterminálů !!!
 
+Při kompilaci \texttt{java} souboru překladač pro každou definovanou třídu a rozhraní vytvoří jeden soubor s příponou \texttt{.class} (dále \texttt{class} soubor). Tento soubor obsahuje binární reprezentaci kompilovaného mezikódu, který lze interpretovat prostřednictvím JVM. V této kapitole popisuji formát \texttt{class} souboru dle specifikace ve verzi Java SE 8 Edition(X).
 
-% Zmínka o gramatice, EBNF, jak jsou pravidla formátovaná, dokaz na lit?
-% Zde je popsaná struktura class souboru. 
+Pro popis formátu jsem zvolila rozšířenou Backus-Naurovu formu (?), která umožňuje zapsat syntaxi formálního jazyka pomocí pravidel a terminálních a nonterminálních symbolů. Nonterminální symboly jsou definovány pomocí definujícího symbolu \texttt{:=}, symbolu pro konkatenaci \texttt{,}, symbolu pro alternaci \texttt{$\mathtt{|}$}, symbolů pro nula a více opakování \texttt{\{\}}, ukončujícího symbolu \texttt{;} a pomocí graficky odlišených \T{terminálních} a \N{nonterminálních} symbolů.
 
 \section{Základní struktura}
 
 % Jaká je základní struktura class souboru?
 
-% Definovat B, 2B, 4B a 6B.
+Položky \texttt{class} souboru tvoří posloupnost osmibitových bajtů. Základní stavební jednotkou je tedy bajt, který je v pravidlech reprezentovaný symbolem \N{B}. Symbol $\langle n \rangle$\N{B}, kde $\langle n \rangle \in \{2,3,\dots\}$, reprezentuje $n$ bajtů. Terminály jsou hexadecimální reprezentací posloupnosti bajtů s prefixem \texttt{0x}. 
 
-%\begin{tabular}{r c l}
-%\N{b} &:=& \T{0} $|$ \T{1}; \\
-%\N{B} &:=& \N{b}, \N{b}, \N{b}, \N{b}, \N{b}, \N{b}, \N{b}, \N{b}; \\
-%\N{2B} &:=& \N{B}, \N{B}; \\
-%\N{4B} &:=& \N{2B}, \N{2B}; \\
-%\end{tabular}
-%\medskip
+Základní struktura souboru je popsaná pravidlem pro symbol \N{classfile}. Soubor obsahuje informace o jeho typu a verzi (\N{version}), disponuje tabulkou všech konstant, které se v souboru vyskytují (\N{constants}), nese informace o třídě, kterou reprezentuje, případně rozhraní (\N{class}), obsahuje seznam rozhraní, které reprezentovaná třída implementuje, případně rozhraní rozšiřuje  (\N{interface\_list}), seznam členských proměnných třídy (\N{field\_list}), seznam metod (\N{method\_list}) a seznam atributů (\N{attribute\_list}).
 
+\begin{figure}[h!]
+  \center
+  \begin{tabular}{r c l}
+  \N{classfile} &:=& \N{version}, \N{constants}, \N{class}, \N{interface\_list}, \N{field\_list}, \N{method\_list}, \N{attribute\_list};
+  \end{tabular}
+\end{figure}
 
-\begin{tabular}{r c l}
-\N{classfile} &:=& \N{version}, \N{constants}, \N{class}, \N{interface\_list}, \N{field\_list}, \N{method\_list}, \N{attribute\_list};
-\end{tabular}
+Typ souboru je definován prvními čtyřmi bajty, které jsou popsané symbolem \N{magic\_number}. Verze souboru je tvořena hodnotou $M$ symbolu \N{major\_version} a hodnotou $m$ symbolu \N{minor\_version} jako $M.m$.
 
-\bigskip
-
-\begin{tabular}{r c l}
-\N{version} &:=& \N{magic\_number}, \N{minor\_version}, \N{major\_version};\\
-\N{magic\_number} &:=& \T{0xCAFEBABE};\\
-\N{minor\_version} &:=& \N{2B};\\
-\N{major\_version} &:=& \N{2B};\\
-\end{tabular}
+\begin{figure} [h!]
+  \center
+  \begin{tabular}{r c l}
+  \N{version} &:=& \N{magic\_number}, \N{minor\_version}, \N{major\_version};\\
+  \N{magic\_number} &:=& \T{0xCAFEBABE};\\
+  \N{minor\_version} &:=& \N{2B};\\
+  \N{major\_version} &:=& \N{2B};\\
+  \end{tabular}
+\end{figure}
 
 \section{Konstanty}
 
