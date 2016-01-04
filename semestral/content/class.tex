@@ -1,6 +1,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Formát instrukčního souboru}
 
+Při kompilaci \texttt{java} souboru překladač pro každou definovanou třídu a rozhraní vytvoří jeden soubor s příponou \texttt{.class} (dále \texttt{class} soubor). Tento soubor obsahuje binární reprezentaci kompilovaného mezikódu, který lze interpretovat prostřednictvím JVM. V této kapitole popisuji formát \texttt{class} souboru dle specifikace ve verzi Java SE 8 (X).
+
+Pro popis formátu jsem zvolila rozšířenou Backus-Naurovu formu (?), která umožňuje syntaxi zapsat pomocí pravidel a terminálních a nonterminálních symbolů. \N{Nonterminální} a \T{terminální} symboly jsou graficky odlišeny. Nonterminální symboly jsou definovány pomocí definujícího symbolu (:=), terminálních a nonterminálních symbolů, konkatenace (,), alternace ($|$), nula a více opakování (\{\}) a ukončujícího symbolu (;).
+
 % TODO
 % * dopsat info u položek
 % * definovat byte
@@ -8,7 +12,8 @@
 % * ověřit velikosti "sdílených" nonterminálů !!!
 
 
-% Zde je popsaná struktura class souboru.
+% Zmínka o gramatice, EBNF, jak jsou pravidla formátovaná, dokaz na lit?
+% Zde je popsaná struktura class souboru. 
 
 \section{Základní struktura}
 
