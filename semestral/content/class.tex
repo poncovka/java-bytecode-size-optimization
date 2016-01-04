@@ -83,77 +83,97 @@ Položky \N{constant\_methodHandle}, \N{constant\_methodType} a \N{constant\_inv
 
 \section{Třída}
 
-\begin{tabular}{r c l}
-\N{class} &:=& \N{access\_flags}, \N{this\_class}, \N{super\_class};\\
-\N{access\_flags} &:=& \N{2B}; \\
-\N{this\_class} &:=& \N{class\_ref};\\
-\N{super\_class} &:=& \N{class\_ref};\\
-\N{class\_ref} &:=& \N{constant\_pool\_index}; \\
-\N{constant\_pool\_index} &:=& \N{2B}; \\
-\end{tabular}
-\medskip
+% TODO access flags
+
+Každý \texttt{class} soubor reprezentuje jednu třídu nebo rozhraní. Informace o reprezentované entitě jsou definované symbolem \N{class}. Položka \N{this\_class} je odkazem na tuto entitu v tabulce konstant, \N{super\_class} je odkaz na nadřazenou třídu a \N{access\_flags} je bitové pole příznaků pro přístup k této entitě.
+
+\begin{figure} [h!]
+  \begin{tabular}{r c l}
+  \N{class} &:=& \N{access\_flags}, \N{this\_class}, \N{super\_class};\\
+  \N{access\_flags} &:=& \N{2B}; \\
+  \N{this\_class} &:=& \N{class\_ref};\\
+  \N{super\_class} &:=& \N{class\_ref};\\
+  \N{class\_ref} &:=& \N{constant\_pool\_index}; \\
+  \N{constant\_pool\_index} &:=& \N{2B}; \\
+  \end{tabular}
+\end{figure}
+
+Seznam rozhraní, které reprezentovaná třída implementuje, případně reprezentované rozhraní rozšiřuje, je definované v poli \N{interfaces} o \N{interface\_count} prvcích. Prvky jsou odkazy do tabulky konstant na položky \N{constant\_class} reprezentující nějaké rozhraní.
+
+\begin{figure} [h!]
+  \begin{tabular}{r c l}
+  \N{interface\_list} &:=& \N{interface\_count}, \N{interfaces};\\
+  \N{interfaces} &:=& \{ \N{class\_ref} \};\\
+  \N{interface\_count} &:=& \N{2B};\\
+  \end{tabular}
+\end{figure}
 
 \section{Členské proměnné}
 
 % Popis struktury field\_info. Jakým způsobem jsou uložené členské proměnné?
+% Popis descriptoru?
 
-\begin{tabular}{r c l}
-\N{field\_list} &:=& \N{fields\_count}, \N{fields};\\
-\N{fields} &:=& \{ \N{field\_info} \};\\
-\N{field\_info} &:=& \N{access\_flags}, \N{name\_ref}, \N{descriptor\_ref}, \N{attribute\_list};\\
-\N{fields\_count} &:=& \N{2B};\\
-\N{name\_ref} &:=& \N{utf8\_ref};\\
-\N{descriptor\_ref} &:=& \N{utf8\_ref};\\
-\N{utf8\_ref} &:=& \N{constant\_pool\_index}; \\
-\end{tabular}
-\medskip
+Členské proměnné třídy jsou definované v poli členských proměnných \N{fields} o \N{fields\_count} prvcích. Každá proměnná má pole příznaků dané symbolem \N{access\_flags}, jméno dané symbolem \N{name\_ref}, typ daný symbolem \N{descriptor\_ref} a seznam atributů daný symbolem \N{attribute\_list}. Jméno a typ jsou reprezentované odkazem do tabulky konstant na položku \N{utf8\_ref}. Atributům se věnuje kapitola (?).
+
+\begin{figure} [h!]
+  \begin{tabular}{r c l}
+  \N{field\_list} &:=& \N{fields\_count}, \N{fields};\\
+  \N{fields} &:=& \{ \N{field\_info} \};\\
+  \N{field\_info} &:=& \N{access\_flags}, \N{name\_ref}, \N{descriptor\_ref}, \N{attribute\_list};\\
+  \N{fields\_count} &:=& \N{2B};\\
+  \N{name\_ref} &:=& \N{utf8\_ref};\\
+  \N{descriptor\_ref} &:=& \N{utf8\_ref};\\
+  \N{utf8\_ref} &:=& \N{constant\_pool\_index}; \\
+  \end{tabular}
+\end{figure}
 
 \section{Metody}
 
 % Popis struktury method\_info. Jakým způsobem jsou uložené metody? Kde jsou uloženy instrukce?
+% TODO jen abstraktní metoda nemá code?
 
-\begin{tabular}{r c l}
-\N{interface\_list} &:=& \N{interface\_count}, \N{interfaces};\\
-\N{interfaces} &:=& \{ \N{class\_ref} \};\\
-\N{interface\_count} &:=& \N{2B};\\
-\end{tabular}
-\medskip
+Metody reprezentované třídy či rozhraní jsou definované v poli metod \N{methods} o \N{methods\_count} prvcích. Stejně jako u členských proměnných jsou metody popsané bitovým polem příznaků, jménem, typem a seznamem atributů.
 
-\begin{tabular}{r c l}
-\N{method\_list} &:=& \N{methods\_count}, \N{methods};\\
-\N{methods} &:=& \{ \N{method\_info} \};\\
-\N{method\_info} &:=& \N{access\_flags}, \N{name\_ref}, \N{descriptor\_ref}, \N{attribute\_list};\\
-\N{methods\_count} &:=& \N{2B};\\
-\end{tabular}
-\medskip
+\begin{figure} [h!]
+  \begin{tabular}{r c l}
+  \N{method\_list} &:=& \N{methods\_count}, \N{methods};\\
+  \N{methods} &:=& \{ \N{method\_info} \};\\
+  \N{method\_info} &:=& \N{access\_flags}, \N{name\_ref}, \N{descriptor\_ref}, \N{attribute\_list};\\
+  \N{methods\_count} &:=& \N{2B};\\
+  \end{tabular}
+\end{figure}
 
-\medskip
+Pokud metoda není abstraktní, pak jedním z jejích atributů je \texttt{Code} s kódem metody.
+Tento atribut je definován symbolem \N{code\_attribute}. Položka \N{name\_ref} je odkazem do tabulky konstant na řetězec "Code". Položka \N{attribute\_length} určuje délku atributu v bajtech bez prvních šesti bajtů. Dále položky \N{max\_stack} a \N{max\_locals} označují maximální hloubku operačního zásobníku přepočtenou na jednotku hloubky (?) a maximální počet lokálních proměnných včetně parametrů. Kód metody je reprezentovaným polem bajtů \N{code} o délce \N{code\_length}. Symbol \N{attribute\_list} je seznamem atributů.
 
-\begin{tabular}{r c l}
-\N{code\_info} &:=& \N{max\_stack}, \N{max\_locals}, \N{code\_list}, \N{exception\_list}, \N{attribute\_list}; \\ 
-\N{code\_list} &:=& \N{code\_length}, \N{code} ; \\ 
-\N{code} &:=& \{ \N{B} \}; \\ 
-\N{max\_stack} &:=& \N{2B}; \\ 
-\N{max\_locals} &:=& \N{4B}; \\ 
-\N{code\_length} &:=& \N{4B} ; \\ 
+\begin{figure} [h!]
+  \begin{tabular}{r c l}
+  \N{code\_attribute} &:=& \N{name\_ref}, \N{attribute\_length}, \N{code\_info} \\
+  \N{code\_info} &:=& \N{max\_stack}, \N{max\_locals}, \N{code\_list}, \N{exception\_list}, \N{attribute\_list}; \\ 
+  \N{code\_list} &:=& \N{code\_length}, \N{code} ; \\ 
+  \N{code} &:=& \{ \N{B} \}; \\ 
+  \N{max\_stack} &:=& \N{2B}; \\ 
+  \N{max\_locals} &:=& \N{4B}; \\ 
+  \N{code\_length} &:=& \N{4B} ; \\ 
+  \end{tabular}
+\end{figure}
 
+Informace o zpracování výjimek jsou dostupné v tabulce výjimek \N{exception\_table} o délce \N{exception\_table\_length}. Každá položka tabulky obsahuje dva indexy \N{start\_pc} a \N{end\_pc} do pole \N{code}, které společně definují blok instrukcí, pro které je odchycení dané výjimky aktivní. Dále index \N{handler\_pc} do pole \N{code} odkazující na začátek bloku pro zpracování výjimky. A nakonec index \N{catch\_type} do tabulky konstant na položku \N{constant\_class} reprezentující typ odchycené výjimky. Jestliže je tento index nulový, pak jsou odchytávány všechny výjimky. Na pořadí položek v tabulce výjimek se nevztahují žádná omezení, neboť při odchytávání výjimky se postupuje od nejniternějšího bloku.
 
-\end{tabular}
-\medskip
+% TODO doplnit ukázku kódu a bytekódu
 
-
-\begin{tabular}{r c l}
-\N{exception\_list} &:=& \N{exception\_table\_length}, \N{exception\_table} ; \\ 
-\N{exception\_table} &:=& \{ \N{\N{start\_pc}, \N{end\_pc}, \N{handler\_pc}, \N{catch\_type}} \}; \\ 
-\N{start\_pc} &:=& \N{code\_index}; \\ 
-\N{end\_pc} &:=& \N{code\_index}; \\ 
-\N{handler\_pc} &:=& \N{code\_index}; \\ 
-\N{catch\_pc} &:=& \N{class\_ref}; \\ 
-\N{exception\_table\_length} &:=& \N{2B}; \\ 
-\N{code\_index} &:=& \N{2B}; \\
-
-\end{tabular}
-\medskip
+\begin{figure} [h!]
+  \begin{tabular}{r c l}
+  \N{exception\_list} &:=& \N{exception\_table\_length}, \N{exception\_table} ; \\ 
+  \N{exception\_table} &:=& \{ \N{\N{start\_pc}, \N{end\_pc}, \N{handler\_pc}, \N{catch\_type}} \}; \\ 
+  \N{start\_pc} &:=& \N{code\_index}; \\ 
+  \N{end\_pc} &:=& \N{code\_index}; \\ 
+  \N{handler\_pc} &:=& \N{code\_index}; \\ 
+  \N{catch\_pc} &:=& \N{class\_ref}; \\ 
+  \N{exception\_table\_length} &:=& \N{2B}; \\ 
+  \N{code\_index} &:=& \N{2B}; \\
+  \end{tabular}
+\end{figure}
 
 \section{Instrukce}
 
@@ -163,12 +183,15 @@ Položky \N{constant\_methodHandle}, \N{constant\_methodType} a \N{constant\_inv
 
 % Základní přehled atributů, jen ty podstatné, neboť jich je mnoho.
 
-\begin{tabular}{r c l}
-\N{attribute\_list} &:=& \N{attributes\_count}, \N{attributes};\\
-\N{attributes} &:=& \{ \N{name\_ref}, \N{attribute\_length}, \N{info} \};\\
-\N{info} &:=& \{ \N{B} \};\\
-\N{attributes\_count} &:=& \N{2B}; \\
-\N{attribute\_length} &:=& \N{4B};\\
-\end{tabular}
+\begin{figure} [h!]
+  \begin{tabular}{r c l}
+  \N{attribute\_list} &:=& \N{attributes\_count}, \N{attributes};\\
+  \N{attributes} &:=& \{ \N{name\_ref}, \N{attribute\_length}, \N{info} \};\\
+  \N{info} &:=& \{ \N{B} \};\\
+  \N{attributes\_count} &:=& \N{2B}; \\
+  \N{attribute\_length} &:=& \N{4B};\\
+  \end{tabular}
+\end{figure}
+
 
 %=========================================================================
