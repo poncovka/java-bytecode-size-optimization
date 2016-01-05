@@ -1,11 +1,18 @@
 package jbyco.pattern.graph;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 public class SuffixNode {
+	
+	// default set
+	static final Set<Path> emptyset = new LinkedHashSet<>(0);
 	
 	// identifier
 	static int maxid = 0;
@@ -21,10 +28,10 @@ public class SuffixNode {
 	Map<Object, SuffixNode> edges;
 	
 	// list of input nodes
-	Set<SuffixNode> in;
+	List<SuffixNode> in;
 	
 	// set of output nodes
-	Set<SuffixNode> out;
+	List<SuffixNode> out;
 	
 	// depth of node
 	int depth;
@@ -36,11 +43,15 @@ public class SuffixNode {
 		this.depth = -1;
 		
 		paths = new LinkedHashMap<>();
-		in = new LinkedHashSet<>();
-		out = new LinkedHashSet<>();
-		edges = new LinkedHashMap<>();
+		in = new Stack<>();
+		out = new Stack<>();
+		edges = new HashMap<>();
 	}
 
+	static int getCount() {
+		return maxid;
+	}
+	
 	public int getNumber() {
 		return id;
 	}
@@ -53,16 +64,30 @@ public class SuffixNode {
 		return depth;
 	}
 	
-	public Set<SuffixNode> getInputNodes() {
+	public List<SuffixNode> getInputNodes() {
 		return in;
 	}
 
-	public Set<SuffixNode> getOutputNodes() {
+	public List<SuffixNode> getOutputNodes() {
 		return out;
 	}
 	
 	public Map<SuffixNode, Set<Path>> getPaths() {
 		return paths;
+	}
+	
+	public Set<Path> getPaths(SuffixNode node) {
+		
+		// get set of paths on the edge to node
+		Set<Path> set = paths.get(node);
+				
+		// or create new set
+		if(set == null) {
+			set = new LinkedHashSet<>();
+			paths.put(node, set);
+		}
+		
+		return set;
 	}
 	
 	public Set<Path> getNodePaths() {
@@ -77,7 +102,7 @@ public class SuffixNode {
 		return nodePaths;
 	}
 	public Set<Path> getEdgePaths(SuffixNode node) {
-		return paths.getOrDefault(node, new LinkedHashSet<>());
+		return paths.getOrDefault(node, emptyset);
 	}
 	
 	public SuffixNode findNext(Object item) {
@@ -116,24 +141,16 @@ public class SuffixNode {
 	}	
 	
 	public void addPath(SuffixNode node, Path path) {
-		
-		// get set of paths on the edge to node
-		Set<Path> set = paths.get(node);
-		
-		// or create new set
-		if(set == null) {
-			set = new LinkedHashSet<>();
-			paths.put(node, set);
-		}
-		
 		// add path to set
-		set.add(path);
+		getPaths(node).add(path);
 	}
 
 	public void addPaths(SuffixNode node, Set<Path> paths) {
 		
+		Set<Path> set = getPaths(node);
+		
 		for(Path path:paths) {		
-			addPath(node, path);
+			set.add(path);
 		}
 	}
 	

@@ -1,8 +1,10 @@
 package jbyco.pattern.graph;
 
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -21,11 +23,13 @@ public class GraphBuilder {
 	SuffixNode node;
 	
 	// set of reachable nodes
-	Set<SuffixNode> reachables;
-	Stack<SuffixNode> stack;
+	BitSet reachables;
 	
 	// set of candidate nodes
 	Map<Object, Candidates> candidates;
+	
+	// stack with nodes to seach
+	Stack<SuffixNode> stack;
 	
 	// set of duplicate path
 	Set<Path> duplicates;
@@ -38,7 +42,6 @@ public class GraphBuilder {
 		this.graph = graph;
 		this.candidates = new HashMap<>();		
 		this.duplicates = new HashSet<>();
-		this.stack = new Stack<>();
 	}
 	
 	public void startPath() {
@@ -53,7 +56,8 @@ public class GraphBuilder {
 		duplicates.clear();
 		duplicates.addAll(node.getNodePaths());
 		
-		reachables = new HashSet<>();
+		reachables = new BitSet(SuffixNode.getCount());
+		stack = new Stack<>();
 		
 		for(Candidates c:candidates.values()) {
 			c.init();
@@ -102,9 +106,6 @@ public class GraphBuilder {
 			
 			// or find node in candidates
 			if (node != graph.getRoot()) {
-
-				// update reachables
-				updateReachables(node);
 				
 				// find a candidate
 				next = findCandidate(item);							
@@ -118,9 +119,12 @@ public class GraphBuilder {
 				
 				// set depth
 				next.setDepth(depth);
+				System.out.printf("%s, depth %s\n", next, depth);
 				
 				// update candidates
-				updateCandidates(next);
+				if (depth > 1) {
+					updateCandidates(next);
+				}
 			}
 			
 			// create edge
@@ -135,53 +139,89 @@ public class GraphBuilder {
 		// add path
 		node.addPath(next, path);
 		node = next;
+		
+		// set reachables
+		//reachables.set(node.getNumber());
 	}
 	
-	public void updateReachables(SuffixNode node) {
+	public boolean isReachable(SuffixNode node2) {
+		
+		// is n2 in reachables?
+		if (reachables.get(node2.getNumber())) {
+			System.out.printf("%s, %s in reachables\n", node, node2);
+			return true;
+		}
+		
+		// have same paths
+		Set<Path> paths = node.getNodePaths();
+		paths.retainAll(node2.getNodePaths());
+		
+		if(!paths.isEmpty()) {
+			System.out.printf("%s, %s same paths %s\n", node, node2, paths);
+			return true;
+		}
 		
 		// init stack
-		stack.clear();
-		
-		// add node
-		reachables.add(node);
 		stack.push(node);
 		
-		// search graph from node to root
+		// search graph from node n1 to root
 		while(!stack.isEmpty()) {
 			
 			// visit previous nodes
 			for(SuffixNode prev : stack.pop().getInputNodes()) {
+								
+				// get id
+				int num = prev.getNumber();
 				
 				// add it to reachables
-				if(reachables.add(prev)) {
+				if (!reachables.get(num)) {
+					reachables.set(num);
 					stack.push(prev);
+				}
+				
+				// is it node n2?
+				if(prev == node2) {
+					System.out.printf("%s, %s found\n", node, node2);
+					return true;
 				}
 			}
 		}
+		
+		System.out.printf("%s, %s not rechable\n", node, node2);
+		return false;
 	}
 	
 	public SuffixNode findCandidate(Object item) {
 		
 		// get candidates for item
-		Candidates candidates = this.candidates.get(node.getItem());
+		Candidates candidates = this.candidates.get(item);
 		
-		Iterator<SuffixNode> i = candidates.available.iterator();
-		while(i.hasNext()) {
+		// no candidates
+		if (candidates == null) {
+			return null;
+		}
+		
+		// search candidates
+		while(candidates.hasNext()) {
 			
-			SuffixNode candidate = i.next();
+			SuffixNode candidate = candidates.next();
+			System.out.printf("%s, %s is candiate?\n", item, candidate);
 						
 			// check reachables
-			if(reachables.contains(candidate)) {
-				candidates.removed.push(candidate);
-				i.remove();
+			if(isReachable(candidate)) {
 				continue;
 			}
-				
-			// check depth
-			if(depth - candidate.getDepth() >= -10) {
-					
-				// found candidate
+			
+			// found candidate
+			System.out.printf("%s, %s depth\n", depth, candidate.getDepth());
+			if(depth - candidate.getDepth() >= 0) {
+				System.out.printf("%s, %s is candiate\n", item, candidate);
 				return candidate;
+			}
+			// depth exceeded
+			else {
+				candidates.back();
+				return null;
 			}
 		}
 		
@@ -199,9 +239,8 @@ public class GraphBuilder {
 			this.candidates.put(item, candidates);
 		}
 		
-		// push node to reachable nodes
-		candidates.remove(node);
-		
+		// push node to the waiting list
+		candidates.add(node);
 	}
 
 	class Candidates {
@@ -209,29 +248,61 @@ public class GraphBuilder {
 		// queue of available candidates
 		TreeSet<SuffixNode> available;
 		
-		// list of unavailable candidates
-		Stack<SuffixNode> removed;
+		// queue of candidates to add
+		Stack<SuffixNode> waiting;
+		
+		// iterator over candidates
+		Iterator<SuffixNode> iterator;
+		
+		// last visited node
+		SuffixNode node;
+		
+		// can iterator iterate?
+		boolean iterate;
 		
 		public Candidates() {
 			this.available = new TreeSet<>(DepthComparator.getInstance());
-			this.removed = new Stack<>();
+			this.waiting = new Stack<>();
+			init();
 		}
 
 		public void init() {
 			
-			// make all nodes available
-			while(!removed.isEmpty()) {
-				available.add(removed.pop());
+			// add new candidates
+			while(!waiting.isEmpty()) {
+				available.add(waiting.pop());
 			}
+			
+			// get iterator
+			this.iterator = this.available.iterator();
+			this.iterate = true;
 		}
 		
 		public void add(SuffixNode node) {
-			available.add(node);
+			waiting.push(node);
 		}
 		
-		public void remove(SuffixNode node) {
-			available.remove(node);
-			removed.push(node);
+		public boolean hasNext() {
+			return (!iterate) || iterator.hasNext();
+		}
+		
+		public SuffixNode next() {
+			
+			// return next node
+			if (iterate) {
+				node = iterator.next();
+			}
+			
+			// return last visited node
+			else {
+				iterate = true;
+			}
+			
+			return node;
+		}
+		
+		public void back() {
+			iterate = false;
 		}	
 	}
 }
