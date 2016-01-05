@@ -1,44 +1,38 @@
-package jbyco.io.dir;
+package jbyco.io.file;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.stream.Stream;
 
-import jbyco.io.file.AbstractFile;
-import jbyco.io.file.JarClassFile;
-
-public class JarDirectory implements AbstractDirectory {
+public class Directory implements AbstractDirectory {
 
 	Path path;
-	JarFile jar;
-	Iterator<JarEntry> iterator;
-	Stream<JarEntry> stream;
+	Iterator<Path> iterator;
+	DirectoryStream<Path> stream;
 	AbstractFile nextFile;
 	
-	public JarDirectory(Path path) {		
+	public Directory(Path path) {
 		this.path = path;
 	}
-
+	
 	@Override
 	public void open() throws IOException {
-		jar = new JarFile(path.toFile());
-		stream = jar.stream();
+		stream = Files.newDirectoryStream(path);
 		iterator = stream.iterator();
-	}
-
-	@Override
-	public void close() throws IOException {
-		stream.close();
-		jar.close();
 	}	
 	
 	@Override
+	public void close() throws IOException {
+		stream.close();
+	}
+
+	@Override
 	public boolean hasNext() {
-		nextFile = search();
+		this.nextFile = search();
 		return (nextFile != null);
 	}
 
@@ -55,6 +49,7 @@ public class JarDirectory implements AbstractDirectory {
 		return file;
 	}
 
+	
 	public AbstractFile search() {
 		
 		AbstractFile file = null;
@@ -62,30 +57,38 @@ public class JarDirectory implements AbstractDirectory {
 		// search files in directory
 		while (file == null && iterator.hasNext()) {
 			
-			JarEntry entry = iterator.next();
-			file = getFile(jar, entry);
+			Path path = iterator.next();
+			file = getFile(path);
 		}
 		
 		// nothing found
 		return file;
 	}
 	
-	static public AbstractFile getFile(JarFile jar, JarEntry entry) {
+	static public AbstractFile getFile(Path path) {
+				
+		File file = path.toFile();
+		String name = file.getName();
 		
-		String name = entry.getName();
-		
-		// check files, skip directories
-		if (!entry.isDirectory()) {
-
+		// check file
+		if (file.isFile()) {
+			
 			if(name.endsWith(".class")) {
-				return new JarClassFile(jar, entry);
+				return new ClassFile(path);
 			}
 			else if (name.endsWith(".jar")) {
-				System.err.println("File " + entry.getName() + " was skipped.");
-			}				
-		}	
+				return new JarDirectory(path);
+			}
+			else if (name.endsWith(".java")) {
+				System.err.println("File " + path + " needs to be compiled.");
+			}
+			
+		}
+		// new directory
+		else if (file.isDirectory()) {
+			return new Directory(path);
+		}
 		
-		// nothing found
 		return null;
 	}
 

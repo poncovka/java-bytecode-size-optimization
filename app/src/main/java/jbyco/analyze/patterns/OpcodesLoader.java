@@ -1,9 +1,7 @@
 package jbyco.analyze.patterns;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -81,11 +79,16 @@ public class OpcodesLoader implements InstructionsLoader {
 	
 	public void loadSequence() {
 		
-		SuffixNode node = graph.getRoot();
+		// start path
+		builder.startPath();
 		
+		// add nodes
 		for(String item : queue) {
-			node = builder.addNextNode(node, item);
+			builder.addNextNode(item);
 		}
+		
+		// finish path
+		builder.finishPath();
 	}
 	
 	public void finish() {

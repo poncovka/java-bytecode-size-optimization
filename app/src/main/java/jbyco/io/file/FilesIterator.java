@@ -1,13 +1,9 @@
-package jbyco.io;
+package jbyco.io.file;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Stack;
 
-import jbyco.io.dir.AbstractDirectory;
-import jbyco.io.dir.Directory;
-import jbyco.io.file.AbstractFile;
-import jbyco.io.file.BytecodeFile;
 import jbyco.lib.SearchIterator;
 
 public class FilesIterator extends SearchIterator<BytecodeFile> {

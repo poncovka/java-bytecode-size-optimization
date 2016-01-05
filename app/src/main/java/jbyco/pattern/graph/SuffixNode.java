@@ -7,15 +7,15 @@ import java.util.Set;
 
 public class SuffixNode {
 	
-	// number
-	static int maxNumber = 0;
-	int number;
+	// identifier
+	static int maxid = 0;
+	int id;
 	
 	// item
 	Object item;
 	
 	// set of paths
-	Map<SuffixNode,Set<Integer>> paths;
+	Map<SuffixNode, Set<Path>> paths;
 	
 	// list of edges, used when we create the graph
 	Map<Object, SuffixNode> edges;
@@ -25,11 +25,15 @@ public class SuffixNode {
 	
 	// set of output nodes
 	Set<SuffixNode> out;
+	
+	// depth of node
+	int depth;
 
 	public SuffixNode(Object item) {
 		
-		this.number = maxNumber++;
+		this.id = maxid++;
 		this.item = item;
+		this.depth = -1;
 		
 		paths = new LinkedHashMap<>();
 		in = new LinkedHashSet<>();
@@ -38,11 +42,15 @@ public class SuffixNode {
 	}
 
 	public int getNumber() {
-		return number;
+		return id;
 	}
 	
 	public Object getItem() {
 		return item;
+	}
+	
+	public int getDepth() {
+		return depth;
 	}
 	
 	public Set<SuffixNode> getInputNodes() {
@@ -53,22 +61,22 @@ public class SuffixNode {
 		return out;
 	}
 	
-	public Map<SuffixNode, Set<Integer>> getPaths() {
+	public Map<SuffixNode, Set<Path>> getPaths() {
 		return paths;
 	}
 	
-	public Set<Integer> getNodePaths() {
+	public Set<Path> getNodePaths() {
 		
-		Set<Integer> npaths = new LinkedHashSet<>();
+		Set<Path> nodePaths = new LinkedHashSet<>();
 		
 		// join all input edge paths
 		for(SuffixNode node:in) {
-			npaths.addAll(node.getEdgePaths(this));
+			nodePaths.addAll(node.getEdgePaths(this));
 		}
 
-		return npaths;
+		return nodePaths;
 	}
-	public Set<Integer> getEdgePaths(SuffixNode node) {
+	public Set<Path> getEdgePaths(SuffixNode node) {
 		return paths.getOrDefault(node, new LinkedHashSet<>());
 	}
 	
@@ -93,7 +101,7 @@ public class SuffixNode {
 			this.addEdge(next);
 			
 			// copy paths
-			for(int path:node.getEdgePaths(next)) {
+			for(Path path:node.getEdgePaths(next)) {
 				this.addPath(next, path);
 			}
 		}
@@ -107,10 +115,10 @@ public class SuffixNode {
 		out.add(node);		
 	}	
 	
-	public void addPath(SuffixNode node, int path) {
+	public void addPath(SuffixNode node, Path path) {
 		
 		// get set of paths on the edge to node
-		Set<Integer> set = paths.get(node);
+		Set<Path> set = paths.get(node);
 		
 		// or create new set
 		if(set == null) {
@@ -122,14 +130,14 @@ public class SuffixNode {
 		set.add(path);
 	}
 
-	public void addPaths(SuffixNode node, Set<Integer> paths) {
+	public void addPaths(SuffixNode node, Set<Path> paths) {
 		
-		for(int path:paths) {		
+		for(Path path:paths) {		
 			addPath(node, path);
 		}
 	}
 	
-	public void addPaths(Map<SuffixNode,Set<Integer>> paths2) {
+	public void addPaths(Map<SuffixNode,Set<Path>> paths2) {
 		
 		// for every edge
 		for(SuffixNode node:paths2.keySet()) {
@@ -143,6 +151,10 @@ public class SuffixNode {
 	public void setItem(Object item) {
 		// this operation destroys edges!!
 		this.item = item;
+	}
+	
+	public void setDepth(int depth) {
+		this.depth = depth;
 	}
 	
 	public void removeEdge(SuffixNode node) {
@@ -168,7 +180,7 @@ public class SuffixNode {
 	
 	@Override
 	public String toString() {
-		return "(" + number + (item == null ? "" : "," + item.toString()) + ")";
+		return "(" + id + (item == null ? "" : "," + item.toString()) + ")";
 	}
 
 	

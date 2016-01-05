@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 
 import jbyco.io.file.BytecodeFile;
+import jbyco.io.file.FilesIterator;
 
 public class Files implements Iterable<BytecodeFile>{
 

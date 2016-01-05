@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 
 import jbyco.pattern.graph.GraphBuilder;
 import jbyco.pattern.graph.GraphSimplifier;
+import jbyco.pattern.graph.Path;
 import jbyco.pattern.graph.SuffixGraph;
 import jbyco.pattern.graph.SuffixNode;
 
@@ -16,7 +17,7 @@ public class Main {
 		// max length of suffix in a graph
 		int max_suffix_length = 30;
 		// maximal number of paths on the edge to wildcard
-		int wildcard_threshold = 1;
+		int wildcard_threshold = 100;
 		// maximal number of printed patterns
 		int pattern_number = 500;
 		// minimal frequency of a pattern
@@ -34,8 +35,8 @@ public class Main {
 		// 42 mins 34.943 secs, Out of memory, generate gml, get patterns
 		//
 		
-		//String[] input = {"abcd", "abbbc", "xadbnncd", "xaqbhccd", "alkgbnhgfqncd", "abqqcd", "abcd", "abbbc", "xadbnncd", "abcd", "xaqbhccd", "alkgbnhgfqncd", "abqqcd", };
-		String[] input = {"abcgd", "abced", "abccd", "xadbeecd", "aabcd"};
+		String[] input = {"abcd", "abbbc", "xadbnncd", "xaqbhccd", "alkgbnhgfqncd", "abqqcd", "abcd", "abbbc", "xadbnncd", "abcd", "xaqbhccd", "alkgbnhgfqncd", "abqqcd", };
+		//String[] input = {"abcgd", "abced", "abccd", "xadbeecd", "aabcd"};
 		
 		
 		/*
@@ -56,7 +57,6 @@ public class Main {
 		
 		System.err.println("BUILD GRAPH");
 		
-		SuffixNode node;
 		int maxPosition;
 		
 		/*
@@ -83,8 +83,11 @@ public class Main {
 			// for every suffix
 			for(int i=0; i < s.length(); i++) {
 				
-				node = graph.getRoot();
+				// calculate max position
 				maxPosition = Integer.min(s.length(), i + max_suffix_length);
+				
+				// start path
+				builder.startPath();
 				
 				// insert every character
 				for(int j=i; j < maxPosition; j++) {
@@ -93,8 +96,11 @@ public class Main {
 					char c = s.charAt(j);
 				
 					// put item to graph
-					node = builder.addNextNode(node, c);
+					builder.addNextNode(c);
 				}
+				
+				// end path
+				builder.finishPath();
 			}
 		}
 		
@@ -126,7 +132,7 @@ public class Main {
 			n++;
 		}
 		
-		
+		System.out.printf("paths %s, nodes %d\n", new Path(), new SuffixNode("").getNumber());
 		
 	}
 }

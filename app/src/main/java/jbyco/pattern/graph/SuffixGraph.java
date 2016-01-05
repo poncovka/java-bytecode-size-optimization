@@ -6,10 +6,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
-import jbyco.io.graph.GmlExporter;
+import jbyco.io.GmlExporter;
 
 public class SuffixGraph {
 
+	// root node of the graph with no item
 	SuffixNode root;
 	
 	public SuffixGraph() {
@@ -81,7 +82,7 @@ public class SuffixGraph {
 					if (cycle == 1) {
 						
 						// get paths on the edge
-						Set<Integer> epaths = node.getEdgePaths(next);
+						Set<Path> epaths = node.getEdgePaths(next);
 						
 						// print edge
 						exporter.printEdge(node.getNumber(), next.getNumber(), epaths);

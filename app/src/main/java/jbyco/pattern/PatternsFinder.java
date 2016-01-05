@@ -5,6 +5,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 import jbyco.lib.SearchIterator;
+import jbyco.pattern.graph.Path;
 import jbyco.pattern.graph.SuffixGraph;
 import jbyco.pattern.graph.SuffixNode;
 import jbyco.pattern.graph.WildCard;
@@ -50,7 +51,7 @@ public class PatternsFinder extends SearchIterator<Pattern> {
 			
 			SuffixNode node = item.node;
 			String string = new String(item.string);
-			Set<Integer> paths = new HashSet<>(item.paths);
+			Set<Path> paths = new HashSet<>(item.paths);
 			
 			// update pattern
 			if(string.length() > 0) {
@@ -68,7 +69,7 @@ public class PatternsFinder extends SearchIterator<Pattern> {
 			for(SuffixNode next:node.getOutputNodes()) {
 				
 				// get paths on edge
-				Set<Integer> nextPaths = node.getEdgePaths(next);
+				Set<Path> nextPaths = node.getEdgePaths(next);
 
 				// get intersection with paths
 				nextPaths.retainAll(paths);
@@ -89,9 +90,9 @@ public class PatternsFinder extends SearchIterator<Pattern> {
 		
 		public final SuffixNode node;
 		public final String string;
-		public final Set<Integer> paths;
+		public final Set<Path> paths;
 		
-		public QueueItem(SuffixNode node, String string, Set<Integer> paths) {
+		public QueueItem(SuffixNode node, String string, Set<Path> paths) {
 			
 			this.node = node;
 			this.string = string;

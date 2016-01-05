@@ -1,4 +1,4 @@
-package jbyco.io.graph;
+package jbyco.io;
 
 import java.io.PrintWriter;
 

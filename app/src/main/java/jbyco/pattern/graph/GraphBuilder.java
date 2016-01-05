@@ -3,50 +3,104 @@ package jbyco.pattern.graph;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Queue;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
 public class GraphBuilder {
 
-	int path;
-	SuffixGraph graph;
-	Set<SuffixNode> reachables;
-	Map<Object,List<SuffixNode>> candidates;
+	// actual path
+	Path path;
 	
-	Queue<SuffixNode> queue;
-	Set<SuffixNode> visited;
+	// built graph
+	SuffixGraph graph;
+	
+	// last added node
+	SuffixNode node;
+	
+	// set of reachable nodes
+	Set<SuffixNode> reachables;
+	Stack<SuffixNode> stack;
+	
+	// set of candidate nodes
+	Map<Object, Candidates> candidates;
+	
+	// set of duplicate path
+	Set<Path> duplicates;
+	
+	// current depth
+	int depth;
 	
 	public GraphBuilder(SuffixGraph graph) {
 
-		this.path = -1;
 		this.graph = graph;
-		this.reachables = new HashSet<>();
-		this.candidates = new HashMap<>();
-		
-		this.queue = new LinkedList<>();
-		this.visited = new HashSet<SuffixNode>();
+		this.candidates = new HashMap<>();		
+		this.duplicates = new HashSet<>();
+		this.stack = new Stack<>();
 	}
 	
-	public SuffixNode addNextNode(SuffixNode node, Object item) {
-				
-		//  do we start a new path?
-		if (node == graph.getRoot()) {
-			path++;
-			
-			initReachables();
-			initCandidates();
-		}	
+	public void startPath() {
 		
-		// try to find node in neighbors
+		depth = 0;
+		node = graph.getRoot();
+		
+		if (duplicates.isEmpty()) {
+			path = new Path();
+		}
+		
+		duplicates.clear();
+		duplicates.addAll(node.getNodePaths());
+		
+		reachables = new HashSet<>();
+		
+		for(Candidates c:candidates.values()) {
+			c.init();
+		}
+	}
+	
+	public void finishPath() {
+		
+		if (!duplicates.isEmpty()) {
+			
+			// calculate intersection with all output paths
+			for(Set<Path> set:node.getPaths().values()) {
+				duplicates.removeAll(set);
+			}
+			
+			if(!duplicates.isEmpty()) {
+			
+				// get duplicate path
+				Path duplicate = duplicates.iterator().next();
+				duplicate.increment();
+				
+				// remove path from nodes
+				SuffixNode current = node;
+				while(current != graph.getRoot()) {
+				
+					for (SuffixNode prev:current.getInputNodes()) {
+						if (prev.getEdgePaths(current).remove(path)) {
+							current = prev;
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	public void addNextNode(Object item) {
+		
+		// update current dept of path
+		depth++;
+		
+		// try to find node in neighbors of previous node
 		SuffixNode next = node.findNext(item);
 		
 		if (next == null) {
 			
-			// or find find node elsewhere
+			// or find node in candidates
 			if (node != graph.getRoot()) {
 
 				// update reachables
@@ -58,101 +112,48 @@ public class GraphBuilder {
 			
 			// or create new node
 			if (next == null) {
+				
+				// init node
 				next = new SuffixNode(item);
+				
+				// set depth
+				next.setDepth(depth);
+				
+				// update candidates
+				updateCandidates(next);
 			}
 			
 			// create edge
 			node.addEdge(next);
+			duplicates.clear();
+		}
+		else {
+			// compute intersection with edge paths
+			duplicates.retainAll(node.getEdgePaths(next));
 		}
 		
 		// add path
 		node.addPath(next, path);
-		
-		// return next node
-		return next;
-	}
-	
-	public void initReachables() {
-		reachables.clear();
-	}
-	
-	public void initCandidates() {
-		
-		// init
-		
-		queue.clear();
-		visited.clear();
-		candidates.clear();
-			
-		// init queue
-		
-		// skip root and first level
-		// queue.add(graph.getRoot());
-		for(SuffixNode next:graph.getRoot().getOutputNodes()) {
-			queue.addAll(next.getOutputNodes());
-		}
-		
-	}
-	
-	public SuffixNode getCandidate() {
-		
-		boolean found = false;
-		SuffixNode candidate = null;
-		
-		// breadth first search
-		while (!found && !queue.isEmpty()) {
-			
-			// get candidate
-			candidate = queue.poll();
-			
-			if (!reachables.contains(candidate)) {
-				
-				// get list
-				List<SuffixNode> list = candidates.get(candidate.getItem());
-				
-				// or create list
-				if (list == null) {
-					list = new LinkedList<>();
-					candidates.put(candidate.getItem(), list);
-				}
-				
-				// add candidate to the list
-				list.add(candidate);
-				
-				// found candidate
-				found = true;
-			}
-			
-			// visit next nodes
-			for (SuffixNode next:candidate.getOutputNodes()) {
-				
-				if (!visited.contains(next)) {
-					queue.add(next);
-					visited.add(next);
-				}
-			}
-		}
-		
-		return candidate;
+		node = next;
 	}
 	
 	public void updateReachables(SuffixNode node) {
 		
-		Stack<SuffixNode> stack = new Stack<>();
+		// init stack
+		stack.clear();
+		
+		// add node
+		reachables.add(node);
 		stack.push(node);
 		
 		// search graph from node to root
 		while(!stack.isEmpty()) {
 			
-			// get node
-			SuffixNode reachable = stack.pop();
-			
-			// add it to reachables
-			reachables.add(reachable);
-			
 			// visit previous nodes
-			for(SuffixNode prev:reachable.getInputNodes()) {
-				if(!reachables.contains(prev)) {
+			for(SuffixNode prev : stack.pop().getInputNodes()) {
+				
+				// add it to reachables
+				if(reachables.add(prev)) {
 					stack.push(prev);
 				}
 			}
@@ -161,49 +162,76 @@ public class GraphBuilder {
 	
 	public SuffixNode findCandidate(Object item) {
 		
-		SuffixNode candidate = null;
+		// get candidates for item
+		Candidates candidates = this.candidates.get(node.getItem());
 		
-		// get list of candidates
-		List<SuffixNode> list = candidates.get(item);
-				
-		// search the list
-		if (list != null) {
+		Iterator<SuffixNode> i = candidates.available.iterator();
+		while(i.hasNext()) {
 			
-			Iterator<SuffixNode> i = list.iterator();
-			while(i.hasNext()) {
+			SuffixNode candidate = i.next();
+						
+			// check reachables
+			if(reachables.contains(candidate)) {
+				candidates.removed.push(candidate);
+				i.remove();
+				continue;
+			}
 				
-				// get next
-				SuffixNode next = i.next();
-				
-				// next is reachable, remove it from list of candidates
-				if (reachables.contains(next)) {
-					i.remove();
-				}
-				// found the candidate
-				else {
-					candidate = next;
-					break;
-				}
+			// check depth
+			if(depth - candidate.getDepth() >= -10) {
+					
+				// found candidate
+				return candidate;
 			}
 		}
 		
-		// try to more candidates
-		if (candidate == null) {
-			
-			SuffixNode next = null;
-			
-			// get new candidate
-			while((next = getCandidate()) != null) {
-				
-				// found a right one?
-				if (item == next.getItem()) {
-					candidate = next;
-					break;
-				}
-			}
+		return null;
+	}
+	
+	public void updateCandidates(SuffixNode node) {
+		
+		// find candidates for node item
+		Object item = node.getItem();
+		Candidates candidates = this.candidates.get(item);
+		
+		if (candidates == null) {
+			candidates = new Candidates();
+			this.candidates.put(item, candidates);
 		}
 		
-		return candidate;
+		// push node to reachable nodes
+		candidates.remove(node);
+		
 	}
 
+	class Candidates {
+		
+		// queue of available candidates
+		TreeSet<SuffixNode> available;
+		
+		// list of unavailable candidates
+		Stack<SuffixNode> removed;
+		
+		public Candidates() {
+			this.available = new TreeSet<>(DepthComparator.getInstance());
+			this.removed = new Stack<>();
+		}
+
+		public void init() {
+			
+			// make all nodes available
+			while(!removed.isEmpty()) {
+				available.add(removed.pop());
+			}
+		}
+		
+		public void add(SuffixNode node) {
+			available.add(node);
+		}
+		
+		public void remove(SuffixNode node) {
+			available.remove(node);
+			removed.push(node);
+		}	
+	}
 }

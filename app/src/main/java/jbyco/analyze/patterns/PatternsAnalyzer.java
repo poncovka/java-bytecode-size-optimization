@@ -10,16 +10,12 @@ import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ClassGenException;
 import org.apache.bcel.generic.Instruction;
-import org.apache.bcel.generic.LoadInstruction;
-import org.apache.bcel.generic.LocalVariableInstruction;
-import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
 import jbyco.io.file.BytecodeFile;
 import jbyco.pattern.Pattern;
 import jbyco.pattern.PatternsFinder;
-import jbyco.pattern.graph.GraphBuilder;
 import jbyco.pattern.graph.SuffixGraph;
 
 public class PatternsAnalyzer implements Analyzer {
@@ -111,15 +107,15 @@ public class PatternsAnalyzer implements Analyzer {
 	public void print() {
 		
 		// print graph
-		System.out.println("Graph:");
-		graph.print(System.out);
+		//System.out.println("Graph:");
+		//graph.print(System.out);
 		
 		System.out.println();
 		
 		// print header
 		String format = "%-15s %s\n";
 		System.out.println("Patterns:");
-		System.out.printf(format, "FREQ", "PATTERN");
+		System.out.printf(format, "COUNT", "PATTERN");
 		
 		// print patterns
 		PatternsFinder finder = new PatternsFinder(graph, "; ");
