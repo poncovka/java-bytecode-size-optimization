@@ -119,7 +119,7 @@ public class GraphBuilder {
 				
 				// set depth
 				next.setDepth(depth);
-				System.out.printf("%s, depth %s\n", next, depth);
+				//System.out.printf("%s, depth %s\n", next, depth);
 				
 				// update candidates
 				if (depth > 1) {
@@ -148,7 +148,7 @@ public class GraphBuilder {
 		
 		// is n2 in reachables?
 		if (reachables.get(node2.getNumber())) {
-			System.out.printf("%s, %s in reachables\n", node, node2);
+			//System.out.printf("%s, %s in reachables\n", node, node2);
 			return true;
 		}
 		
@@ -157,7 +157,7 @@ public class GraphBuilder {
 		paths.retainAll(node2.getNodePaths());
 		
 		if(!paths.isEmpty()) {
-			System.out.printf("%s, %s same paths %s\n", node, node2, paths);
+			//System.out.printf("%s, %s same paths %s\n", node, node2, paths);
 			return true;
 		}
 		
@@ -181,13 +181,13 @@ public class GraphBuilder {
 				
 				// is it node n2?
 				if(prev == node2) {
-					System.out.printf("%s, %s found\n", node, node2);
+					//System.out.printf("%s, %s found\n", node, node2);
 					return true;
 				}
 			}
 		}
 		
-		System.out.printf("%s, %s not rechable\n", node, node2);
+		//System.out.printf("%s, %s not rechable\n", node, node2);
 		return false;
 	}
 	
@@ -205,7 +205,7 @@ public class GraphBuilder {
 		while(candidates.hasNext()) {
 			
 			SuffixNode candidate = candidates.next();
-			System.out.printf("%s, %s is candiate?\n", item, candidate);
+			//System.out.printf("%s, %s is candiate?\n", item, candidate);
 						
 			// check reachables
 			if(isReachable(candidate)) {
@@ -213,9 +213,9 @@ public class GraphBuilder {
 			}
 			
 			// found candidate
-			System.out.printf("%s, %s depth\n", depth, candidate.getDepth());
+			//System.out.printf("%s, %s depth\n", depth, candidate.getDepth());
 			if(depth - candidate.getDepth() >= 0) {
-				System.out.printf("%s, %s is candiate\n", item, candidate);
+				//System.out.printf("%s, %s is candiate\n", item, candidate);
 				return candidate;
 			}
 			// depth exceeded
