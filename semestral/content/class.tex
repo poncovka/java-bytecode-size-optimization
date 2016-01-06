@@ -183,9 +183,12 @@ Každá instrukce se skládá z jednobajtového operačního kódu \textit{opcod
 
 \subsubsection{Konstantní hodnoty}
 
-% aconst_null, bipush, sipush, iconst_m1, iconst_n, lconst_n, fconst_n, dconst_n, ldc, ldc_w, ldc2_w
+Konstantní hodnotu lze dle jejího typu, velikosti a hodnoty vložit na zásobník několika způsoby.
+Instrukce \texttt{aconst\_null} vloží na zásobník referenci na \texttt{null}. 
+Instrukce \texttt{iconst\_}$value$, kde $value \in \{ \texttt{m1}, \texttt{0}, \texttt{1}, \texttt{2}, \dots, \texttt{5}\}$ a \texttt{m1} označuje hodnotu $-1$, vloží na zásobník hodnotu $value$ typu \texttt{int}. Obdobně lze instrukcí \texttt{fconst\_}$value$, kde $value \in \{\texttt{0}, \texttt{1}, \texttt{2}\}$, a instrukcemi \texttt{lconst\_}$value$ a \texttt{dconst\_}$value$, kde $value \in \{\texttt{0}, \texttt{1}\}$, vložit konstatní hodnoty typu \texttt{float}, \texttt{long} a \texttt{double}. 
+Větší celočíselnou hodnotu typu \texttt{int} umožňují vložit instrukce \texttt{bipush} $value$ a \texttt{sipush} $value$, kde $value$ je jednobajtová, respektive dvoubajtová, znaménková hodnota.
 
-Vložení hodnoty z tabulky konstant na operační zásobník lze docílit instrukcí \texttt{lcd} $index$, kde $index$ je index to tabulky konstant na číselnou nebo řetězcovou konstantu, třídu nebo metodu.  
+Ve všech ostatních případech, je nutné vložit hodnotu z tabulky konstant. Pomocí instrukce \texttt{ldc} $index$, kde $index$ je jednobajtový index do tabulky konstant, lze vložit hodnotu typu \texttt{int} či \texttt{float} nebo referenci na objekt. Instrukce \texttt{ldc\_w} $index$ umožňuje použít dvoubajtový index. Instrukce \texttt{ldc2\_w} $index$ vloží na zásobník hodnotu typu \texttt{long} nebo \texttt{double} danou dvoubajtovým indexem  $index$.
 
 \subsubsection{Práce s lokálními proměnnými}
 
@@ -209,9 +212,11 @@ Instrukcí $t$\texttt{aload} lze hodnotu z pole načíst na zásobník. Ze záso
 
 Instrukce \texttt{if}$condition$ $next$, kde $condition \in \{ \texttt{eq}, \texttt{ne}, \texttt{lt}, \texttt{le}, \texttt{ge}, \texttt{gt}\}$ a $next$ je dvoubajtová znaménková hodnota, umožňuje provést podmíněný skok na jinou instrukci. Ze zásobníku odebere hodnotu typu \texttt{int} a porovná ji s nulou na rovnost, nerovnost, menší než, menší nebo rovno, větší než či větší nebo rovno dle $condition$. Pokud je podmínka pro skok splněna, pokračuje se instrukcí ve vzdálenosti $next$ od pozice aktuální instrukce. Jinak se pokračuje následující instrukcí. Instrukce \texttt{if\_icmp}$condition$ umožňuje vzájemně porovnat dvě hodnoty typu \texttt{int}. Dva objekty lze na rovnost a nerovnost porovnat instrukcemi \texttt{if\_acmpeq} a \texttt{if\_acmpne}. Pro hodnoty typu \texttt{long}, \texttt{float} a \texttt{double} je nutné nejprve provést jednu z instrukcí \texttt{lcmp}, \texttt{fcmp}$x$ a \texttt{dcmp}$x$, kde $x \in \{\texttt{l}, \texttt{g} \}$. Instrukce ze zásobníku odebere dvě hodnoty, porovná je a výsledek porovnání vloží na zásobník ($1$ pro větší než, $0$ pro rovnost, $-1$ pro menší než). Podmíněný skok lze následně vykonat instrukcí \texttt{if}$condition$.
 
+% switch
+
 \subsubsection {Řízení toku}
 
-% return
+% return, goto
 
 \subsubsection{Konverze hodnot}
 
@@ -233,24 +238,6 @@ Instrukce pro bitové operace jsou ve tvaru $t operation$,
 kde $t \in \{\texttt{i}, \texttt{l}\}$ 
 a $operation \in \{\texttt{shl},\texttt{shr}, \texttt{ushr}, \texttt{and}, \texttt{or}, \texttt{xor}\}$ označuje bitový posuv doleva, aritmetický posuv doprava, logický posuv doprava, logický součin, logický součet nebo  exkluzivní logický součet. 
 Uvedené instrukce odeberou ze zásobníku příslušný počet operandů a vrátí na zásobník výsledek operace.
-
-
-Instrukce \texttt{iinc} $index$ $value$ inkrementuje lokální proměnnou danou indexem do polem lokálních proměnných o hodnotu $value$. 
-
-
-
-\begin{figure} [h!]
-  \begin{tabular}{l l l l l }
-  $\langle n \rangle$\texttt{add} & $\dots, a, b$ & $\dots, a+b$ & & $\langle n \rangle \in \{\texttt{i},\texttt{f}, \texttt{l}, \texttt{d} \}$ \\ 
-
-  \end{tabular}
-\end{figure}
-
-
-
-% <n>add          ...,a,b          ...,a+b              		  a,b jsou hodnoty daného typu, n in {i,f,d,...}
-% <n>aload        ...,array, i     ...,array[i]		                  array je reference na pole, i je typu int
-% <n>astore       ...,array, i, v  ...              array[i] = v
 
 
 % TODO příklad na inicializaci lokálních proměnných a matematické operace
