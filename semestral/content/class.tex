@@ -197,12 +197,12 @@ Celočíselné lokální proměnné lze inkrementovat instrukcí \texttt{iinc} $
 
 \subsubsection{Práce s polem}
 
-%newarray, multianewarray
-
-Pole lze vytvořit instrukcí \texttt{anewarray} $index$, kde  $index$ je dvoubajtový index do tabulky konstant na typ vytvářeného pole. Typem pole může být třída, rozhraní nebo pole. Ze zásobníku se odebere hodnota $count$ určující délku pole a vloží reference na vytvořené pole. Prvky pole jsou inicializované  na \texttt{null}. Délku pole lze zjistit instrukcí \texttt{arraylength}, která ze zásobníku odebere referenci na pole a vloží na něj délku tohoto pole.
+Pole lze vytvořit instrukcí \texttt{newarray} $type$, kde $type$ označuje typ pole. Instrukce načte ze zásobníku hodnotu $count$ typu \texttt{int}, vytvoří pole typu $type$ o délce $count$ a referenci na toto pole vloží na zásobník. Pole objektů umožňuje vytvořit instrukce \texttt{anewarray} $index$, kde $index$ je dvoubajtový index do tabulky konstant na typ vytvářeného pole. Typem zde může být třída, rozhraní nebo pole. Obdobně lze vytvořit vícerozměrné pole objektů instrukcí \texttt{multianewarray} $index$ $dimension$, kde $index$ je opět index do tabulky konstant a $dimension$ udává počet dimenzí vytvářeného pole. Ze zásobníku jsou načteny délky pro jednotlivé dimenze a je vložena reference na vícerozměrné pole objektů daného typu.
 
 Instrukce $t$\texttt{astore}, kde $t \in \{\texttt{b}, \texttt{c}, \texttt{s}, \texttt{i}, \texttt{l}, \texttt{f},  \texttt{d}, \texttt{a}  \}$ určuje typ pole, umožňuje vložit hodnotu do pole. Ze zásobníku odebere hodnotu $value$, index $index$ a referenci na pole $array$ typu $t$ a provede operaci $array$[$index$] $:=$ $value$.
 Instrukcí $t$\texttt{aload} lze hodnotu z pole načíst na zásobník. Ze zásobníku se odebere $index$ a $array$ a vloží se na něj hodnota $array$[$index$]. 
+
+Délku pole lze zjistit instrukcí \texttt{arraylength}, která ze zásobníku odebere referenci na pole a vloží na něj délku tohoto pole.
 
 \subsubsection{Metody a objekty}
 
@@ -224,11 +224,15 @@ Vstupu do synchronizovaného bloku instrukcí předchází vstup do monitoru dan
 
 \subsubsection{Porovnávání a podmíněné skoky}
 
-% ifnull, ifnonnull
+Instrukce \texttt{if}$condition$ $next$, kde $condition \in \{ \texttt{eq}, \texttt{ne}, \texttt{lt}, \texttt{le}, \texttt{ge}, \texttt{gt}\}$ a $next$ je dvoubajtová znaménková hodnota, umožňuje provést podmíněný skok na jinou instrukci. Ze zásobníku odebere hodnotu typu \texttt{int} a porovná ji s nulou na rovnost, nerovnost, menší než, menší nebo rovno, větší než či větší nebo rovno dle $condition$. Pokud je podmínka pro skok splněna, pokračuje se instrukcí ve vzdálenosti $next$ od pozice aktuální instrukce. Jinak se pokračuje následující instrukcí. Instrukce \texttt{if\_icmp}$condition$ umožňuje vzájemně porovnat dvě hodnoty typu \texttt{int}.
+ Pro hodnoty typu \texttt{long}, \texttt{float} a \texttt{double} je nutné nejprve provést jednu z instrukcí \texttt{lcmp}, \texttt{fcmp}$x$ a \texttt{dcmp}$x$, kde $x \in \{\texttt{l}, \texttt{g} \}$. Instrukce ze zásobníku odebere dvě hodnoty, porovná je a výsledek porovnání vloží na zásobník ($1$ pro větší než, $0$ pro rovnost, $-1$ pro menší než). Podmíněný skok lze následně vykonat instrukcí \texttt{if}$condition$.
+Pro porovnání objektu s \texttt{null} jsou k dispozici instrukce \texttt{ifnull} a \texttt{ifnonnull}. Pro porovnání dvou objektů lze použít instrukce \texttt{if\_acmpeq} a \texttt{if\_acmpne}.
 
-Instrukce \texttt{if}$condition$ $next$, kde $condition \in \{ \texttt{eq}, \texttt{ne}, \texttt{lt}, \texttt{le}, \texttt{ge}, \texttt{gt}\}$ a $next$ je dvoubajtová znaménková hodnota, umožňuje provést podmíněný skok na jinou instrukci. Ze zásobníku odebere hodnotu typu \texttt{int} a porovná ji s nulou na rovnost, nerovnost, menší než, menší nebo rovno, větší než či větší nebo rovno dle $condition$. Pokud je podmínka pro skok splněna, pokračuje se instrukcí ve vzdálenosti $next$ od pozice aktuální instrukce. Jinak se pokračuje následující instrukcí. Instrukce \texttt{if\_icmp}$condition$ umožňuje vzájemně porovnat dvě hodnoty typu \texttt{int}. Dva objekty lze na rovnost a nerovnost porovnat instrukcemi \texttt{if\_acmpeq} a \texttt{if\_acmpne}. Pro hodnoty typu \texttt{long}, \texttt{float} a \texttt{double} je nutné nejprve provést jednu z instrukcí \texttt{lcmp}, \texttt{fcmp}$x$ a \texttt{dcmp}$x$, kde $x \in \{\texttt{l}, \texttt{g} \}$. Instrukce ze zásobníku odebere dvě hodnoty, porovná je a výsledek porovnání vloží na zásobník ($1$ pro větší než, $0$ pro rovnost, $-1$ pro menší než). Podmíněný skok lze následně vykonat instrukcí \texttt{if}$condition$.
+Příkaz \texttt{switch} se převádí na jednu z instrukcí \texttt{tableswitch} a \texttt{lookupswitch}. První instrukce pracuje s tabulkou relativních adres, kde vstupní hodnota lze přímo převést na index do tabulky. Druhá instrukce pracuje s tabulkou dvojic klíč-adresa, kde pro vstupní hodnotu je třeba nalézt dvojici s odpovídajícím klíčem. Tabulka adres je vhodnější, nejsou-li jednotlivé případy příkazu \texttt{switch} navzájem příliš rozptýlené, jinak je lepší použít tabulku dvojic.
 
-% tableswitch, lookupswitch
+První instrukce je definovaná jako \texttt{tableswitch} $pad$ $default$ $low$ $high$ $table$, kde $pad$ je výplň o délce nula až tři bajty, která slouží ke správnému zarovnání dalších položek, $default$, $low$ a $high$ jsou čtyřbajtové hodnoty a $table$ je sekvence čtyřbajtových hodnot o délce $high$ - $low$ + 1. Instrukce načte ze zásobníku hodnotu $value$ typu \texttt{int} a ověří zda leží v rozsahu hodnot $low$ a $high$. Pokud ne, pak pro skok použije relativní adresu $default$, pokud ano, pak použije adresu z tabulky relativních adres $table$ na pozici $value$ - $low$. Následně se provede skok.
+
+Podoba druhé instrukce je \texttt{lookupswitch} $pad$ $default$ $count$ $pairs$, kde $count$ je čtyřbajtová hodnota označující počet dvojic v tabulce $pairs$ a $pairs$ je sekvence dvojic čtyřbajtových hodnot $key$ a $next$. Dvojice jsou v tabulce seřazené podle hodnoty $key$. Instrukce načte ze zásobníku hodnotu $value$ typu \texttt{int}, vyhledá v tabulce $pairs$ dvojici, kde $key$ je rovno $value$, a odpovídající hodnotu $next$ použije jako relativní adresu skoku. Pokud takovou dvojici nenajde, skočí na relativní adresu $default$.
 
 \subsubsection {Řízení toku}
 
