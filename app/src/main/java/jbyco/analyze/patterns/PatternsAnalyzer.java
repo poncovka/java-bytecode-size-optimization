@@ -13,10 +13,9 @@ import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
+import jbyco.analyze.patterns.graph.SuffixGraph;
+import jbyco.io.PatternsPrinter;
 import jbyco.io.file.BytecodeFile;
-import jbyco.pattern.Pattern;
-import jbyco.pattern.PatternsFinder;
-import jbyco.pattern.graph.SuffixGraph;
 
 public class PatternsAnalyzer implements Analyzer {
 
@@ -113,16 +112,10 @@ public class PatternsAnalyzer implements Analyzer {
 		System.out.println();
 		
 		// print header
-		String format = "%-15s %s\n";
-		System.out.println("Patterns:");
-		System.out.printf(format, "COUNT", "PATTERN");
-		
-		// print patterns
-		PatternsFinder finder = new PatternsFinder(graph, "; ");
-		
-		for(Pattern pattern : finder) {
-			System.out.printf(format, pattern.frequency, "\'" + pattern.string +  "\'");
-		}	
-	}
 
+		// print patterns
+		System.out.println("Patterns:");
+		PatternsPrinter printer = new PatternsPrinter();
+		printer.print(graph, ";");		
+	}
 }

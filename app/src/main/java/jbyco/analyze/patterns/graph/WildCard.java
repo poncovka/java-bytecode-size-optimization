@@ -1,4 +1,4 @@
-package jbyco.pattern.graph;
+package jbyco.analyze.patterns.graph;
 
 public class WildCard {
 	

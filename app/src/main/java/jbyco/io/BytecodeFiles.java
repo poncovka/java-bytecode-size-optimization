@@ -7,15 +7,15 @@ import java.util.Iterator;
 import jbyco.io.file.BytecodeFile;
 import jbyco.io.file.FilesIterator;
 
-public class Files implements Iterable<BytecodeFile>{
+public class BytecodeFiles implements Iterable<BytecodeFile>{
 
 	Path path;
 	
-	public Files(String str) {
+	public BytecodeFiles(String str) {
 		this.path = Paths.get(str);
 	}
 	
-	public Files(Path path) {
+	public BytecodeFiles(Path path) {
 		this.path = path;
 	}
 	

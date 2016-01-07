@@ -13,8 +13,8 @@ import jbyco.analyze.Analyzer;
 import jbyco.analyze.locals.LocalsAnalyzer;
 import jbyco.analyze.patterns.PatternsAnalyzer;
 import jbyco.analyze.size.SizeAnalyzer;
+import jbyco.io.BytecodeFiles;
 import jbyco.io.BytecodePrinter;
-import jbyco.io.Files;
 import jbyco.io.file.BytecodeFile;
 
 // java jbyco print -h -c -f -m -a filename
@@ -79,7 +79,7 @@ public class App {
 		for (String path : args.paths) {
 			 
 			// start to search files
-			Files files = new Files(path);
+			BytecodeFiles files = new BytecodeFiles(path);
 			
 			// iterate over class files
 			for (BytecodeFile file:files) {
@@ -134,7 +134,7 @@ public class App {
 		for (String path : args.paths) {
 			 
 			// start to search files
-			Files files = new Files(path);
+			BytecodeFiles files = new BytecodeFiles(path);
 			
 			// iterate over class files
 			for (BytecodeFile file:files) {
@@ -152,7 +152,7 @@ public class App {
 		for (String path : args.paths) {
 			 
 			// start to search files
-			Files files = new Files(path);
+			BytecodeFiles files = new BytecodeFiles(path);
 			
 			// iterate over class files
 			for (BytecodeFile file:files) {

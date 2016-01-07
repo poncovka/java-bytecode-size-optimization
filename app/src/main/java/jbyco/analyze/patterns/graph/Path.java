@@ -1,4 +1,4 @@
-package jbyco.pattern.graph;
+package jbyco.analyze.patterns.graph;
 
 public class Path implements Comparable<Path> {
 	
@@ -20,9 +20,13 @@ public class Path implements Comparable<Path> {
 		counter++;
 	}
 	
+	public int getCount() {
+		return counter;
+	}
+	
 	@Override
 	public String toString() {
-		return id + "x" + counter;
+		return Integer.toString(id);
 	}
 
 	@Override

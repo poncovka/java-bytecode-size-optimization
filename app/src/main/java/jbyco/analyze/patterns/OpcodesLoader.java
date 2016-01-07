@@ -8,9 +8,8 @@ import java.util.Queue;
 import org.apache.bcel.Constants;
 import org.apache.bcel.generic.Instruction;
 
-import jbyco.pattern.graph.GraphBuilder;
-import jbyco.pattern.graph.SuffixGraph;
-import jbyco.pattern.graph.SuffixNode;
+import jbyco.analyze.patterns.graph.GraphBuilder;
+import jbyco.analyze.patterns.graph.SuffixGraph;
 
 public class OpcodesLoader implements InstructionsLoader {
 	

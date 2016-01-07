@@ -1,13 +1,10 @@
-package jbyco.pattern;
+package jbyco.analyze.patterns.graph;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
-import jbyco.pattern.graph.GraphBuilder;
-import jbyco.pattern.graph.Path;
-import jbyco.pattern.graph.SuffixGraph;
-import jbyco.pattern.graph.SuffixNode;
+import jbyco.io.PatternsPrinter;
 
 public class Main {
 	
@@ -58,25 +55,7 @@ public class Main {
 		System.err.println("BUILD GRAPH");
 		
 		int maxPosition;
-		
-		/*
-		// for every string
-		for(String s:input) {
-					
-			node = graph.getRoot();
-						
-			// insert every character
-			for(int j=0; j < s.length(); j++) {
-							
-				// item
-				char c = s.charAt(j);
-						
-				// put item to graph
-				node = finder.addNextNode(node, c);
-			}
-		}		
-		*/
-		
+				
 		// for every string
 		for(String s:input) {
 			
@@ -122,17 +101,10 @@ public class Main {
 		out2.close();
 		
 		System.err.println("FIND PATTERNS");
+		PatternsPrinter printer = new PatternsPrinter();
+		printer.print(graph, "");
 		
-		int n = 0;
-		PatternsFinder finder = new PatternsFinder(graph, "");
-		for(Pattern pattern:finder) {
-			if (n >= pattern_number) break;
-			if (pattern.frequency < min_frequency) continue;
-			System.out.printf("%-15d%-15s\n", pattern.frequency, "\'" + pattern.string +  "\'");
-			n++;
-		}
-		
-		System.out.printf("paths %s, nodes %d\n", new Path(), new SuffixNode("").getId());
+		System.out.printf("paths %s, nodes %d\n", new Path(), new Node("").getId());
 		
 	}
 }

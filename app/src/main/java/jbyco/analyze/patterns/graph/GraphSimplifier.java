@@ -1,4 +1,4 @@
-package jbyco.pattern.graph;
+package jbyco.analyze.patterns.graph;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,8 +18,8 @@ public class GraphSimplifier {
 	
 	public void simplify(int threshold) {
 		
-		Queue<SuffixNode> queue = new LinkedList<>();
-		Set<SuffixNode> visited = new HashSet<>();
+		Queue<Node> queue = new LinkedList<>();
+		Set<Node> visited = new HashSet<>();
 		
 		// init queue
 		queue.add(graph.getRoot());
@@ -29,10 +29,10 @@ public class GraphSimplifier {
 		while(!queue.isEmpty()) {
 			
 			// get node
-			SuffixNode node = queue.poll();			
+			Node node = queue.poll();			
 			
 			// find wild cards
-			Map<SuffixNode, WildCard> wildcards = findWildCards(node, threshold);
+			Map<Node, WildCard> wildcards = findWildCards(node, threshold);
 			
 			// change graph
 			if (!wildcards.isEmpty()) {
@@ -40,7 +40,7 @@ public class GraphSimplifier {
 			}
 			
 			// add next nodes to queue
-			for(SuffixNode next : node.getOutputNodes()) {
+			for(Node next : node.getOutputNodes()) {
 				if (!visited.contains(next)) {
 					queue.add(next);
 					visited.add(next);
@@ -49,13 +49,13 @@ public class GraphSimplifier {
 		}	
 	}
 	
-	private Map<SuffixNode, WildCard> findWildCards(SuffixNode node, int threshold) {
+	private Map<Node, WildCard> findWildCards(Node node, int threshold) {
 		
 		// init
-		Map<SuffixNode, WildCard> wildcards = new HashMap<>();
+		Map<Node, WildCard> wildcards = new HashMap<>();
 		
 		// find wildcards
-		for(SuffixNode next : node.getOutputNodes()) {
+		for(Node next : node.getOutputNodes()) {
 			
 			// get number of paths on the edge to next
 			int npaths = node.getEdgePaths(next).size();
@@ -69,14 +69,14 @@ public class GraphSimplifier {
 		return wildcards;
 	}
 
-	private void simplifyWildCards(SuffixNode node, Map<SuffixNode, WildCard> wildcards) {
+	private void simplifyWildCards(Node node, Map<Node, WildCard> wildcards) {
 		
 		// do we need to create a new node with a wild card?
 		boolean create = !(node.getItem() instanceof WildCard); 
 		
 		// create new wild card and node
 		WildCard w = create ? new WildCard(0,0) : (WildCard) node.getItem();
-		SuffixNode next2 = create ? new SuffixNode(w) : node;
+		Node next2 = create ? new Node(w) : node;
 		
 		// update wild cards
 		wildcards.put(node, w);
@@ -84,7 +84,7 @@ public class GraphSimplifier {
 		wildcards.remove(node);
 
 		// update edges
-		for(SuffixNode next : wildcards.keySet()) {
+		for(Node next : wildcards.keySet()) {
 			
 			if(create) {
 				node.addPaths(next2, node.getEdgePaths(next));
@@ -102,14 +102,14 @@ public class GraphSimplifier {
 
 	}
 	
-	private void updateWildcards(SuffixNode root, Map<SuffixNode, WildCard> wildcards) {
+	private void updateWildcards(Node root, Map<Node, WildCard> wildcards) {
 		
 		final int SEEN = 1;
 		final int DOWN = 2;
 		final int UP = 3;
 		
-		Stack<SuffixNode> stack = new Stack<>();
-		Map<SuffixNode, Integer> visited = new HashMap<>();
+		Stack<Node> stack = new Stack<>();
+		Map<Node, Integer> visited = new HashMap<>();
 		
 		stack.add(root);
 		visited.put(root, SEEN);
@@ -117,7 +117,7 @@ public class GraphSimplifier {
 		// post order
 		while(!stack.isEmpty()) {
 			
-			SuffixNode node = stack.pop();
+			Node node = stack.pop();
 			int flag = visited.get(node);
 			
 			// top to bottom
@@ -127,7 +127,7 @@ public class GraphSimplifier {
 				stack.push(node);
 				
 				// add next nodes to stack
-				for (SuffixNode next : node.getOutputNodes()) {
+				for (Node next : node.getOutputNodes()) {
 					
 					// add only wildcards that were not seen
 					if(wildcards.containsKey(next) && !visited.containsKey(next)) {
@@ -147,7 +147,7 @@ public class GraphSimplifier {
 				WildCard w2 = new WildCard(Integer.MAX_VALUE, 0);
 				
 				// compute parallel min, max
-				for (SuffixNode next : node.getOutputNodes()) {
+				for (Node next : node.getOutputNodes()) {
 					
 					if(wildcards.containsKey(next)) {
 						w2.addParallel(wildcards.get(next));

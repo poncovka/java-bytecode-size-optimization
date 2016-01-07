@@ -1,7 +1,8 @@
-package jbyco.pattern.graph;
+package jbyco.analyze.patterns.graph;
 
 import java.util.ArrayDeque;
 import java.util.BitSet;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,10 +20,10 @@ public class GraphBuilder {
 	SuffixGraph graph;
 	
 	// last added node
-	SuffixNode node;
+	Node node;
 	
 	// nodes of the path
-	Deque<SuffixNode> nodes;
+	Deque<Node> nodes;
 	
 	// set of reachable nodes
 	BitSet reachables;
@@ -30,8 +31,11 @@ public class GraphBuilder {
 	// set of candidate nodes
 	Map<Object, Candidates> candidates;
 	
+	// comparator for candidates
+	Comparator<Node> comparator;
+	
 	// stack with nodes to seach
-	Deque<SuffixNode> stack;
+	Deque<Node> stack;
 	
 	// should we create new Path? 
 	boolean createPath = true;
@@ -49,6 +53,7 @@ public class GraphBuilder {
 
 		this.graph = graph;
 		this.candidates = new HashMap<>();		
+		this.comparator = new DepthComparator();
 		this.nodes = new ArrayDeque<>();
 		
 		stack = new ArrayDeque<>();
@@ -65,14 +70,14 @@ public class GraphBuilder {
 		createPath = false;
 		paths.clear();
 		
-		reachables = new BitSet(SuffixNode.getTotal());		
+		reachables = new BitSet(Node.getTotal());		
 		stack.clear();		
 	}
 	
 	public void finishPath() {
 		
 		// update candidates
-		for (SuffixNode node:nodes) {
+		for (Node node:nodes) {
 			if (node.getDepth() > 1) {
 				updateCandidates(node);
 			}
@@ -82,7 +87,7 @@ public class GraphBuilder {
 		if (!createPath) {
 					
 			// remove paths that does not end in the node
-			for (SuffixNode next:node.getOutputNodes()) {
+			for (Node next:node.getOutputNodes()) {
 				paths.removeAll(node.getEdgePaths(next));
 			}
 				
@@ -99,7 +104,7 @@ public class GraphBuilder {
 		// create new path
 		if (createPath) {
 			
-			SuffixNode n1, n2 = null;
+			Node n1, n2 = null;
 			Path path = new Path();
 			
 			while(!nodes.isEmpty()) {
@@ -126,7 +131,7 @@ public class GraphBuilder {
 		depth++;
 		
 		// try to find node in neighbors of previous node
-		SuffixNode next = node.findNext(item);
+		Node next = node.findNext(item);
 		
 		if (next == null) {
 			
@@ -141,7 +146,7 @@ public class GraphBuilder {
 			if (next == null) {
 				
 				// init node
-				next = new SuffixNode(item);
+				next = new Node(item);
 				
 				// set depth
 				next.setDepth(depth);
@@ -166,7 +171,7 @@ public class GraphBuilder {
 		nodes.push(node);
 	}
 	
-	public void updatePaths(SuffixNode next) {
+	public void updatePaths(Node next) {
 		
 		if (!createPath) {
 			
@@ -181,7 +186,7 @@ public class GraphBuilder {
 			}
 		}	
 	}
-	public boolean isReachable(SuffixNode node2) {
+	public boolean isReachable(Node node2) {
 				
 		// is n2 in reachables?
 		if (reachables.get(node2.getId())) {
@@ -200,7 +205,7 @@ public class GraphBuilder {
 		while(!stack.isEmpty()) {
 			
 			// visit previous nodes
-			for(SuffixNode prev : stack.pop().getInputNodes()) {
+			for(Node prev : stack.pop().getInputNodes()) {
 								
 				// get id
 				int num = prev.getId();
@@ -223,7 +228,7 @@ public class GraphBuilder {
 		return false;
 	}
 	
-	public SuffixNode findCandidate(Object item) {
+	public Node findCandidate(Object item) {
 		
 		// get candidates for item
 		Candidates candidates = this.candidates.get(item);
@@ -236,7 +241,7 @@ public class GraphBuilder {
 		// search candidates
 		while(candidates.hasNext()) {
 			
-			SuffixNode candidate = candidates.next();
+			Node candidate = candidates.next();
 			//System.out.printf("%s, %s is candiate?\n", item, candidate);
 						
 			// check reachables
@@ -260,7 +265,7 @@ public class GraphBuilder {
 		return null;
 	}
 	
-	public void updateCandidates(SuffixNode node) {
+	public void updateCandidates(Node node) {
 		
 		// find candidates for node item
 		Object item = node.getItem();
@@ -275,22 +280,30 @@ public class GraphBuilder {
 		candidates.add(node);
 	}
 
+	class DepthComparator implements Comparator<Node> {
+		
+		@Override
+		public int compare(Node n1, Node n2) {
+			return n1.getDepth() - n2.getDepth();
+		}
+	}
+	
 	class Candidates {
 		
 		// queue of available candidates
-		TreeSet<SuffixNode> available;
+		TreeSet<Node> available;
 	
 		// iterator over candidates
-		Iterator<SuffixNode> iterator;
+		Iterator<Node> iterator;
 		
 		// last visited node
-		SuffixNode node;
+		Node node;
 		
 		// can iterator iterate?
 		boolean iterate;
 		
 		public Candidates() {
-			this.available = new TreeSet<>(DepthComparator.getInstance());
+			this.available = new TreeSet<>(comparator);
 			init();
 		}
 
@@ -299,7 +312,7 @@ public class GraphBuilder {
 			this.iterate = true;
 		}
 		
-		public void add(SuffixNode node) {
+		public void add(Node node) {
 			this.available.add(node);
 			init();
 		}
@@ -308,7 +321,7 @@ public class GraphBuilder {
 			return (!iterate) || iterator.hasNext();
 		}
 		
-		public SuffixNode next() {
+		public Node next() {
 			
 			// return next node
 			if (iterate) {

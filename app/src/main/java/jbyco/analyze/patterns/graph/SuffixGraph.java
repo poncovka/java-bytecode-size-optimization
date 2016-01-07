@@ -1,4 +1,4 @@
-package jbyco.pattern.graph;
+package jbyco.analyze.patterns.graph;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -11,13 +11,13 @@ import jbyco.io.GmlExporter;
 public class SuffixGraph {
 
 	// root node of the graph with no item
-	SuffixNode root;
+	Node root;
 	
 	public SuffixGraph() {
-		root = new SuffixNode(new Root());
+		root = new Node(new Root());
 	}
 	
-	public SuffixNode getRoot() {
+	public Node getRoot() {
 		return root;
 	}	
 	
@@ -25,8 +25,8 @@ public class SuffixGraph {
 		
 		out.printf("%-15s%-30s%-30s\n", "[node]", "[output]", "[paths]");
 		
-		Stack<SuffixNode> stack = new Stack<SuffixNode>();
-		Set<SuffixNode> visited = new HashSet<SuffixNode>();
+		Stack<Node> stack = new Stack<Node>();
+		Set<Node> visited = new HashSet<Node>();
 		
 		stack.push(root);
 		visited.add(root);
@@ -34,13 +34,13 @@ public class SuffixGraph {
 		while(!stack.isEmpty()) {
 			
 			// get node
-			SuffixNode node = stack.pop();
+			Node node = stack.pop();
 			
 			// print it
 			out.printf("%-15s%-30s%-30s\n", node, node.getOutputNodes(), node.getPaths());
 			
 			// add next nodes
-			for(SuffixNode next:node.getOutputNodes()) {
+			for(Node next:node.getOutputNodes()) {
 				if (!visited.contains(next)) {
 					stack.push(next);
 					visited.add(next);
@@ -59,8 +59,8 @@ public class SuffixGraph {
 		
 		for (int cycle = 0; cycle < 2; cycle++) {
 			
-			Stack<SuffixNode> stack = new Stack<SuffixNode>();
-			Set<SuffixNode> visited = new HashSet<SuffixNode>();
+			Stack<Node> stack = new Stack<Node>();
+			Set<Node> visited = new HashSet<Node>();
 			
 			stack.push(root);
 			visited.add(root);
@@ -68,7 +68,7 @@ public class SuffixGraph {
 			while(!stack.isEmpty()) {
 				
 				// get node
-				SuffixNode node = stack.pop();
+				Node node = stack.pop();
 				
 				// print nodes in the 1st cycle
 				if (cycle == 0) {
@@ -76,7 +76,7 @@ public class SuffixGraph {
 					exporter.printNode(node.getId(), node);
 				}
 				
-				for(SuffixNode next:node.getOutputNodes()) {
+				for(Node next:node.getOutputNodes()) {
 					
 					// print edges in the 2nd cycle
 					if (cycle == 1) {

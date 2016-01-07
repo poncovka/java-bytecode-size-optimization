@@ -1,4 +1,4 @@
-package jbyco.pattern.graph;
+package jbyco.analyze.patterns.graph;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class SuffixNode implements Comparable<SuffixNode> {
+public class Node implements Comparable<Node> {
 	
 	// default set
 	static final Set<Path> EMPTYSET = new LinkedHashSet<>(0);
@@ -21,18 +21,18 @@ public class SuffixNode implements Comparable<SuffixNode> {
 	Object item;
 	
 	// sets of paths on edges to output nodes
-	Map<SuffixNode, Set<Path>> paths;
+	Map<Node, Set<Path>> paths;
 	
 	// list of input nodes
-	Collection<SuffixNode> in;
+	Collection<Node> in;
 	
 	// set of output nodes
-	Collection<SuffixNode> out;
+	Collection<Node> out;
 	
 	// depth of node
 	int depth;
 
-	public SuffixNode(Object item) {
+	public Node(Object item) {
 		
 		this.id = maxid++;
 		this.item = item;
@@ -59,19 +59,19 @@ public class SuffixNode implements Comparable<SuffixNode> {
 		return depth;
 	}
 	
-	public Collection<SuffixNode> getInputNodes() {
+	public Collection<Node> getInputNodes() {
 		return in;
 	}
 
-	public Collection<SuffixNode> getOutputNodes() {
+	public Collection<Node> getOutputNodes() {
 		return out;
 	}
 	
-	public Map<SuffixNode, Set<Path>> getPaths() {
+	public Map<Node, Set<Path>> getPaths() {
 		return paths;
 	}
 	
-	public Set<Path> getPaths(SuffixNode node) {
+	public Set<Path> getPaths(Node node) {
 		
 		// get set of paths on the edge to node
 		Set<Path> set = paths.get(node);
@@ -85,12 +85,12 @@ public class SuffixNode implements Comparable<SuffixNode> {
 		return set;
 	}
 	
-	public boolean doSharePath(SuffixNode node) {
+	public boolean doSharePath(Node node) {
 		
-		for(SuffixNode prev : in) {
+		for(Node prev : in) {
 			for (Path p: prev.getEdgePaths(this)) {
 				
-				for (SuffixNode prev2 : node.in) {
+				for (Node prev2 : node.in) {
 					for (Path p2 : prev2.getEdgePaths(node)) {
 						
 						if (p == p2) {
@@ -104,13 +104,13 @@ public class SuffixNode implements Comparable<SuffixNode> {
 		return false;
 	}
 	
-	public Set<Path> getEdgePaths(SuffixNode node) {
+	public Set<Path> getEdgePaths(Node node) {
 		return paths.getOrDefault(node, EMPTYSET);
 	}
 	
-	public SuffixNode findNext(Object item) {
+	public Node findNext(Object item) {
 		
-		for(SuffixNode next : out) {
+		for(Node next : out) {
 			if (next.item == item) {
 				return next;
 			}
@@ -119,17 +119,17 @@ public class SuffixNode implements Comparable<SuffixNode> {
 		return null;
 	}
 
-	public void addEdge(SuffixNode node) {
+	public void addEdge(Node node) {
 		
 		// add input and output nodes
 		this.addOutputNode(node);
 		node.addInputNode(this);
 	}
 	
-	public void copyEdges(SuffixNode node) {
+	public void copyEdges(Node node) {
 		
 		// copy edges
-		for(SuffixNode next:node.getOutputNodes()) {
+		for(Node next:node.getOutputNodes()) {
 			this.addEdge(next);
 			
 			// copy paths
@@ -139,20 +139,20 @@ public class SuffixNode implements Comparable<SuffixNode> {
 		}
 	}
 	
-	private void addInputNode(SuffixNode node) {
+	private void addInputNode(Node node) {
 		in.add(node);
 	}
 	
-	private void addOutputNode(SuffixNode node) {
+	private void addOutputNode(Node node) {
 		out.add(node);		
 	}	
 	
-	public void addPath(SuffixNode node, Path path) {
+	public void addPath(Node node, Path path) {
 		// add path to set
 		getPaths(node).add(path);
 	}
 
-	public void addPaths(SuffixNode node, Set<Path> paths) {
+	public void addPaths(Node node, Set<Path> paths) {
 		
 		Set<Path> set = getPaths(node);
 		
@@ -161,10 +161,10 @@ public class SuffixNode implements Comparable<SuffixNode> {
 		}
 	}
 	
-	public void addPaths(Map<SuffixNode,Set<Path>> paths2) {
+	public void addPaths(Map<Node,Set<Path>> paths2) {
 		
 		// for every edge
-		for(SuffixNode node:paths2.keySet()) {
+		for(Node node:paths2.keySet()) {
 			
 			// merge set of paths
 			addPaths(node, paths2.get(node));
@@ -180,7 +180,7 @@ public class SuffixNode implements Comparable<SuffixNode> {
 		this.depth = depth;
 	}
 	
-	public void removeEdge(SuffixNode node) {
+	public void removeEdge(Node node) {
 		
 		// remove input and output nodes
 		this.removeOutputNode(node);
@@ -190,11 +190,11 @@ public class SuffixNode implements Comparable<SuffixNode> {
 		this.paths.remove(node);
 	}
 	
-	private void removeInputNode(SuffixNode node) {
+	private void removeInputNode(Node node) {
 		in.remove(node);
 	}
 	
-	private void removeOutputNode(SuffixNode node) {
+	private void removeOutputNode(Node node) {
 		out.remove(node);
 	}
 	
@@ -204,7 +204,7 @@ public class SuffixNode implements Comparable<SuffixNode> {
 	}
 
 	@Override
-	public int compareTo(SuffixNode node) {
+	public int compareTo(Node node) {
 		return Integer.compare(id, node.id);
 	}
 	
