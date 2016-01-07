@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
 import jbyco.pattern.graph.GraphBuilder;
-import jbyco.pattern.graph.GraphSimplifier;
 import jbyco.pattern.graph.Path;
 import jbyco.pattern.graph.SuffixGraph;
 import jbyco.pattern.graph.SuffixNode;
@@ -133,7 +132,7 @@ public class Main {
 			n++;
 		}
 		
-		System.out.printf("paths %s, nodes %d\n", new Path(), new SuffixNode("").getNumber());
+		System.out.printf("paths %s, nodes %d\n", new Path(), new SuffixNode("").getId());
 		
 	}
 }

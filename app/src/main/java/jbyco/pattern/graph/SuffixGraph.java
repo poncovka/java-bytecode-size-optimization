@@ -73,7 +73,7 @@ public class SuffixGraph {
 				// print nodes in the 1st cycle
 				if (cycle == 0) {
 					//exporter.printNode(node.getNumber(), node.getItem());
-					exporter.printNode(node.getNumber(), node);
+					exporter.printNode(node.getId(), node);
 				}
 				
 				for(SuffixNode next:node.getOutputNodes()) {
@@ -85,7 +85,7 @@ public class SuffixGraph {
 						Set<Path> epaths = node.getEdgePaths(next);
 						
 						// print edge
-						exporter.printEdge(node.getNumber(), next.getNumber(), epaths);
+						exporter.printEdge(node.getId(), next.getId(), epaths);
 					}
 					
 					// add next nodes

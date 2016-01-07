@@ -2,13 +2,10 @@ package jbyco.pattern.graph;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 
 public class SuffixNode implements Comparable<SuffixNode> {
@@ -23,17 +20,14 @@ public class SuffixNode implements Comparable<SuffixNode> {
 	// item
 	Object item;
 	
-	// set of paths
+	// sets of paths on edges to output nodes
 	Map<SuffixNode, Set<Path>> paths;
 	
-	// list of edges, used when we create the graph
-	Map<Object, SuffixNode> edges;
-	
 	// list of input nodes
-	Set<SuffixNode> in;
+	Collection<SuffixNode> in;
 	
 	// set of output nodes
-	Set<SuffixNode> out;
+	Collection<SuffixNode> out;
 	
 	// depth of node
 	int depth;
@@ -45,16 +39,15 @@ public class SuffixNode implements Comparable<SuffixNode> {
 		this.depth = -1;
 		
 		paths = new HashMap<>();
-		in = new TreeSet<>();
-		out = new TreeSet<>();
-		edges = new HashMap<>();
+		in = new LinkedList<>();
+		out = new LinkedList<>();
 	}
 
-	static int getCount() {
+	static int getTotal() {
 		return maxid;
 	}
 	
-	public int getNumber() {
+	public int getId() {
 		return id;
 	}
 	
@@ -116,13 +109,17 @@ public class SuffixNode implements Comparable<SuffixNode> {
 	}
 	
 	public SuffixNode findNext(Object item) {
-		return edges.get(item);
+		
+		for(SuffixNode next : out) {
+			if (next.item == item) {
+				return next;
+			}
+		}
+		
+		return null;
 	}
 
 	public void addEdge(SuffixNode node) {
-		
-		// add edge
-		edges.put(node.getItem(), node);
 		
 		// add input and output nodes
 		this.addOutputNode(node);
@@ -176,7 +173,6 @@ public class SuffixNode implements Comparable<SuffixNode> {
 	
 	
 	public void setItem(Object item) {
-		// this operation destroys edges!!
 		this.item = item;
 	}
 	
@@ -185,9 +181,6 @@ public class SuffixNode implements Comparable<SuffixNode> {
 	}
 	
 	public void removeEdge(SuffixNode node) {
-		
-		// remove edge
-		edges.remove(node.getItem());
 		
 		// remove input and output nodes
 		this.removeOutputNode(node);
@@ -214,6 +207,5 @@ public class SuffixNode implements Comparable<SuffixNode> {
 	public int compareTo(SuffixNode node) {
 		return Integer.compare(id, node.id);
 	}
-
 	
 }

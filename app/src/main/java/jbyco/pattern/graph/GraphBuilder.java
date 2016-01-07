@@ -6,11 +6,8 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 
 public class GraphBuilder {
@@ -68,7 +65,7 @@ public class GraphBuilder {
 		createPath = false;
 		paths.clear();
 		
-		reachables = new BitSet(SuffixNode.getCount());
+		reachables = new BitSet(SuffixNode.getTotal());		
 		stack.clear();		
 	}
 	
@@ -184,11 +181,10 @@ public class GraphBuilder {
 			}
 		}	
 	}
-	
 	public boolean isReachable(SuffixNode node2) {
-		
+				
 		// is n2 in reachables?
-		if (reachables.get(node2.getNumber())) {
+		if (reachables.get(node2.getId())) {
 			//System.out.printf("%s, %s in reachables\n", node, node2);
 			return true;
 		}
@@ -207,7 +203,7 @@ public class GraphBuilder {
 			for(SuffixNode prev : stack.pop().getInputNodes()) {
 								
 				// get id
-				int num = prev.getNumber();
+				int num = prev.getId();
 				
 				// add it to reachables
 				if (!reachables.get(num)) {

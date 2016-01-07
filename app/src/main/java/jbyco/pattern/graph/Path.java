@@ -12,6 +12,10 @@ public class Path implements Comparable<Path> {
 		this.counter = 1;
 	}
 	
+	public static int getTotal() {
+		return maxid;
+	}
+	
 	public void increment() {
 		counter++;
 	}
