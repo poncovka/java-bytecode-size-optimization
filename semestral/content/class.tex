@@ -197,6 +197,8 @@ Celočíselné lokální proměnné lze inkrementovat instrukcí \texttt{iinc} $
 
 \subsubsection{Práce s polem}
 
+%newarray, multianewarray
+
 Pole lze vytvořit instrukcí \texttt{anewarray} $index$, kde  $index$ je dvoubajtový index do tabulky konstant na typ vytvářeného pole. Typem pole může být třída, rozhraní nebo pole. Ze zásobníku se odebere hodnota $count$ určující délku pole a vloží reference na vytvořené pole. Prvky pole jsou inicializované  na \texttt{null}. Délku pole lze zjistit instrukcí \texttt{arraylength}, která ze zásobníku odebere referenci na pole a vloží na něj délku tohoto pole.
 
 Instrukce $t$\texttt{astore}, kde $t \in \{\texttt{b}, \texttt{c}, \texttt{s}, \texttt{i}, \texttt{l}, \texttt{f},  \texttt{d}, \texttt{a}  \}$ určuje typ pole, umožňuje vložit hodnotu do pole. Ze zásobníku odebere hodnotu $value$, index $index$ a referenci na pole $array$ typu $t$ a provede operaci $array$[$index$] $:=$ $value$.
@@ -204,19 +206,33 @@ Instrukcí $t$\texttt{aload} lze hodnotu z pole načíst na zásobník. Ze záso
 
 \subsubsection{Metody a objekty}
 
-% checkcast, nthrow, monitor
+Nový objekt lze vytvořit instrukcí \texttt{new} $index$, kde $index$ je dvoubajtový index do tabulky konstant na třídu nebo rozhraní. Instance třídy nebo rozhraní se inicializuje a její reference se vloží na zásobník.
+
+Přístup ke členským proměnným objektu umožňují instrukce \texttt{getfield} $index$ a \texttt{putfield} $index$, kde $index$ je dvoubajtový index do tabulky konstant na členskou proměnnou. Instrukce \texttt{getfield} odebere ze zásobníku referenci na objekt, získá hodnotu dané členské proměnné a vloží ji na zásobník. Instrukce \texttt{putfield} odebere ze zásobníku hodnotu $value$ a referenci na objekt a dané členské proměnné tohoto objektu přiřadí hodnotu $value$. Obdobně lze přistupovat k proměnným třídy pomocí instrukcí \texttt{getstatic} $index$ a \texttt{putstatic} $index$. Instrukce však ze zásobníku nenačítají referenci na objekt a třídu proměnné určí z položky v tabulce konstant pro členskou proměnnou.
+
+% invokevirtual/special/static/interface/dynamic
 
 
+Instrukce \texttt{instanceof} $index$ umožňuje ověřit, zda je objekt daný referencí z vrcholu zásobníku instancí třídy dané dvoubajtovým indexem do tabulky konstant  $index$, případně zda objekt implementuje rozhraní dané tímto indexem. Výsledek ověření je vložen na zásobník v podobě hodnoty typu \texttt{int} ($1$ úspěch, $0$ neúspěch). Obdobně se chová instrukce \texttt{checkcast} $index$, ale v případě úspěchu vloží referenci na objekt zpět na zásobník, v případě neúspěchu vyhodí výjimku \texttt{ClassCastException}.
+
+
+Výjimku lze vyhodit instrukcí \texttt{athrow}. Ze zásobníku se odebere reference na instanci třídy \texttt{Throwable} nebo její podtřídu a v tabulce výjimek se vyhledá blok pro zpracování této instance. Pokud pro danou výjimku takový blok neexistuje, vykonávání aktuální metody $method$ se okamžitě bez předání návratové hodnoty ukončí a výjimka se znovu vyvolá v metodě, která metodu $method$ zavolala. 
+
+% Zkontrolovat:
+
+Vstupu do synchronizovaného bloku instrukcí předchází vstup do monitoru daného objektu. Opuštění takového bloku znamená uvolnění tohoto monitoru. Toto chování zajišťují instrukce \texttt{monitorenter} a \texttt{monitorexit}. Referenci na objekt, s jehož monitorem budou pracovat, získávají z operačního zásobníku.
 
 \subsubsection{Porovnávání a podmíněné skoky}
 
+% ifnull, ifnonnull
+
 Instrukce \texttt{if}$condition$ $next$, kde $condition \in \{ \texttt{eq}, \texttt{ne}, \texttt{lt}, \texttt{le}, \texttt{ge}, \texttt{gt}\}$ a $next$ je dvoubajtová znaménková hodnota, umožňuje provést podmíněný skok na jinou instrukci. Ze zásobníku odebere hodnotu typu \texttt{int} a porovná ji s nulou na rovnost, nerovnost, menší než, menší nebo rovno, větší než či větší nebo rovno dle $condition$. Pokud je podmínka pro skok splněna, pokračuje se instrukcí ve vzdálenosti $next$ od pozice aktuální instrukce. Jinak se pokračuje následující instrukcí. Instrukce \texttt{if\_icmp}$condition$ umožňuje vzájemně porovnat dvě hodnoty typu \texttt{int}. Dva objekty lze na rovnost a nerovnost porovnat instrukcemi \texttt{if\_acmpeq} a \texttt{if\_acmpne}. Pro hodnoty typu \texttt{long}, \texttt{float} a \texttt{double} je nutné nejprve provést jednu z instrukcí \texttt{lcmp}, \texttt{fcmp}$x$ a \texttt{dcmp}$x$, kde $x \in \{\texttt{l}, \texttt{g} \}$. Instrukce ze zásobníku odebere dvě hodnoty, porovná je a výsledek porovnání vloží na zásobník ($1$ pro větší než, $0$ pro rovnost, $-1$ pro menší než). Podmíněný skok lze následně vykonat instrukcí \texttt{if}$condition$.
 
-% switch
+% tableswitch, lookupswitch
 
 \subsubsection {Řízení toku}
 
-% return, goto
+% goto, jsr, ret, treturn, return, goto_w, jsr_w
 
 \subsubsection{Konverze hodnot}
 
@@ -224,10 +240,8 @@ Hodnotu z vrcholu zásobníku lze konvertovat na jiný datový typ instrukcí ty
 
 \subsubsection{Práce se zásobníkem}
 
+% pop, pop2, dup, dup_x1, dup_x2, dup2, dup2_x1, dup2_x2, swap
 
-\subsubsection{Další instrukce}
-
-% nop, breakpoint, impdep1, impdep2
 
 \subsubsection{Matematické a bitové operace}
 
@@ -238,6 +252,10 @@ Instrukce pro bitové operace jsou ve tvaru $t operation$,
 kde $t \in \{\texttt{i}, \texttt{l}\}$ 
 a $operation \in \{\texttt{shl},\texttt{shr}, \texttt{ushr}, \texttt{and}, \texttt{or}, \texttt{xor}\}$ označuje bitový posuv doleva, aritmetický posuv doprava, logický posuv doprava, logický součin, logický součet nebo  exkluzivní logický součet. 
 Uvedené instrukce odeberou ze zásobníku příslušný počet operandů a vrátí na zásobník výsledek operace.
+
+\subsubsection{Další instrukce}
+
+% nop, breakpoint, impdep1, impdep2
 
 
 % TODO příklad na inicializaci lokálních proměnných a matematické operace
@@ -273,8 +291,6 @@ Reprezentovaná třída, případně rozhraní, metody, členské proměnné a i
   \end{tabular}
 \end{figure}
 
-% TODO dopsat atributy, vykašlat se na strukturu a jen napsat, k čemu slouží
-
 Specifikace (?) definuje 23 atributů. Překladače však mohou definovat a vkládat do \texttt{class} souborů i atributy vlastní. Pokud je JVM neumí rozpoznat, pak je ignoruje. Atributy mají různou míru důležitosti vzhledem k interpretaci \texttt{class} souboru. 
 
 Pro správnou interpretaci JVM je důležitých následujících pět atributů. Jedním z atributů členské proměnné může být atribut \texttt{ConstantValue}, který v sobě nese index do tabulky konstant na položku s číselnou nebo řetězcovou konstantou. Jestliže je daná proměnná statická, pak je jí při inicializaci třídy přiřazena právě tato hodnota. Atribut \texttt{Code} reprezentující instrukce metody byl představen v kapitole (?). Jedním z atributů \texttt{Code} může být \texttt{StackMapTable}. Tento atribut je důležitý pro typovou kontrolu při verifikaci \texttt{class} souborů. Pro každý základní blok instrukcí jsou specifikovány typy lokálních proměnných a hodnot na operačním zásobníku. U starších verzí \texttt{class} souboru se provádí typová inference pomocí analýzy datového toku. \texttt{Exceptions} je atribut metody. Obsahuje odkazy do tabulky konstant na typy kontrolovaných výjimek, které metoda může vyhodit. Atribut \texttt{BootstrapMethods} souvisí s dynamickými jazyky.
@@ -283,9 +299,6 @@ Následujících dvanáct atributů je podstatných pro správnou interpretaci k
 
 % TODO Runtime*Annotations, AnnotationDefault, 
 
-Další atributy jsou pouze informativní a mohou sloužit například k ladění chyb ve zdrojovém souboru. Atribut \texttt{SourceFile} obsahuje odkaz na název zdrojového kódu. Atribut \texttt{SourceDebugExtension} v sobě nese řetězec s ladícími informace. \texttt{LineNumberTable} reprezentuje mapování indexů do pole instrukcí na čísla řádků zdrojového kódu. Informace o lokálních proměnných metody mohou být dostupné v atributu \texttt{LocalVariableTable}, kde je obsažen rozsah instrukcí, ve kterém proměnná nese hodnotu, odkaz na název proměnné, odkaz na typ proměnné a index do pole lokálních proměnných. Atribut \texttt{LocalVariableTypeTable} nese stejné informace, ale pouze pro proměnné, jejichž typy používají typované proměnné nebo parametrizované typy.
-
-% LineNumberTable, LocalVariableTable, LocalVariableTypeTable, Deprecated,
-
+Další atributy jsou pouze informativní a mohou sloužit například k ladění chyb ve zdrojovém souboru. Atribut \texttt{SourceFile} obsahuje odkaz na název zdrojového kódu. Atribut \texttt{SourceDebugExtension} v sobě nese řetězec s ladícími informace. \texttt{LineNumberTable} reprezentuje mapování indexů do pole instrukcí na čísla řádků zdrojového kódu. Informace o lokálních proměnných metody mohou být dostupné v atributu \texttt{LocalVariableTable}, kde je obsažen rozsah instrukcí, ve kterém proměnná nese hodnotu, odkaz na název proměnné, odkaz na typ proměnné a index do pole lokálních proměnných. Stejné informace nese atribut \texttt{LocalVariableTypeTable}, ale pouze pro proměnné, jejichž typy používají typované proměnné nebo parametrizované typy. Atribut \texttt{Deprecated} slouží k indikaci toho, že třída, metoda, členská proměnná či rozhraní jsou zastaralé.
 
 %=========================================================================
