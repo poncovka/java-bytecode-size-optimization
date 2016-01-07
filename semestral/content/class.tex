@@ -236,7 +236,15 @@ Podoba druhé instrukce je \texttt{lookupswitch} $pad$ $default$ $count$ $pairs$
 
 \subsubsection {Řízení toku}
 
-% goto, jsr, ret, treturn, return, goto_w, jsr_w
+\texttt{goto} $next$ dvoubajtová relativní adresa
+\texttt{goto\_w} $next$ čtyřbajtová relativní adresa
+
+$t$\texttt{return}, kde $t \in \{   \}$, odebere hodnotu $value$ ze zásobníku, obnoví rámec volající metody a vloží $value$ na operační zásobník této metody.
+\texttt{return} 
+
+\texttt{jsr} $next$, kde $index$ je dvoubajtová hodnota s relativní adresou skoku. Adresa následující instrukce je vložena na zásobník pro pozdější návrat ze subrutiny.
+\texttt{jsr\_w} používá čtyřbajtový index
+\texttt{ret} $index$, kde $index$ je indexem do tabulky lokálních proměnných na proměnnou typu \texttt{returnAddress}. Obsah této proměnné udává adresu pro skok.
 
 \subsubsection{Konverze hodnot}
 
@@ -244,8 +252,10 @@ Hodnotu z vrcholu zásobníku lze konvertovat na jiný datový typ instrukcí ty
 
 \subsubsection{Práce se zásobníkem}
 
-% pop, pop2, dup, dup_x1, dup_x2, dup2, dup2_x1, dup2_x2, swap
+Níže zmíněné instrukce umožňují manipulovat se zásobníkem. Způsob manipulace je popsaný pomocí tzv. jednotek délky zásobníku, přičemž některé hodnoty na zásobníku se mohou skládat ze dvou jednotek. Po provedení instrukce musí být vždy zachována integrita těchto hodnot. %Porušení integrity by bylo odhaleno při verifikací \texttt{class} souboru.
 
+K odstranění hodnot z vrcholu zásobníku slouží instrukce \texttt{pop} a \texttt{pop2}, které odstraní jednu, případně dvě jednotky. Instrukce \texttt{dup} duplikuje jednotku na vrcholu zásobníku, zatímco instrukce \texttt{dup\_x1} a \texttt{dup\_x2} duplikovanou jednotku navíc přesunou o dvě, případně tři jednotky níže. Obdobně instrukce \texttt{dup2} duplikuje dvojici jednotek na vrcholu zásobníku a instrukce \texttt{dup2\_x1} a \texttt{dup2\_x2} dvojici navíc přesunou o tři, případně čtyři, jednotky níže. Instrukce 
+\texttt{swap} prohodí pořadí dvou jednotek na vrcholu zásobníku.
 
 \subsubsection{Matematické a bitové operace}
 
@@ -259,8 +269,7 @@ Uvedené instrukce odeberou ze zásobníku příslušný počet operandů a vrá
 
 \subsubsection{Další instrukce}
 
-% nop, breakpoint, impdep1, impdep2
-
+Instrukce \texttt{nop} nic nedělá. Instrukce \texttt{breakpoint}, \texttt{impdep1} a \texttt{impdep1} jsou rezervované pro použití v jiných programech, ale ve validním \texttt{class} souboru se objevit nemohou.
 
 % TODO příklad na inicializaci lokálních proměnných a matematické operace
 
@@ -280,8 +289,6 @@ Uvedené instrukce odeberou ze zásobníku příslušný počet operandů a vrá
 
 
 \section{Atributy}
-
-% Základní přehled atributů, jen ty podstatné, neboť jich je mnoho.
 
 Reprezentovaná třída, případně rozhraní, metody, členské proměnné a i některé atributy mají definovaný seznam atributů. Seznam se skládá z tabulky atributů \N{attributes} o \N{attributes\_count} položkách. Typ atributu je daný odkazem \N{name\_ref} na název atributu, délka atributu bez prvních šesti bajtů je daná hodnotou \N{attribute\_length}. Další informace, které atribut nese v položce \N{info}, liší podle typu atributu.
 
