@@ -1,6 +1,8 @@
 package jbyco.pattern.graph;
 
+import java.util.ArrayDeque;
 import java.util.BitSet;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,6 +24,9 @@ public class GraphBuilder {
 	// last added node
 	SuffixNode node;
 	
+	// nodes of the path
+	Deque<SuffixNode> nodes;
+	
 	// set of reachable nodes
 	BitSet reachables;
 	
@@ -29,69 +34,93 @@ public class GraphBuilder {
 	Map<Object, Candidates> candidates;
 	
 	// stack with nodes to seach
-	Stack<SuffixNode> stack;
+	Deque<SuffixNode> stack;
 	
-	// set of duplicate path
-	Set<Path> duplicates;
+	// should we create new Path? 
+	boolean createPath = true;
+	
+	// set of same paths
+	Set<Path> paths = new HashSet<>();
 	
 	// current depth
-	int depth;
+	int depth = 0;
+	
+	// maximal difference of depths for candidates
+	int DEPTHDIFF = 0;
 	
 	public GraphBuilder(SuffixGraph graph) {
 
 		this.graph = graph;
 		this.candidates = new HashMap<>();		
-		this.duplicates = new HashSet<>();
+		this.nodes = new ArrayDeque<>();
+		
+		stack = new ArrayDeque<>();
+		paths = new HashSet<>();
 	}
 	
 	public void startPath() {
 		
 		depth = 0;
 		node = graph.getRoot();
+		nodes.clear();
+		nodes.push(node);
 		
-		if (duplicates.isEmpty()) {
-			path = new Path();
-		}
-		
-		duplicates.clear();
-		duplicates.addAll(node.getNodePaths());
+		createPath = false;
+		paths.clear();
 		
 		reachables = new BitSet(SuffixNode.getCount());
-		stack = new Stack<>();
-		
-		for(Candidates c:candidates.values()) {
-			c.init();
-		}
+		stack.clear();		
 	}
 	
 	public void finishPath() {
 		
-		if (!duplicates.isEmpty()) {
-			
-			// calculate intersection with all output paths
-			for(Set<Path> set:node.getPaths().values()) {
-				duplicates.removeAll(set);
-			}
-			
-			if(!duplicates.isEmpty()) {
-			
-				// get duplicate path
-				Path duplicate = duplicates.iterator().next();
-				duplicate.increment();
-				
-				// remove path from nodes
-				SuffixNode current = node;
-				while(current != graph.getRoot()) {
-				
-					for (SuffixNode prev:current.getInputNodes()) {
-						if (prev.getEdgePaths(current).remove(path)) {
-							current = prev;
-							break;
-						}
-					}
-				}
+		// update candidates
+		for (SuffixNode node:nodes) {
+			if (node.getDepth() > 1) {
+				updateCandidates(node);
 			}
 		}
+		
+		// try to recycle path
+		if (!createPath) {
+					
+			// remove paths that does not end in the node
+			for (SuffixNode next:node.getOutputNodes()) {
+				paths.removeAll(node.getEdgePaths(next));
+			}
+				
+			// increment path
+			if(!paths.isEmpty()) {
+				paths.iterator().next().increment();
+			}
+			// or create new path
+			else {
+				createPath = true;
+			}
+		}	
+		
+		// create new path
+		if (createPath) {
+			
+			SuffixNode n1, n2 = null;
+			Path path = new Path();
+			
+			while(!nodes.isEmpty()) {
+				
+				// get node
+				n1 = nodes.pop();
+				
+				// add path from n1 to n2
+				if (n2 != null) {
+					n1.addPath(n2, path);
+				}
+				
+				// remember node
+				n2 = n1;
+			}
+		}		
+		
+		
 	}
 	
 	public void addNextNode(Object item) {
@@ -105,7 +134,7 @@ public class GraphBuilder {
 		if (next == null) {
 			
 			// or find node in candidates
-			if (node != graph.getRoot()) {
+			if (depth > 1) {
 				
 				// find a candidate
 				next = findCandidate(item);							
@@ -120,28 +149,40 @@ public class GraphBuilder {
 				// set depth
 				next.setDepth(depth);
 				//System.out.printf("%s, depth %s\n", next, depth);
-				
-				// update candidates
-				if (depth > 1) {
-					updateCandidates(next);
-				}
 			}
 			
 			// create edge
 			node.addEdge(next);
-			duplicates.clear();
+			
+			// we need to create new path
+			createPath = true;
 		}
 		else {
-			// compute intersection with edge paths
-			duplicates.retainAll(node.getEdgePaths(next));
+			// searching for same paths
+			updatePaths(next);
 		}
 		
-		// add path
-		node.addPath(next, path);
+		// remember node
 		node = next;
+			
+		// add to sequence of nodes
+		nodes.push(node);
+	}
+	
+	public void updatePaths(SuffixNode next) {
 		
-		// set reachables
-		//reachables.set(node.getNumber());
+		if (!createPath) {
+			
+			// init
+			if (depth == 1) {
+				paths.addAll(node.getEdgePaths(next));
+				
+			}
+			// calculate intersection
+			else {
+				paths.retainAll(node.getEdgePaths(next));
+			}
+		}	
 	}
 	
 	public boolean isReachable(SuffixNode node2) {
@@ -152,12 +193,7 @@ public class GraphBuilder {
 			return true;
 		}
 		
-		// have same paths
-		Set<Path> paths = node.getNodePaths();
-		paths.retainAll(node2.getNodePaths());
-		
-		if(!paths.isEmpty()) {
-			//System.out.printf("%s, %s same paths %s\n", node, node2, paths);
+		if(node.doSharePath(node2)) {
 			return true;
 		}
 		
@@ -214,7 +250,7 @@ public class GraphBuilder {
 			
 			// found candidate
 			//System.out.printf("%s, %s depth\n", depth, candidate.getDepth());
-			if(depth - candidate.getDepth() >= 0) {
+			if(depth - candidate.getDepth() >= DEPTHDIFF) {
 				//System.out.printf("%s, %s is candiate\n", item, candidate);
 				return candidate;
 			}
@@ -247,10 +283,7 @@ public class GraphBuilder {
 		
 		// queue of available candidates
 		TreeSet<SuffixNode> available;
-		
-		// queue of candidates to add
-		Stack<SuffixNode> waiting;
-		
+	
 		// iterator over candidates
 		Iterator<SuffixNode> iterator;
 		
@@ -262,26 +295,19 @@ public class GraphBuilder {
 		
 		public Candidates() {
 			this.available = new TreeSet<>(DepthComparator.getInstance());
-			this.waiting = new Stack<>();
 			init();
 		}
 
-		public void init() {
-			
-			// add new candidates
-			while(!waiting.isEmpty()) {
-				available.add(waiting.pop());
-			}
-			
-			// get iterator
+		public void init() {		
 			this.iterator = this.available.iterator();
 			this.iterate = true;
 		}
 		
 		public void add(SuffixNode node) {
-			waiting.push(node);
+			this.available.add(node);
+			init();
 		}
-		
+				
 		public boolean hasNext() {
 			return (!iterate) || iterator.hasNext();
 		}

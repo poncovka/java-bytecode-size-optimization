@@ -1,6 +1,6 @@
 package jbyco.pattern.graph;
 
-public class Path {
+public class Path implements Comparable<Path> {
 	
 	int id;
 	int counter;
@@ -18,6 +18,11 @@ public class Path {
 	
 	@Override
 	public String toString() {
-		return Integer.toString(id);
+		return id + "x" + counter;
+	}
+
+	@Override
+	public int compareTo(Path path) {
+		return Integer.compare(id, path.id);
 	}
 }

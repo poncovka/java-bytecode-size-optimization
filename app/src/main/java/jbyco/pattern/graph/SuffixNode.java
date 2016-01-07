@@ -1,5 +1,6 @@
 package jbyco.pattern.graph;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -8,11 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
-public class SuffixNode {
+public class SuffixNode implements Comparable<SuffixNode> {
 	
 	// default set
-	static final Set<Path> emptyset = new LinkedHashSet<>(0);
+	static final Set<Path> EMPTYSET = new LinkedHashSet<>(0);
 	
 	// identifier
 	static int maxid = 0;
@@ -28,10 +30,10 @@ public class SuffixNode {
 	Map<Object, SuffixNode> edges;
 	
 	// list of input nodes
-	List<SuffixNode> in;
+	Set<SuffixNode> in;
 	
 	// set of output nodes
-	List<SuffixNode> out;
+	Set<SuffixNode> out;
 	
 	// depth of node
 	int depth;
@@ -42,9 +44,9 @@ public class SuffixNode {
 		this.item = item;
 		this.depth = -1;
 		
-		paths = new LinkedHashMap<>();
-		in = new Stack<>();
-		out = new Stack<>();
+		paths = new HashMap<>();
+		in = new TreeSet<>();
+		out = new TreeSet<>();
 		edges = new HashMap<>();
 	}
 
@@ -64,11 +66,11 @@ public class SuffixNode {
 		return depth;
 	}
 	
-	public List<SuffixNode> getInputNodes() {
+	public Collection<SuffixNode> getInputNodes() {
 		return in;
 	}
 
-	public List<SuffixNode> getOutputNodes() {
+	public Collection<SuffixNode> getOutputNodes() {
 		return out;
 	}
 	
@@ -83,26 +85,34 @@ public class SuffixNode {
 				
 		// or create new set
 		if(set == null) {
-			set = new LinkedHashSet<>();
+			set = new TreeSet<>();
 			paths.put(node, set);
 		}
 		
 		return set;
 	}
 	
-	public Set<Path> getNodePaths() {
+	public boolean doSharePath(SuffixNode node) {
 		
-		Set<Path> nodePaths = new LinkedHashSet<>();
-		
-		// join all input edge paths
-		for(SuffixNode node:in) {
-			nodePaths.addAll(node.getEdgePaths(this));
+		for(SuffixNode prev : in) {
+			for (Path p: prev.getEdgePaths(this)) {
+				
+				for (SuffixNode prev2 : node.in) {
+					for (Path p2 : prev2.getEdgePaths(node)) {
+						
+						if (p == p2) {
+							return true;
+						}
+					}
+				}
+			}
 		}
-
-		return nodePaths;
+		
+		return false;
 	}
+	
 	public Set<Path> getEdgePaths(SuffixNode node) {
-		return paths.getOrDefault(node, emptyset);
+		return paths.getOrDefault(node, EMPTYSET);
 	}
 	
 	public SuffixNode findNext(Object item) {
@@ -198,6 +208,11 @@ public class SuffixNode {
 	@Override
 	public String toString() {
 		return "(" + id + (item == null ? "" : "," + item.toString()) + ")";
+	}
+
+	@Override
+	public int compareTo(SuffixNode node) {
+		return Integer.compare(id, node.id);
 	}
 
 	

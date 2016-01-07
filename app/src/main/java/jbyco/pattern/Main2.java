@@ -4,29 +4,27 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
-import jbyco.pattern.graph.GraphBuilder;
-import jbyco.pattern.graph.GraphSimplifier;
+import jbyco.pattern.graph.GraphBuilder2;
 import jbyco.pattern.graph.Path;
 import jbyco.pattern.graph.SuffixGraph;
 import jbyco.pattern.graph.SuffixNode;
 
-public class Main {
+public class Main2 {
 	
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
 		
 		// max length of suffix in a graph
 		int max_suffix_length = 30;
 		// maximal number of paths on the edge to wildcard
-		int wildcard_threshold = 100;
+		int wildcard_threshold = 1;
 		// maximal number of printed patterns
 		int pattern_number = 500;
 		// minimal frequency of a pattern
 		int min_frequency = 2;
 		
 		//String[] input = {"aaa", "aba"};
-		//String[] input = {"aa", "ab", "aa"};
-		//String[] input = {"abc", "bac", "aaa"};
-		String[] input = {"axb", "ayb", "azb"};
+		//String[] input = {"abc", "bac"};
+		//String[] input = {"axb", "ayb", "azb"};
 		//String[] input = {"abc", "abc", "bdc"};
 		//String[] input = {"abc", "abc", "bdc", "abadcaaa"};
 		//String[] input = {"abc", "abc", "bdc", "badcaaa"};
@@ -36,7 +34,7 @@ public class Main {
 		// 42 mins 34.943 secs, Out of memory, generate gml, get patterns
 		//
 		
-		//String[] input = {"abcd", "abbbc", "xadbnncd", "xaqbhccd", "alkgbnhgfqncd", "abqqcd", "abcd", "abbbc", "xadbnncd", "abcd", "xaqbhccd", "alkgbnhgfqncd", "abqqcd", };
+		String[] input = {"abcd", "abbbc", "xadbnncd", "xaqbhccd", "alkgbnhgfqncd", "abqqcd", "abcd", "abbbc", "xadbnncd", "abcd", "xaqbhccd", "alkgbnhgfqncd", "abqqcd", };
 		//String[] input = {"abcgd", "abced", "abccd", "xadbeecd", "aabcd"};
 		
 		
@@ -54,10 +52,11 @@ public class Main {
 		
 		
 		SuffixGraph graph = new SuffixGraph();
-		GraphBuilder builder = new GraphBuilder(graph);
+		GraphBuilder2 builder = new GraphBuilder2(graph);
 		
 		System.err.println("BUILD GRAPH");
 		
+		SuffixNode node;
 		int maxPosition;
 		
 		/*
@@ -84,11 +83,8 @@ public class Main {
 			// for every suffix
 			for(int i=0; i < s.length(); i++) {
 				
-				// calculate max position
+				node = graph.getRoot();
 				maxPosition = Integer.min(s.length(), i + max_suffix_length);
-				
-				// start path
-				builder.startPath();
 				
 				// insert every character
 				for(int j=i; j < maxPosition; j++) {
@@ -97,11 +93,8 @@ public class Main {
 					char c = s.charAt(j);
 				
 					// put item to graph
-					builder.addNextNode(c);
+					node = builder.addNextNode(node, c);
 				}
-				
-				// end path
-				builder.finishPath();
 			}
 		}
 		
@@ -118,9 +111,9 @@ public class Main {
 		
 		//graph.print(System.out);
 		
-		PrintWriter out2 = new PrintWriter("../data/simplyfied.gml", "UTF-8");
-		graph.printGml(out2);
-		out2.close();
+		//PrintWriter out2 = new PrintWriter("../data/simplyfied.gml", "UTF-8");
+		//graph.printGml(out2);
+		//out2.close();
 		
 		System.err.println("FIND PATTERNS");
 		
@@ -134,6 +127,7 @@ public class Main {
 		}
 		
 		System.out.printf("paths %s, nodes %d\n", new Path(), new SuffixNode("").getNumber());
+		
 		
 	}
 }

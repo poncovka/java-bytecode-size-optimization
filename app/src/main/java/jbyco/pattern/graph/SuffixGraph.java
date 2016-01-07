@@ -20,7 +20,7 @@ public class SuffixGraph {
 	public SuffixNode getRoot() {
 		return root;
 	}	
-
+	
 	public void print(PrintStream out) {
 		
 		out.printf("%-15s%-30s%-30s\n", "[node]", "[output]", "[paths]");
