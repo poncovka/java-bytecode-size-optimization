@@ -116,6 +116,6 @@ public class PatternsAnalyzer implements Analyzer {
 		// print patterns
 		System.out.println("Patterns:");
 		PatternsPrinter printer = new PatternsPrinter();
-		printer.print(graph, ";");		
+		printer.print(graph, ";", 1);		
 	}
 }

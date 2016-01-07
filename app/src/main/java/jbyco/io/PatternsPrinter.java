@@ -15,48 +15,55 @@ public class PatternsPrinter {
 
 	SuffixGraph graph;
 	String delimiter;
+	int min;
+	
 	Deque<StackItem> stack;
 	
-	public void print(SuffixGraph graph, String delimiter) {
+	public void print(SuffixGraph graph, String delimiter, int min) {
 		
 		// init
-		init(graph, delimiter);
+		init(graph, delimiter, min);
 		
 		// process stack
 		while(!stack.isEmpty()) {
 			
 			// get head
-			StackItem item = stack.getFirst();
-			
-			// if printable, print stack
-			if (isPrintable(item)) {
-				printPattern();
-			}
-			
+			StackItem item = stack.getFirst();			
+			//System.out.println(item.node + " " + item.paths);
+						
 			// get next item
 			StackItem next = null;
 			while (item.hasNext() && (next = item.next()) == null);
-			
-			// push item on stack
+						
 			if (next != null) {
+				
+				// push item on stack
 				stack.push(next);
+				
+				// if printable, print stack
+				if (isPrintable(next)) {
+					printPattern();
+				}
+
 			}
-			// or pop head of stack
 			else {
+				
+				// or pop head of stack
 				stack.pop();
 			}
 		}
 	}
 	
-	private void init(SuffixGraph graph, String delimiter) {
+	private void init(SuffixGraph graph, String delimiter, int min) {
 		
 		this.graph = graph;
 		this.delimiter = delimiter;
+		this.min = min;
 		
 		Node root = this.graph.getRoot();
 		Set<Path> paths = new TreeSet<>();
 		
-		for (Node node:root.getInputNodes()) {
+		for (Node node:root.getOutputNodes()) {
 			paths.addAll(root.getEdgePaths(node));
 		}
 		
@@ -68,8 +75,7 @@ public class PatternsPrinter {
 	private void printPattern() {
 		
 		// print frequency
-		int count = getCount(stack.getFirst().paths);
-		System.out.printf("%-15s", count);
+		System.out.printf("%-15s", stack.getFirst().count);
 		
 		// for all nodes in a stack
 		Iterator<StackItem> iterator = stack.descendingIterator();
@@ -77,25 +83,22 @@ public class PatternsPrinter {
 			
 			// print items in nodes
 			StackItem item = iterator.next();
-			System.out.printf("%s%s", item.node.getItem(), delimiter);
+			
+			if (item.node != graph.getRoot()) {
+				System.out.printf("%s%s", item.node.getItem(), delimiter);
+			}
 		}
 		
 		// new line
 		System.out.println();
 	}
 	
-	private int getCount(Set<Path> paths) {
-		
-		int count = 0;
-		for (Path path:paths) {
-			count += path.getCount();
-		}
-		
-		return count;
-	}
-	
 	private boolean isPrintable(StackItem item) {
-		return !(item.node == graph.getRoot() || item.node.getItem() instanceof WildCard);
+		return !(
+				   item.node == graph.getRoot() 
+				|| item.node.getItem() instanceof WildCard
+				|| item.count < min
+				);
 	}
 	
 	private class StackItem {
@@ -103,11 +106,18 @@ public class PatternsPrinter {
 		public final Node node;
 		public final Set<Path> paths;
 		public final Iterator<Node> iterator;
+		public final int count;
 		
 		public StackItem(Node node, Set<Path> paths) {		
 			this.node = node;
 			this.paths = paths;
 			this.iterator = node.getOutputNodes().iterator();
+			
+			int count = 0;
+			for (Path path:paths) {
+				count += path.getCount();
+			}
+			this.count = count; 
 		}
 		
 		public boolean hasNext() {

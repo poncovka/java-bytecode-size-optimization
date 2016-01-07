@@ -102,7 +102,7 @@ public class Main {
 		
 		System.err.println("FIND PATTERNS");
 		PatternsPrinter printer = new PatternsPrinter();
-		printer.print(graph, "");
+		printer.print(graph, "", 1);
 		
 		System.out.printf("paths %s, nodes %d\n", new Path(), new Node("").getId());
 		

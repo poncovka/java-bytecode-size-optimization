@@ -16,8 +16,8 @@ public class OpcodesLoader implements InstructionsLoader {
 	// max length of instruction sequencies
 	static final int MAXLENGTH = 50;
 	
-	// array with a sequence
-	Queue<String> queue;
+	// queue of node items
+	Queue<Object> queue;
 	
 	// graph
 	SuffixGraph graph;
@@ -29,7 +29,7 @@ public class OpcodesLoader implements InstructionsLoader {
 	int counter;
 	
 	// map of items
-	Map<Short, String> items;
+	Map<Short, NodeItem> items;
 	
 	public OpcodesLoader(SuffixGraph graph) {
 		this.graph = graph;
@@ -43,17 +43,17 @@ public class OpcodesLoader implements InstructionsLoader {
 		queue.clear();
 	}
 	
-	public String getItem(Instruction i) {
+	public Object getItem(Instruction i) {
 		
 		// get opcode
 		short opcode = i.getOpcode();
 		
 		// get item
-		String item = items.get(opcode);
+		NodeItem item = items.get(opcode);
 		
 		// or create one
 		if (item == null) {
-			item = Constants.OPCODE_NAMES[opcode];
+			item = new NodeItem(opcode);
 			items.put(opcode, item);
 		}
 		
@@ -82,7 +82,7 @@ public class OpcodesLoader implements InstructionsLoader {
 		builder.startPath();
 		
 		// add nodes
-		for(String item : queue) {
+		for(Object item : queue) {
 			builder.addNextNode(item);
 		}
 		
@@ -97,5 +97,18 @@ public class OpcodesLoader implements InstructionsLoader {
 			queue.remove();
 		}
 		
+	}
+	
+	class NodeItem {
+		short opcode;
+		
+		public NodeItem(short opcode) {
+			this.opcode = opcode;
+		}
+		
+		@Override
+		public String toString() {
+			return Constants.OPCODE_NAMES[opcode];
+		}
 	}
 }
