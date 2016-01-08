@@ -213,6 +213,8 @@ Přístup ke členským proměnným objektu umožňují instrukce \texttt{getfie
 % invokevirtual/special/static/interface/dynamic
 
 
+
+
 Instrukce \texttt{instanceof} $index$ umožňuje ověřit, zda je objekt daný referencí z vrcholu zásobníku instancí třídy dané dvoubajtovým indexem do tabulky konstant  $index$, případně zda objekt implementuje rozhraní dané tímto indexem. Výsledek ověření je vložen na zásobník v podobě hodnoty typu \texttt{int} ($1$ úspěch, $0$ neúspěch). Obdobně se chová instrukce \texttt{checkcast} $index$, ale v případě úspěchu vloží referenci na objekt zpět na zásobník, v případě neúspěchu vyhodí výjimku \texttt{ClassCastException}.
 
 
