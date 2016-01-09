@@ -181,6 +181,8 @@ Informace o zpracování výjimek jsou dostupné v tabulce výjimek \N{exception
 
 Každá instrukce se skládá z jednobajtového operačního kódu \textit{opcode} a nula a více operandů. Instrukce může dále pracovat s obsahem operačního zásobníku a má přístup do pole lokálních proměnných a tabulky konstant. Pro snazší orientaci je každému operačnímu kódu přiřazen jednoznačný název \textit{mnemonic}. V následujícím textu jsou instukce uvedené ve tvaru: $mnemonic$ $operand_1$ $operand_2$ \dots $operand_n$. Pokud nebude řečeno jinak, pak každý operand má velikost jednoho bajtu.
 
+% zm9nit 6e operandy jsou ulo6en0 v big-endian order, batkód je zarovanný na 1 byte s výjimou switch, počet a velikost operandů určuje operační kód instrukce, zmínit kódování typu pomocí písmenke i,ld, ...
+
 \subsubsection{Konstantní hodnoty}
 
 Konstantní hodnotu lze dle jejího typu, velikosti a hodnoty vložit na zásobník několika způsoby.

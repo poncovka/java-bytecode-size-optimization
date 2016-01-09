@@ -4,6 +4,8 @@
 % Základní charakteristika JVM.
 % Tato kapitola slouží pouze k doplnění kontextu.
 
+Java Virtual Machine (JVM)
+
 \section{Architektura Javy}
 
 % Krátce historie, popis jednotlivých částí Javy: jazyk Java, instrukční soubor class, překladač, JVM, Java API).
@@ -11,13 +13,36 @@
 
 \section{Datové typy}
 
-% Datové typy podporované JVM a jejich reprezentace.
+% zmínit big endian?
+
+Primitivní datové typy a hodnoty podporované JVM jsou znázorněné na diagramu (). Celá čísla jsou reprezentovaná typy \texttt{byte} o délce 8 bitů, \texttt{short} o délce 16 bitů, \texttt{int} o délce 32 bitů nebo \texttt{long} o délce 64 bitů. Pro čísla s plovoucí čárkou jsou definovány typy \texttt{float} o 32 bitech a \texttt{double} o 64 bitech. Typ \texttt{boolean} reprezentuje pravdivostní hodnoty pravda a nepravda. Typ \texttt{returnAddress} reprezentuje ukazatel na instrukci v instrukčním souboru.
+
+Znaky a řetězce jsou v Javě kódované podle standardu Unicode v kódování UTF-16, kde jeden znak je kódovaný jednou nebo dvěmi kódovými jednotkami. Kódovou jednotku reprezentuje typ \texttt{char}. Jedná se o 16-bitové nezáporné číslo. Řetězec je pak reprezentovaný pomocí pole hodnot typu \texttt{char}. V instrukčním souboru jsou řetězcové konstanty kódované v modifikovaném kódování UTF-8. 
+
+Typ \texttt{reference} označuje referenční datový typ. Typ reprezentuje referenci na dynamicky vytvořený objekt. Podle toho, zda objekt je instancí třídy, pole nebo instancí třídy či pole, které implementují nějaké rozhraní, rozlišujeme typ reference. Hodnotou typu \texttt{reference} může být též speciální hodnota \texttt{null}, která reprezentuje referenci na žádný objekt. S objekty lze manipulovat výhradně skrze reference.
+
+
+% TODO vylepšit, doplnit reference
+\input{fig/types}
+
+
+Instrukční sada JVM je omezená a nenabízí u všech instrukcí podporu pro všechny datové typy. Celá čísla jsou primárně reprezentovaná datovými typy \texttt{int} a \texttt{long} a případně přetypovaná na jeden z typů \texttt{byte}, \texttt{short} či \texttt{char}. Pro datový typ \texttt{boolean} existuje jen podpora pro přetypování a pro vytvoření pole hodnot typu \texttt{boolean}. Pro výpočet logických výrazů se používá typ \texttt{int} s hodnotami 0 a 1.
+
 
 \section{Paměťové oblasti}
 
 % Popis paměťových oblastí JVM (zásobník, halda, constant pool, rámce, lokální proměnné, zásobník operandů)
 % Co JVM dělá při volání metody a návratu?
 % Co JVM dělá, když je vyvolaná výjimka?
+
+% Některé oblasti se vytvářejí pro každé vlákno spuštěného programu a jsou zničeny spolu s ukončením běhu vlákna.
+% field asi není členská proměnná...atribut?
+% hodit odkaz na herouta jako na zdroj českých ekvivalentů
+
+JVM pracuje s několika typy paměťových oblastí. Velikosti těchto oblastí mohou být pevně dané, nebo se mohou měnit dynamicky podle potřeby. Při spuštění JVM vzniká halda a oblast metod. Halda je paměť určená pro alokaci instancí tříd a polí. Alokovanou paměť nelze dealokovat explicitně. Haldu automaticky spravuje tzv. \textit{garbage collector}. Oblast metod slouží k ukládání kompilovaného kódu. Pro každou načtenou třídu se do této paměti ukládají struktury definující tuto třídu. Jednou z těchto struktur je tzv. \textit{run-time constant pool}. Jedná se o tabulku konstant z \texttt{class} souboru, kde jsou symbolické reference na třídy, metody a členské proměnné nahrazeny konkrétními referencemi. Více se o tabulce konstant zmiňuje kapitola (). Každá aplikace je spuštěna v samostaném vlákně a při běhu mohou vznikat a zanikat i další vlákna. Všechna taková vlákna sdílí přístup k haldě a oblasti metod. Navíc má každé vlákno k dispozici vlastní \texttt{pc} register a zásobník rámců. V \texttt{pc} registru je ucháván ukazatel na aktuálně vykonávanou instrukci, není-li aktuálně vykonávaná metoda nativní. Zásobník rámců uchovává data zavolaných metod. Při každém volání metody je vytvořen nový rámec. Rámec má vlastní pole lokálních proměnných a operační zásobník. V poli lokálních proměnných se uchovávají hodnoty parametrů a lokálních proměnných. Hodnoty lze vkládat na operační zásobník, provádět nad nimi výpočty a ukládat zpět do pole lokálních proměnných. Operační zásobník slouží k předávání operandů instrukcím a k uchovávání mezivýsledků. Podílí se také na předávání parametrů a návratových hodnot.
+
+Před voláním metody je třeba neprve vložit parametry na operační zásobník aktuálního rámce. Zavoláním metody se vytvoří nový rámec a umístí se na vrchol zásobníku rámců. Parametry se následně přesunou z operačního zásobníku předchozího rámce do pole lokálních proměnných nového rámce. Registr \texttt{pc} se nastaví na první instrukci volané metody a začnou se vykonávat jednotlivé instrukce. Při návratu z metody je návratová hodnota umístěna na vrcholu operačního zásobníku, vrací-li metoda nějakou hodnotu. Tato hodnota je přesunuta na operační zásobník předcházejícího rámce a aktuální rámec je ze zásobníku rámců odstraněn. Dojde k obnovení stavu volající metody. Registr \texttt{pc} je nastaven na index instrukce, která bezprostředně následuje za instrukcí volajícící metodu. Pokud je metoda ukončena vyvoláním nezachycené výjimky, pak k předání hodnoty nedochází. Aktuální rámec je odstraněn a výjimka je znovu vyvolaná ve volající metodě. Zpracování výjimek je více vysvětleno v kapitole ().
+
 
 \section{Verifikace instrukčního souboru}
 
