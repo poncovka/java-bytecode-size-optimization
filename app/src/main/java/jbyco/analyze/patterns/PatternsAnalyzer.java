@@ -33,7 +33,7 @@ public class PatternsAnalyzer implements Analyzer {
 	
 	public PatternsAnalyzer() {
 		graph = new SuffixGraph();
-		loader = new OpcodesLoader(graph);
+		loader = new InstructionsLoader(graph);
 	}
 	
 	@Override
@@ -74,7 +74,7 @@ public class PatternsAnalyzer implements Analyzer {
 				
 				try {				
 					// init loader
-					loader.init();
+					loader.init(klass.getConstantPool());
 					
 					// read bytecode
 					ByteSequence seq = new ByteSequence(code.getCode());
@@ -106,7 +106,7 @@ public class PatternsAnalyzer implements Analyzer {
 	public void print() {
 		
 		// print graph
-		//System.out.println("Graph:");
+		System.out.println("Graph:");
 		//graph.print(System.out);
 		
 		System.out.println();
