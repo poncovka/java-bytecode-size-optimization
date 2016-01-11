@@ -2,22 +2,17 @@
 \chapter{Formát instrukčního souboru}
 
 % TODO
-% * dopsat info u položek
-% * definovat byte
-% * nastudovat instrukce
-% * ověřit velikosti "sdílených" nonterminálů !!!
+% 4lensk0 prom2nn0
 
-Při kompilaci \texttt{java} souboru překladač pro každou definovanou třídu a rozhraní vytvoří jeden soubor s příponou \texttt{.class} (dále \texttt{class} soubor). Tento soubor obsahuje binární reprezentaci kompilovaného mezikódu, který lze interpretovat prostřednictvím JVM. V této kapitole popisuji formát \texttt{class} souboru dle specifikace ve verzi Java SE 8 Edition(X).
+Při kompilaci \texttt{java} souboru překladač pro každou definovanou třídu a rozhraní vytvoří jeden \texttt{class} soubor. Tento soubor obsahuje binární reprezentaci kompilovaného mezikódu, který lze interpretovat prostřednictvím JVM.  V této kapitole popisuji formát \texttt{class} souboru dle specifikace ve verzi Java SE 8 Edition(X).
 
-Pro popis formátu jsem zvolila rozšířenou Backus-Naurovu formu (?), která umožňuje zapsat syntaxi formálního jazyka pomocí pravidel a terminálních a nonterminálních symbolů. Nonterminální symboly jsou definovány pomocí definujícího symbolu \texttt{:=}, symbolu pro konkatenaci \texttt{,}, symbolu pro alternaci \texttt{$\mathtt{|}$}, symbolů pro nula a více opakování \texttt{\{\}}, ukončujícího symbolu \texttt{;} a pomocí graficky odlišených \T{terminálních} a \N{nonterminálních} symbolů.
+Pro popis formátu jsem zvolila rozšířenou Backus-Naurovu formu (?), která umožňuje zapsat syntaxi formálního jazyka pomocí pravidel a terminálních a nonterminálních symbolů. Nonterminální symboly jsou definovány pomocí definujícího symbolu \texttt{:=}, symbolu pro konkatenaci \texttt{,}, symbolu pro alternaci \texttt{$\mathtt{|}$}, symbolů pro nula a více opakování \texttt{\{\}}, ukončujícího symbolu \texttt{;} a pomocí graficky odlišených \T{terminálních} a \N{nonterminálních} symbolů. Symboly popisují jednotlivé struktury, ze kterých se \texttt{class} soubor skládá.
 
 \section{Základní struktura}
 
-% Jaká je základní struktura class souboru?
+Položky \texttt{class} souboru tvoří posloupnost osmibitových bajtů. Základní stavební jednotkou je tedy bajt, který je v pravidlech reprezentovaný symbolem \N{B}. Symbol $\langle n \rangle$\N{B}, kde $\langle n \rangle \in \{2,3,\dots\}$, reprezentuje $n$ bajtů. Terminály jsou hexadecimální reprezentací posloupnosti bajtů s prefixem \texttt{0x}. Vícebajtové datové hodnoty jsou uloženy v pořadí big-endian.
 
-Položky \texttt{class} souboru tvoří posloupnost osmibitových bajtů. Základní stavební jednotkou je tedy bajt, který je v pravidlech reprezentovaný symbolem \N{B}. Symbol $\langle n \rangle$\N{B}, kde $\langle n \rangle \in \{2,3,\dots\}$, reprezentuje $n$ bajtů. Terminály jsou hexadecimální reprezentací posloupnosti bajtů s prefixem \texttt{0x}. 
-
-Základní struktura souboru je popsaná pravidlem pro symbol \N{classfile}. Soubor obsahuje informace o jeho typu a verzi (\N{version}), disponuje tabulkou všech konstant, které se v souboru vyskytují (\N{constants}), nese informace o třídě, kterou reprezentuje, případně rozhraní (\N{class}), obsahuje seznam rozhraní, které reprezentovaná třída implementuje, případně rozhraní rozšiřuje  (\N{interface\_list}), seznam členských proměnných třídy (\N{field\_list}), seznam metod (\N{method\_list}) a seznam atributů (\N{attribute\_list}). 
+Základní struktura souboru je popsaná symbolem \N{classfile}. Soubor obsahuje informace o svém typu a verzi (\N{version}), disponuje tabulkou všech konstant, které se v souboru vyskytují (\N{constants}), nese informace o třídě (\N{class}), kterou reprezentuje, případně rozhraní, obsahuje seznam rozhraní (\N{interface\_list}), které reprezentovaná třída implementuje, případně rozhraní rozšiřuje, seznam členských proměnných třídy (\N{field\_list}), seznam metod (\N{method\_list}) a seznam atributů (\N{attribute\_list}). 
 
 \begin{figure}[h!]
   \begin{tabular}{r c l}
@@ -37,11 +32,6 @@ Typ souboru je definován prvními čtyřmi bajty, které jsou popsané symbolem
 \end{figure}
 
 \section{Konstanty}
-
-% Popis struktury constant\_pool. Jakým způsobem jsou ukládané konstanty? Jak jsou reprezentované různé typy?
-% Jednotlivé typy konstant lze nejspíš popsat jen slovně.
-% TODO
-% * zmínit run-time constant pool, kdy se symbolické reference nahrazují konkrétními referencemi
 
 Tabulka konstant obsahuje některé číselné konstanty, všechny řetězce a symbolické informace o všech třídách, rozhraních, metodách a členských proměnných, které se v souboru, instrukcích i atributech vyskytují. Tato tabulka se nazývá \textit{constant pool} a slouží v podstatě jako databáze dat, do které se pomocí indexů odkazují další položky souboru. 
 
@@ -77,7 +67,7 @@ Každá položka tabulky je tvořena označením typu a posloupností bajtů s i
 Symbol \N{constant\_utf8} reprezentuje řetězec v upraveném kódování \texttt{UTF-8} a skládá se z typu, délky pole bajtů a pole bajtů nesoucích reprezentaci řetězce. Znaky řetězce mohou být vhledem ke kódování tvořeny různými počty bajtů. 
 Symbol \N{constant\_string} je reprezentací řetězcové konstanty a kromě typu obsahuje index do tabulky konstant na položku \N{constant\_utf8}. 
 Třídy a rozhraní jsou reprezentované položkami \N{constant\_class} s odkazy na jejich název (\N{constant\_utf8}). 
-Entity jako členské proměnné, metody třídy a metody rozhraní jsou reprezentované položkami \N{constant\_fieldref}, \N{constant\_methodref} a \N{constant\_interfaceMethodref} obsahujícími odkaz na třídu, případně rozhraní, dané entity (\N{constant\_class}), a odkaz na položku se jménem a typem této entity (\N{constant\_nameAndType}). 
+Entity jako členské proměnné (i statické), metody třídy a metody rozhraní jsou reprezentované položkami \N{constant\_fieldref}, \N{constant\_methodref} a \N{constant\_interfaceMethodref} obsahujícími odkaz na třídu, případně rozhraní, dané entity (\N{constant\_class}), a odkaz na položku se jménem a typem této entity (\N{constant\_nameAndType}). 
 Jméno a typ v položce \N{constant\_nameAndType} jsou odkazy na řetězce (\N{constant\_utf8}). 
 Položky \N{constant\_methodHandle}, \N{constant\_methodType} a \N{constant\_invokeDynamic} souvisí s podporou dynamických jazyků.
 

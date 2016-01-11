@@ -1,23 +1,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Java Virtual Machine}
 
-% Základní charakteristika JVM.
-% Tato kapitola slouží pouze k doplnění kontextu.
-
-
 % field asi není členská proměnná...atribut?
 % hodit odkaz na herouta jako na zdroj českých ekvivalentů
 
-Java Virtual Machine (JVM)
+Architektura Javy se skládá z programovacího jazyka Java, formátu instrukčního souboru, aplikačního programového rozhraní Java Application Programming Interface (Java API) a virtuálního stroje Java Virtual Machine (JVM) (). Pro psaní zdrojových kódů a jejich spouštění je zapotřebí všech těchto částí.
+Zdrojový kód zapsaný v programovacím jazyce Java je uložený v souboru s příponou \texttt{.java} (dále \texttt{java} soubor). Tento kód je při kompilaci převeden na mezikód, tzv. bajtkód, a uložen v souborech s příponou \texttt{.class} (dále \texttt{class} soubory). Bajtkód lze spustit pomocí virtuálního stroje, který má přístup k Java API. O tomto stroji lze hovořit z hlediska abstraktní specifikace nebo konkrétní implementace (). Konkrétní implementace je závislá na daném systému a hardwaru, ale jednotná interpretace \texttt{class} souborů napříč platformami je zajištěna dodržením specifikace a platformově nezávislým formátem \texttt{class} souborů. Vzhledem k zaměření práce se v této kapitole zabývám abstraktní specifikací JVM dle dokumentu (). 
 
-\section{Architektura Javy}
 
+%\section{Architektura Javy}
 % Krátce historie, popis jednotlivých částí Javy: jazyk Java, instrukční soubor class, překladač, JVM, Java API).
 % Uvedena verze Javy, ze které jsem vycházela. Kapitola slouží pouze k doplnění kontextu.
 
-
-
-\section{Datové typy}
+\section{Datové typy a hodnoty}
 
 % zmínit big endian?
 
