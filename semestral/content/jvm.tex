@@ -1,20 +1,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Java Virtual Machine}
 
-% field asi není členská proměnná...atribut?
-% hodit odkaz na herouta jako na zdroj českých ekvivalentů
-
 Architektura Javy se skládá z programovacího jazyka Java, formátu instrukčního souboru, aplikačního programového rozhraní Java Application Programming Interface (Java API) a virtuálního stroje Java Virtual Machine (JVM) (). Pro psaní zdrojových kódů a jejich spouštění je zapotřebí všech těchto částí.
 Zdrojový kód zapsaný v programovacím jazyce Java je uložený v souboru s příponou \texttt{.java} (dále \texttt{java} soubor). Tento kód je při kompilaci převeden na mezikód, tzv. bajtkód, a uložen v souborech s příponou \texttt{.class} (dále \texttt{class} soubory). Bajtkód lze spustit pomocí virtuálního stroje, který má přístup k Java API. O tomto stroji lze hovořit z hlediska abstraktní specifikace nebo konkrétní implementace (). Konkrétní implementace je závislá na daném systému a hardwaru, ale jednotná interpretace \texttt{class} souborů napříč platformami je zajištěna dodržením specifikace a platformově nezávislým formátem \texttt{class} souborů. Vzhledem k zaměření práce se v této kapitole zabývám abstraktní specifikací JVM dle dokumentu (). 
 
-
-%\section{Architektura Javy}
-% Krátce historie, popis jednotlivých částí Javy: jazyk Java, instrukční soubor class, překladač, JVM, Java API).
-% Uvedena verze Javy, ze které jsem vycházela. Kapitola slouží pouze k doplnění kontextu.
-
 \section{Datové typy a hodnoty}
-
-% zmínit big endian?
 
 Primitivní datové typy a hodnoty podporované JVM jsou znázorněné na diagramu (). Celá čísla jsou reprezentovaná typy \texttt{byte} o délce 8 bitů, \texttt{short} o délce 16 bitů, \texttt{int} o délce 32 bitů nebo \texttt{long} o délce 64 bitů. Pro čísla s plovoucí čárkou jsou definovány typy \texttt{float} o 32 bitech a \texttt{double} o 64 bitech. Typ \texttt{boolean} reprezentuje pravdivostní hodnoty pravda a nepravda. Typ \texttt{returnAddress} reprezentuje ukazatel na instrukci v instrukčním souboru.
 
@@ -23,7 +13,7 @@ Znaky a řetězce jsou v Javě kódované podle standardu Unicode v kódování 
 Typ \texttt{reference} označuje referenční datový typ. Typ reprezentuje referenci na dynamicky vytvořený objekt. Podle toho, zda objekt je instancí třídy, pole nebo instancí třídy či pole, které implementují nějaké rozhraní, rozlišujeme typ reference. Hodnotou typu \texttt{reference} může být též speciální hodnota \texttt{null}, která reprezentuje referenci na žádný objekt. S objekty lze manipulovat výhradně skrze reference.
 
 
-% TODO vylepšit, doplnit reference
+% TODO vylepšit, ošklivé
 \input{fig/types}
 
 
