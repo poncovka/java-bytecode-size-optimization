@@ -1,17 +1,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Formát instrukčního souboru}
+\chapter{Formát instrukčního souboru}\label{Format}
 
 % doplnit příklady
 
-Při kompilaci \texttt{java} souboru překladač pro každou definovanou třídu a rozhraní vytvoří jeden \texttt{class} soubor. Tento soubor obsahuje binární reprezentaci kompilovaného mezikódu, který lze interpretovat prostřednictvím JVM.  V této kapitole popisuji formát \texttt{class} souboru dle specifikace ve verzi Java SE 8 Edition(X).
+Při kompilaci \texttt{java} souboru překladač pro každou definovanou třídu a rozhraní vytvoří jeden \texttt{class} soubor. Tento soubor obsahuje binární reprezentaci kompilovaného mezikódu, který lze interpretovat prostřednictvím JVM.  V této kapitole popisuji formát \texttt{class} souboru dle specifikace ve verzi Java SE 8 Edition \cite{Lindholm:JVM}.
 
-Pro popis formátu jsem zvolila rozšířenou Backus-Naurovu formu (?), která umožňuje zapsat syntaxi formálního jazyka pomocí pravidel a terminálních a nonterminálních symbolů. Nonterminální symboly jsou definovány pomocí definujícího symbolu \texttt{:=}, symbolu pro konkatenaci \texttt{,}, symbolu pro alternaci \texttt{$\mathtt{|}$}, symbolů pro nula a více opakování \texttt{\{\}}, ukončujícího symbolu \texttt{;} a pomocí graficky odlišených \T{terminálních} a \N{nonterminálních} symbolů. Symboly popisují jednotlivé struktury, ze kterých se \texttt{class} soubor skládá.
+Pro popis formátu jsem zvolila rozšířenou Backus-Naurovu formu, která umožňuje zapsat syntaxi formálního jazyka pomocí pravidel a terminálních a nonterminálních symbolů. Nonterminální symboly jsou definovány pomocí definujícího symbolu \texttt{:=}, symbolu pro konkatenaci \texttt{,}, symbolu pro alternaci \texttt{$\mathtt{|}$}, symbolů pro nula a více opakování \texttt{\{\}}, ukončujícího symbolu \texttt{;} a pomocí graficky odlišených \T{terminálních} a \N{nonterminálních} symbolů. Symboly popisují jednotlivé struktury, ze kterých se \texttt{class} soubor skládá.
 
-\section{Základní struktura}
+\section{Základní struktura}\label{FormatBasic}
 
-Položky \texttt{class} souboru tvoří posloupnost osmibitových bajtů. Základní stavební jednotkou je tedy bajt, který je v pravidlech reprezentovaný symbolem \N{B}. Symbol $\langle n \rangle$\N{B}, kde $\langle n \rangle \in \{2,3,\dots\}$, reprezentuje $n$ bajtů. Terminály jsou hexadecimální reprezentací posloupnosti bajtů s prefixem \texttt{0x}. Vícebajtové datové hodnoty jsou uloženy v pořadí big-endian.
+Položky \texttt{class} souboru tvoří posloupnost osmibitových bajtů. Základní stavební jednotkou je tedy bajt, který je v pravidlech reprezentovaný symbolem \N{B}. Symbol $\langle n \rangle$\N{B}, kde $\langle n \rangle \in \{2,3,\dots\}$, reprezentuje $n$ bajtů. Terminály začínají prefixem \texttt{0x} a jsou hexadecimální reprezentací posloupnosti bajtů. 
 
-Základní struktura souboru je popsaná symbolem \N{classfile}. Soubor obsahuje informace o svém typu a verzi (\N{version}), disponuje tabulkou všech konstant, které se v souboru vyskytují (\N{constants}), nese informace o třídě (\N{class}), kterou reprezentuje, případně rozhraní, obsahuje seznam rozhraní (\N{interface\_list}), které reprezentovaná třída implementuje, případně rozhraní rozšiřuje, seznam členských proměnných třídy (\N{field\_list}), seznam metod (\N{method\_list}) a seznam atributů (\N{attribute\_list}). 
+Základní struktura souboru je popsaná symbolem \N{classfile}. Soubor obsahuje informace o svém typu a verzi (\N{version}), disponuje tabulkou všech konstant, které se v souboru vyskytují (\N{constants}), nese informace o třídě či rozhraní (\N{class}), které reprezentuje, obsahuje seznam rozhraní (\N{interface\_list}), které reprezentovaná třída implementuje, případně rozhraní rozšiřuje, seznam členských proměnných (\N{field\_list}), seznam metod (\N{method\_list}) a seznam atributů (\N{attribute\_list}). 
 
 \begin{figure}[h!]
   \begin{tabular}{r c l}
@@ -30,11 +30,11 @@ Typ souboru je definován prvními čtyřmi bajty, které jsou popsané symbolem
   \end{tabular}
 \end{figure}
 
-\section{Konstanty}
+\section{Konstanty}\label{FormatConstants}
 
-Tabulka konstant obsahuje některé číselné konstanty, všechny řetězce a symbolické informace o všech třídách, rozhraních, metodách a členských proměnných, které se v souboru, instrukcích i atributech vyskytují. Tato tabulka se nazývá \textit{constant pool} a slouží v podstatě jako databáze dat, do které se pomocí indexů odkazují další položky souboru. Odkazem do tabulky konstant je tedy dále myšlen platný index do tabulky konstant adresující položku očekávaného typu.
+Tabulka konstant obsahuje některé číselné konstanty, všechny řetězce a symbolické informace o všech třídách, rozhraních, metodách a členských proměnných, které se v souboru, instrukcích i atributech vyskytují. Tato tabulka se nazývá \textit{constant pool} a slouží v podstatě jako databáze dat, do které se pomocí indexů odkazují další položky souboru. Odkazem do tabulky konstant je tedy v dalším textu myšlen platný index do tabulky konstant adresující položku očekávaného typu.
 
-Struktura tabulky konstant je popsána pravidlem pro \N{constants}. Symbol \N{constant\_pool\_count} reprezentuje hodnotu $1 + n$, kde $n$ je počet položek v tabulce konstant. Položky tabulky jsou indexované od jedné. Nultý index je vyhrazen pro odkaz na žádnou z položek. Samotná tabulka je reprezentovaná symbolem \N{constant\_pool}.
+Struktura tabulky konstant je popsána pravidlem pro \N{constants}. Symbol \N{constant\_pool\_count} reprezentuje hodnotu $1 + n$, kde $n$ je počet položek v tabulce konstant. Položky tabulky jsou indexované od jedné, neboť nultý index je vyhrazen pro odkaz na žádnou z položek. Samotná tabulka je reprezentovaná symbolem \N{constant\_pool}.
 
 \begin{figure} [h!]
 
@@ -71,10 +71,10 @@ Jméno a typ v položce \N{constant\_nameAndType} jsou odkazy na řetězce (\N{c
 Položky \N{constant\_methodHandle}, \N{constant\_methodType} a \N{constant\_invokeDynamic} souvisí s podporou dynamických jazyků.
 
 
-Názvy tříd a rozhraní jsou interně uváděné v úplném tvaru, ale z historických důvodů se tečky nahrazují lomítky. Například, třída \texttt{Object} má úplný název \texttt{java.lang.Object} a interní název \texttt{java/lang/Object}. Typ proměnné nebo metody je specifikován řetězcem. Základní datové typy jsou reprezentované písmeny \texttt{B} pro \texttt{byte}, \texttt{C} pro \texttt{char}, \texttt{D} pro \texttt{double}, \texttt{F} pro \texttt{float}, \texttt{I} pro \texttt{int}, \texttt{J} pro \texttt{long}, \texttt{S} pro \texttt{short}, \texttt{Z} pro \texttt{boolean}. Typ reference na objekt je reprezentovaný řetězcem \texttt{L}$ClassName$\texttt{;}, kde $ClassName$ je interní název třídy nebo rozhraní. Typ reference na jednorozměrné pole je reprezentovaný řetězcem \texttt{[}$ComponentType$, kde $ComponentType$ je řetězec reprezentující základní datový typ, referenci na objekt nebo referenci na pole. Pomocí zanoření referencí na pole lze definovat referenci na vícerozměrné pole. Například, řetězec \texttt{Ljava/lang/Object;} označuje referenci na objekt typu \texttt{Object} a \texttt{[[[I} označuje referenci na trojrozměrné pole typu \texttt{int}. Typ metody je reprezentován řetězcem, který se skládá z výčtu typů formálních parametrů metody a typu její návratové hodnoty. Tedy například, typ metody s hlavičkou \texttt{int method(boolean b, Object o)} bude specifikovaný řetětězcem \texttt{(BLjava/lang/Object;)I}. Nemá-li metoda žádné parametry či nevrací žádnou hodnotu, pak je odpovídající chybějící typ nahrazen písmenem \texttt{V}.
+Názvy tříd a rozhraní jsou interně uváděné v úplném tvaru, ale z historických důvodů se tečky nahrazují lomítky. Například, třída \texttt{Object} má úplný název \texttt{java.lang.Object} a interní název \texttt{java/lang/Object}. Typ proměnné nebo metody je specifikován řetězcem. Základní datové typy jsou reprezentované písmeny \texttt{B} pro \texttt{byte}, \texttt{C} pro \texttt{char}, \texttt{D} pro \texttt{double}, \texttt{F} pro \texttt{float}, \texttt{I} pro \texttt{int}, \texttt{J} pro \texttt{long}, \texttt{S} pro \texttt{short}, \texttt{Z} pro \texttt{boolean}. Typ reference na objekt je reprezentovaný řetězcem \texttt{L}$ClassName$\texttt{;}, kde $ClassName$ je interní název třídy nebo rozhraní. Typ reference na jednorozměrné pole je reprezentovaný řetězcem \texttt{[}$ComponentType$, kde $ComponentType$ je řetězec reprezentující základní datový typ, referenci na objekt nebo referenci na pole. Pomocí zanoření referencí na pole lze definovat referenci na vícerozměrné pole. Například, řetězec \texttt{Ljava/lang/Object;} označuje referenci na objekt typu \texttt{Object} a \texttt{[[[I} označuje referenci na trojrozměrné pole typu \texttt{int}. Typ metody je reprezentován řetězcem, který se skládá z výčtu typů formálních parametrů metody a typu její návratové hodnoty. Tedy například, typ metody s hlavičkou \texttt{int method(boolean b, Object o)} bude specifikovaný řetězcem \texttt{(BLjava/lang/Object;)I}. Nemá-li metoda žádné parametry či nevrací žádnou hodnotu, pak je chybějící typ nahrazen písmenem \texttt{V}.
 
 
-\section{Třída}
+\section{Třída}\label{FormatClass}
 
 Každý \texttt{class} soubor reprezentuje jednu třídu nebo rozhraní. Informace o reprezentované entitě jsou definované symbolem \N{class}. Položka \N{this\_class} je odkazem na tuto entitu v tabulce konstant, \N{super\_class} je odkaz na nadřazenou třídu a \N{access\_flags} je bitové pole příznaků pro přístup k této entitě.
 
@@ -99,9 +99,9 @@ Seznam rozhraní, které reprezentovaná třída implementuje, případně repre
   \end{tabular}
 \end{figure}
 
-\section{Členské proměnné}
+\section{Členské proměnné}\label{FormatFields}
 
-Členské proměnné (proměnné třídy i proměnné instance) jsou definované v poli členských proměnných \N{fields} o \N{fields\_count} prvcích. Každá proměnná má pole příznaků dané symbolem \N{access\_flags}, jméno dané symbolem \N{name\_ref}, typ daný symbolem \N{descriptor\_ref} a seznam atributů daný symbolem \N{attribute\_list}. Jméno a typ jsou reprezentované odkazem do tabulky konstant na položku \N{utf8\_ref}. Atributům se věnuje kapitola (?).
+Členské proměnné (proměnné třídy i proměnné instance) jsou definované v poli členských proměnných \N{fields} o \N{fields\_count} prvcích. Každá proměnná má pole příznaků dané symbolem \N{access\_flags}, jméno dané symbolem \N{name\_ref}, typ daný symbolem \N{descriptor\_ref} a seznam atributů daný symbolem \N{attribute\_list}. Jméno a typ jsou reprezentované odkazem do tabulky konstant na položku \N{utf8\_ref}. Atributům se věnuje kapitola \ref{FormatAttributes}.
 
 \begin{figure} [h!]
   \begin{tabular}{r c l}
@@ -115,7 +115,7 @@ Seznam rozhraní, které reprezentovaná třída implementuje, případně repre
   \end{tabular}
 \end{figure}
 
-\section{Metody}
+\section{Metody}\label{FormatMethod}
 
 Metody reprezentované třídy či rozhraní jsou definované v poli metod \N{methods} o \N{methods\_count} prvcích. Stejně jako u členských proměnných jsou metody popsané bitovým polem příznaků, jménem, typem a seznamem atributů.
 
@@ -129,7 +129,7 @@ Metody reprezentované třídy či rozhraní jsou definované v poli metod \N{me
 \end{figure}
 
 Pokud metoda není abstraktní, pak jedním z jejích atributů je \texttt{Code} s kódem metody.
-Tento atribut je definován symbolem \N{code\_attribute}. Položka \N{name\_ref} je odkazem do tabulky konstant na řetězec "Code". Položka \N{attribute\_length} určuje délku atributu v bajtech bez prvních šesti bajtů. Dále položky \N{max\_stack} a \N{max\_locals} označují maximální hloubku operačního zásobníku přepočtenou na jednotku hloubky (?) a maximální počet lokálních proměnných včetně parametrů. Kód metody je reprezentovaným polem bajtů \N{code} o délce \N{code\_length}. Symbol \N{attribute\_list} je seznamem atributů.
+Tento atribut je definován symbolem \N{code\_attribute}. Položka \N{name\_ref} je odkazem do tabulky konstant na řetězec "Code". Položka \N{attribute\_length} určuje délku atributu v bajtech bez prvních šesti bajtů. Dále položky \N{max\_stack} a \N{max\_locals} označují maximální hloubku operačního zásobníku přepočtenou na jednotku hloubky a maximální počet lokálních proměnných včetně parametrů. Kód metody je reprezentovaným polem bajtů \N{code} o délce \N{code\_length}. Symbol \N{attribute\_list} je seznamem atributů.
 
 \begin{figure} [h!]
   \begin{tabular}{r c l}
@@ -143,7 +143,7 @@ Tento atribut je definován symbolem \N{code\_attribute}. Položka \N{name\_ref}
   \end{tabular}
 \end{figure}
 
-Informace o zpracování výjimek jsou dostupné v tabulce výjimek \N{exception\_table} o délce \N{exception\_table\_length}. Každá položka tabulky obsahuje dva indexy \N{start\_pc} a \N{end\_pc} do pole \N{code}, které společně definují blok instrukcí, pro které je odchycení dané výjimky aktivní. Dále index \N{handler\_pc} do pole \N{code} odkazující na začátek bloku pro zpracování výjimky. A nakonec index \N{catch\_type} do tabulky konstant na položku \N{constant\_class} reprezentující typ odchycené výjimky. Jestliže je tento index nulový, pak jsou odchytávány všechny výjimky. Na pořadí položek v tabulce výjimek se nevztahují žádná omezení, neboť při odchytávání výjimky se postupuje od nejniternějšího bloku.
+Informace o zpracování výjimek jsou dostupné v tabulce výjimek \N{exception\_table} o délce \N{exception\_table\_length}. Každá položka tabulky obsahuje dva indexy \N{start\_pc} a \N{end\_pc} do pole \N{code}, jež společně definují blok instrukcí, pro který je odchycení dané výjimky aktivní. Dále obsahuje index \N{handler\_pc} do pole \N{code} odkazující na začátek bloku pro zpracování výjimky a nakonec index \N{catch\_type} do tabulky konstant na položku \N{constant\_class} reprezentující typ odchycené výjimky. Jestliže je tento index nulový, pak jsou odchytávány všechny výjimky. Na pořadí položek v tabulce výjimek se nevztahují žádná omezení, neboť při odchytávání výjimky se postupuje od nejniternějšího bloku.
 
 \begin{figure} [h!]
   \begin{tabular}{r c l}
@@ -158,23 +158,48 @@ Informace o zpracování výjimek jsou dostupné v tabulce výjimek \N{exception
   \end{tabular}
 \end{figure}
 
-\section{Instrukce}
+\pagebreak
+\section{Atributy}\label{FormatAttributes}
 
-Každá instrukce se skládá z jednobajtového operačního kódu \textit{opcode} a nula a více operandů. Instrukce může dále pracovat s obsahem operačního zásobníku a má přístup do pole lokálních proměnných a tabulky konstant. Pro snazší orientaci je každému operačnímu kódu přiřazen jednoznačný název \textit{mnemonic}. Součástí \textit{mnemonic} může být označení datového typu, s jehož hodnotami instrukce pracuje. Typ je specifikován písmeny \texttt{i} pro \texttt{int}, \texttt{l} pro \texttt{long}, \texttt{s} pro \texttt{short}, \texttt{b} pro \texttt{byte}, \texttt{c} pro \texttt{char}, \texttt{f} pro \texttt{float}, \texttt{d} pro \texttt{double} a \texttt{a} pro \texttt{reference}. V následujícím textu jsou instukce uvedené ve tvaru: $mnemonic$ $operand_1$ $operand_2$ \dots $operand_n$. Pokud nebude řečeno jinak, pak každý operand má velikost jednoho bajtu.
+Reprezentovaná třída, případně rozhraní, metody, členské proměnné a i některé atributy mají definovaný seznam atributů. Seznam se skládá z tabulky atributů \N{attributes} o \N{attributes\_count} položkách. Typ atributu je daný odkazem \N{name\_ref} na název atributu, délka atributu bez prvních šesti bajtů je daná hodnotou \N{attribute\_length}. Další informace, které atribut nese v položce \N{info}, se liší podle typu atributu.
+
+\begin{figure} [h!]
+  \begin{tabular}{r c l}
+  \N{attribute\_list} &:=& \N{attributes\_count}, \N{attributes};\\
+  \N{attributes} &:=& \{ \N{name\_ref}, \N{attribute\_length}, \N{info} \};\\
+  \N{info} &:=& \{ \N{B} \};\\
+  \N{attributes\_count} &:=& \N{2B}; \\
+  \N{attribute\_length} &:=& \N{4B};\\
+  \end{tabular}
+\end{figure}
+
+Specifikace \cite{Lindholm:JVM} definuje 23 atributů. Překladače však mohou definovat a vkládat do \texttt{class} souborů i atributy vlastní. Pokud je JVM neumí rozpoznat, pak je ignoruje. Atributy mají různou míru důležitosti vzhledem k interpretaci \texttt{class} souboru. 
+
+Pro správnou interpretaci virtuálním strojem je důležitých následujících pět atributů. Atribut \texttt{Code} s instrukcemi metody byl představen v kapitole \ref{FormatMethod}. Jedním z atributů \texttt{Code} může být \texttt{StackMapTable}. Tento atribut je důležitý pro typovou kontrolu při verifikaci \texttt{class} souborů. Pro každý základní blok instrukcí jsou specifikovány typy lokálních proměnných a hodnot na operačním zásobníku. U starších verzí \texttt{class} souboru tento atribut chybí, a proto se provádí typová inference pomocí analýzy datového toku. \texttt{Exceptions} je atribut metody. Obsahuje odkazy do tabulky konstant na typy kontrolovaných výjimek, které metoda může vyhodit. Jedním z atributů členské proměnné může být \texttt{ConstantValue}, který v sobě nese index do tabulky konstant na položku s číselnou nebo řetězcovou konstantou. Jestliže je daná proměnná statická, pak je jí při inicializaci třídy přiřazena právě tato hodnota. Atribut \texttt{BootstrapMethods} souvisí s dynamickými jazyky.
+
+Následujících dvanáct atributů je podstatných pro správnou interpretaci knihovnami Java API. Vnitřní třídy třídy reprezentované \texttt{class} souborem jsou vyjmenované v atributu \texttt{InnerClasses}. Pro každou vnitřní třídu atribut uchovává bitové pole příznaků, ukazatel na název vnitřní třídy, ukazatel na vnější třídu a ukazatel na vnitřní třídu. Každá lokální nebo anonymní třída pak musí mít atribut \texttt{EnclosingMethod} obsahující ukazatel na vnější třídu a ukazatel na metodu, která definici třídy uzavírá. Atribut \texttt{Synthetic} reprezentuje příznak, že daný člen třídy se nevyskytuje ve zdrojovém kódu a zároveň není standardním členem. Atribut \texttt{Signature} nese deklaraci třídy, rozhraní, členské proměnné nebo metody, v níž se vyskytují typové proměnné nebo parametrizované typy. Jména a přístupové příznaky formálních parametrů metody mohou být dostupné v atributu \texttt{MethodParameters}. 
+Anotace jsou dostupné v atributech \texttt{Runtime}$Visibility$$Annotations$, kde $Visibility$ určuje, zda je anotace viditelná (\texttt{Visible}) či neviditelná (\texttt{Invisible}) za běhu programu, a $Type$ označuje jeden z typů anotací \texttt{Annotations}, \texttt{TypeAnnotations}, \texttt{ParameterAnnotations}.
+Atribut \texttt{AnnotationDefault} reprezentuje výchozí hodnotu elementu, který patří typu anotace.
+
+Další atributy jsou pouze informativní a mohou sloužit například k ladění chyb ve zdrojovém souboru. Atribut \texttt{SourceFile} obsahuje odkaz na název zdrojového kódu. Atribut \texttt{SourceDebugExtension} v sobě nese řetězec s ladícími informace. \texttt{LineNumberTable} reprezentuje mapování indexů do pole instrukcí na čísla řádků zdrojového kódu. Informace o lokálních proměnných metody mohou být dostupné v atributu \texttt{LocalVariableTable}, kde je obsažen rozsah instrukcí, ve kterém proměnná nese hodnotu, odkaz na název proměnné, odkaz na typ proměnné a index do pole lokálních proměnných. Stejné informace nese atribut \texttt{LocalVariableTypeTable}, ale pouze pro proměnné, jejichž typy používají typované proměnné nebo parametrizované typy. Atribut \texttt{Deprecated} slouží k indikaci toho, že třída, metoda, členská proměnná či rozhraní jsou zastaralé.
+
+\section{Instrukce}\label{FormatInstruction}
+
+Každá instrukce se skládá z jednobajtového operačního kódu \textit{opcode} a nula a více operandů. Instrukce může dále pracovat s obsahem operačního zásobníku a má přístup do pole lokálních proměnných a tabulky konstant. Pro snazší orientaci je každému operačnímu kódu přiřazen jednoznačný název \textit{mnemonic}. Součástí \textit{mnemonic} může být označení datového typu, s jehož hodnotami instrukce pracuje. Typ je specifikován písmeny \texttt{i} pro \texttt{int}, \texttt{l} pro \texttt{long}, \texttt{s} pro \texttt{short}, \texttt{b} pro \texttt{byte}, \texttt{c} pro \texttt{char}, \texttt{f} pro \texttt{float}, \texttt{d} pro \texttt{double} a \texttt{a} pro \texttt{reference}. V následujícím textu jsou instrukce uvedené ve tvaru: $mnemonic$ $operand_1$ $operand_2$ \dots $operand_n$. Pokud nebude řečeno jinak, pak každý operand má velikost jednoho bajtu.
 
 \subsubsection{Konstantní hodnoty}
 
 Konstantní hodnotu lze dle jejího typu, velikosti a hodnoty vložit na zásobník několika způsoby.
 Instrukce \texttt{aconst\_null} vloží na zásobník referenci na \texttt{null}. 
-Instrukce \texttt{iconst\_}$value$, kde $value \in \{ \texttt{m1}, \texttt{0}, \texttt{1}, \texttt{2}, \dots, \texttt{5}\}$ a \texttt{m1} označuje hodnotu $-1$, vloží na zásobník hodnotu $value$ typu \texttt{int}. Obdobně lze instrukcí \texttt{fconst\_}$value$, kde $value \in \{\texttt{0}, \texttt{1}, \texttt{2}\}$, a instrukcemi \texttt{lconst\_}$value$ a \texttt{dconst\_}$value$, kde $value \in \{\texttt{0}, \texttt{1}\}$, vložit konstatní hodnoty typu \texttt{float}, \texttt{long} a \texttt{double}. 
-Větší celočíselnou hodnotu typu \texttt{int} umožňují vložit instrukce \texttt{bipush} $value$ a \texttt{sipush} $value$, kde $value$ je jednobajtová, respektive dvoubajtová, znaménková hodnota.
+Instrukce \texttt{iconst\_}$value$, kde $value \in \{ \texttt{m1}, \texttt{0}, \texttt{1}, \texttt{2}, \dots, \texttt{5}\}$ a \texttt{m1} označuje hodnotu $-1$, vloží na zásobník hodnotu $value$ typu \texttt{int}. Obdobně lze instrukcí \texttt{fconst\_}$value$, kde $value \in \{\texttt{0}, \texttt{1}, \texttt{2}\}$, a instrukcemi \texttt{lconst\_}$value$ a \texttt{dconst\_}$value$, kde $value \in \{\texttt{0}, \texttt{1}\}$, vložit konstantní hodnoty typu \texttt{float}, \texttt{long} a \texttt{double}. 
+Větší celočíselnou hodnotu typu \texttt{int} umožňují vložit instrukce \texttt{bipush} $value$ a \texttt{sipush} $value$, kde $value$ je jednobajtová, respektive dvoubajtová, celočíselná hodnota.
 
 Ve všech ostatních případech, je nutné vložit hodnotu z tabulky konstant. Pomocí instrukce \texttt{ldc} $index$, kde $index$ je jednobajtový index do tabulky konstant, lze vložit hodnotu typu \texttt{int} či \texttt{float} nebo referenci na objekt. Instrukce \texttt{ldc\_w} $index$ umožňuje použít dvoubajtový index. Instrukce \texttt{ldc2\_w} $index$ vloží na zásobník hodnotu typu \texttt{long} nebo \texttt{double} danou dvoubajtovým indexem  $index$.
 
 \subsubsection{Práce s lokálními proměnnými}
 
-Do lokální proměnné lze přiřadit hodnotu instrukcí $t$\texttt{store} $index$, kde $t \in \{  \}$ a $index$ je index do pole lokálních proměnných. Dané proměnné se přiřadí hodnota, která se odebere z vrcholu zásobníku. Na druhou stranu, instrukce $t$\texttt{load} $index$, načte hodnotu z dané lokální proměnné na zásobník. Pro lokální proměnné s indexy $index \in \{0,1,2,3\}$ lze použít jednobajtové instrukce $t$\texttt{store\_}$index$ a $t$\texttt{load\_}$index$.
-Celočíselné lokální proměnné lze inkrementovat instrukcí \texttt{iinc} $index$ $value$, která k hodnotě proměnné na indexu $index$ přičte jednobajtovou znaménkovou hodnotu $value$.
+Do lokální proměnné lze přiřadit hodnotu instrukcí $t$\texttt{store} $index$, kde $t \in \{ \texttt{i}, \texttt{l}, \texttt{f}, \texttt{d}, \texttt{a} \}$ a $index$ je index do pole lokálních proměnných. Dané proměnné se přiřadí hodnota, která se odebere z vrcholu zásobníku. Na druhou stranu, instrukce $t$\texttt{load} $index$, načte hodnotu z dané lokální proměnné na zásobník. Pro lokální proměnné s indexy $index \in \{0,1,2,3\}$ lze použít jednobajtové instrukce $t$\texttt{store\_}$index$ a $t$\texttt{load\_}$index$.
+Celočíselné lokální proměnné lze inkrementovat instrukcí \texttt{iinc} $index$ $value$, která k hodnotě proměnné na indexu $index$ přičte jednobajtovou celočíselnou hodnotu $value$.
 
 \subsubsection{Práce s polem}
 
@@ -189,7 +214,7 @@ Délku pole lze zjistit instrukcí \texttt{arraylength}, která ze zásobníku o
 
 Nový objekt lze vytvořit instrukcí \texttt{new} $index$, kde $index$ je dvoubajtový index do tabulky konstant na třídu nebo rozhraní. Instance třídy nebo rozhraní se inicializuje a její reference se vloží na zásobník.
 
-Přístup ke členským proměnným objektu umožňují instrukce \texttt{getfield} $index$ a \texttt{putfield} $index$, kde $index$ je dvoubajtový index do tabulky konstant na členskou proměnnou. Instrukce \texttt{getfield} odebere ze zásobníku referenci na objekt, získá hodnotu dané členské proměnné a vloží ji na zásobník. Instrukce \texttt{putfield} odebere ze zásobníku hodnotu $value$ a referenci na objekt a dané členské proměnné tohoto objektu přiřadí hodnotu $value$. Obdobně lze přistupovat k proměnným třídy pomocí instrukcí \texttt{getstatic} $index$ a \texttt{putstatic} $index$. Instrukce však ze zásobníku nenačítají referenci na objekt a třídu proměnné určí z položky v tabulce konstant pro členskou proměnnou.
+Přístup k proměnným instance umožňují instrukce \texttt{getfield} $index$ a \texttt{putfield} $index$, kde $index$ je dvoubajtový index do tabulky konstant na členskou proměnnou. Instrukce \texttt{getfield} odebere ze zásobníku referenci na objekt, získá hodnotu dané členské proměnné a vloží ji na zásobník. Instrukce \texttt{putfield} odebere ze zásobníku hodnotu $value$ a referenci na objekt a dané členské proměnné tohoto objektu přiřadí hodnotu $value$. Obdobně lze přistupovat k proměnným třídy pomocí instrukcí \texttt{getstatic} $index$ a \texttt{putstatic} $index$.
 
 Metodu lze zavolat instrukcí \texttt{invokevirtual} $index$, kde $index$ je dvoubajtový index do tabulky konstant na metodu. Instrukce ze zásobníku odebere parametry metody včetně reference na objekt, který bude sloužit jako parametr \texttt{this}, a zavolá příslušnou metodu. Obdobně instrukce \texttt{invokestatic} volá statickou metodu, \texttt{invokeinterface} volá metodu rozhraní a \texttt{invokedynamic} volá dynamickou metodu. Pro ostatní metody je třeba použít instrukci \texttt{invokespecial}.
 
@@ -205,12 +230,12 @@ Vstupu do synchronizovaného bloku instrukcí předchází vstup do monitoru dan
 
 \subsubsection{Konverze hodnot}
 
-Hodnotu z vrcholu zásobníku lze konvertovat na jiný datový typ instrukcí typu $t_1$\texttt{2}$t_2$, kde $t_1, t_2 \in \{\texttt{i}, \texttt{l},\texttt{f},\texttt{d}\}$ a pro $t_1$ rovno $\texttt{i}$ platí $t_2 \in \{\texttt{b}, \texttt{c},\texttt{s}\}$. Hodnota je pak konvertovaná z typu $t_1$ na typ $t_2$.
+Hodnotu z vrcholu zásobníku lze konvertovat na jiný datový typ instrukcí typu $t_1$\texttt{2}$t_2$, kde $t_1, t_2 \in \{\texttt{i}, \texttt{l},\texttt{f},\texttt{d}\}$ a pro $t_1$ rovno $\texttt{i}$ navíc $t_2 \in \{\texttt{b}, \texttt{c},\texttt{s}\}$. Hodnota je pak konvertovaná z typu $t_1$ na typ $t_2$.
 
 \subsubsection{Matematické a bitové operace}
 
 Instrukce pro matematické operace jsou ve tvaru $t operation$, 
-kde $t \in \{\texttt{i},\texttt{f}, \texttt{l}, \texttt{d} \}$ specifikuje typ operandů 
+kde $t \in \{\texttt{i}, \texttt{l}, \texttt{f}, \texttt{d} \}$ specifikuje typ operandů 
 a $operation \in \{\texttt{add},\texttt{sub}, \texttt{mul}, \texttt{div}, \texttt{rem}, \texttt{neg} \}$ určuje jednu z matematických operací pro součet, rozdíl, násobení, dělení, zbytek po dělení a negaci. 
 Instrukce pro bitové operace jsou ve tvaru $t operation$, 
 kde $t \in \{\texttt{i}, \texttt{l}\}$ 
@@ -237,9 +262,9 @@ Instrukce \texttt{jsr}, \texttt{jsr\_w} a \texttt{ret} slouží k obsluze podpro
 
 \subsubsection{Práce se zásobníkem}
 
-Níže zmíněné instrukce umožňují manipulovat se zásobníkem. Způsob manipulace je popsaný pomocí tzv. jednotek délky zásobníku, přičemž některé hodnoty na zásobníku se mohou skládat ze dvou jednotek. Po provedení instrukce musí být vždy zachována integrita těchto hodnot. Porušení integrity by bylo odhaleno při verifikací \texttt{class} souboru.
+Níže zmíněné instrukce umožňují manipulovat se zásobníkem. Způsob manipulace je popsaný pomocí tzv. jednotek délky zásobníku, přičemž některé hodnoty na zásobníku se mohou skládat ze dvou jednotek. Po provedení instrukce musí být vždy zachována integrita těchto hodnot. Porušení integrity by bylo odhaleno při verifikaci \texttt{class} souboru.
 
-K odstranění hodnot z vrcholu zásobníku slouží instrukce \texttt{pop} a \texttt{pop2}, které odstraní jednu, případně dvě jednotky. Instrukce \texttt{dup} duplikuje jednotku na vrcholu zásobníku, zatímco instrukce \texttt{dup\_x1} a \texttt{dup\_x2} duplikovanou jednotku navíc přesunou o dvě, případně tři jednotky níže. Obdobně instrukce \texttt{dup2} duplikuje dvojici jednotek na vrcholu zásobníku a instrukce \texttt{dup2\_x1} a \texttt{dup2\_x2} dvojici navíc přesunou o tři, případně čtyři, jednotky níže. Instrukce 
+K odstranění hodnot z vrcholu zásobníku slouží instrukce \texttt{pop} a \texttt{pop2}, které odstraní jednu, respektive dvě, jednotky. Instrukce \texttt{dup} duplikuje jednotku na vrcholu zásobníku, zatímco instrukce \texttt{dup\_x1} a \texttt{dup\_x2} duplikovanou jednotku navíc přesunou o dvě, respektive tři, jednotky níže. Obdobně instrukce \texttt{dup2} duplikuje dvojici jednotek na vrcholu zásobníku a instrukce \texttt{dup2\_x1} a \texttt{dup2\_x2} dvojici navíc přesunou o tři, respektive čtyři, jednotky níže. Instrukce 
 \texttt{swap} prohodí pořadí dvou jednotek na vrcholu zásobníku.
 
 \subsubsection{Další instrukce}
@@ -263,28 +288,5 @@ Instrukce \texttt{nop} nic nedělá. Instrukce \texttt{breakpoint}, \texttt{impd
 % TODO příklad na monitor enter a exit
 
 
-\section{Atributy}
-
-Reprezentovaná třída, případně rozhraní, metody, členské proměnné a i některé atributy mají definovaný seznam atributů. Seznam se skládá z tabulky atributů \N{attributes} o \N{attributes\_count} položkách. Typ atributu je daný odkazem \N{name\_ref} na název atributu, délka atributu bez prvních šesti bajtů je daná hodnotou \N{attribute\_length}. Další informace, které atribut nese v položce \N{info}, liší podle typu atributu.
-
-\begin{figure} [h!]
-  \begin{tabular}{r c l}
-  \N{attribute\_list} &:=& \N{attributes\_count}, \N{attributes};\\
-  \N{attributes} &:=& \{ \N{name\_ref}, \N{attribute\_length}, \N{info} \};\\
-  \N{info} &:=& \{ \N{B} \};\\
-  \N{attributes\_count} &:=& \N{2B}; \\
-  \N{attribute\_length} &:=& \N{4B};\\
-  \end{tabular}
-\end{figure}
-
-Specifikace (?) definuje 23 atributů. Překladače však mohou definovat a vkládat do \texttt{class} souborů i atributy vlastní. Pokud je JVM neumí rozpoznat, pak je ignoruje. Atributy mají různou míru důležitosti vzhledem k interpretaci \texttt{class} souboru. 
-
-Pro správnou interpretaci JVM je důležitých následujících pět atributů. Jedním z atributů členské proměnné může být atribut \texttt{ConstantValue}, který v sobě nese index do tabulky konstant na položku s číselnou nebo řetězcovou konstantou. Jestliže je daná proměnná statická, pak je jí při inicializaci třídy přiřazena právě tato hodnota. Atribut \texttt{Code} reprezentující instrukce metody byl představen v kapitole (?). Jedním z atributů \texttt{Code} může být \texttt{StackMapTable}. Tento atribut je důležitý pro typovou kontrolu při verifikaci \texttt{class} souborů. Pro každý základní blok instrukcí jsou specifikovány typy lokálních proměnných a hodnot na operačním zásobníku. U starších verzí \texttt{class} souboru se provádí typová inference pomocí analýzy datového toku. \texttt{Exceptions} je atribut metody. Obsahuje odkazy do tabulky konstant na typy kontrolovaných výjimek, které metoda může vyhodit. Atribut \texttt{BootstrapMethods} souvisí s dynamickými jazyky.
-
-Následujících dvanáct atributů je podstatných pro správnou interpretaci knihovnami Java API. Vnitřní třídy třídy reprezentované \texttt{class} souborem jsou vyjmenované v atributu \texttt{InnerClasses}. Pro každou vnitřní třídu atribut uchovává bitové pole příznaků, ukazatel na název vnitřní třídy, ukazatel na vnější třídu a ukazatel na vnitřní třídu. Každá lokální nebo anonymní třída pak musí mít atribut \texttt{EnclosingMethod} obsahující ukazatel na vnější třídu a ukazatel na metodu, která definici třídy uzavírá. Atribut \texttt{Synthetic} reprezentuje příznak, že daný člen třídy se nevyskytuje ve zdrojovém kódu a zároveň není standardním členem. Atribut \texttt{Signature} nese deklaraci třídy, rozhraní, členské proměnné nebo metody, v níž se vyskytují typové proměnné nebo parametrizované typy. Jména a přístupové příznaky formálních parametrů metody mohou být dostupné v atributu \texttt{MethodParameters}. 
-Anotace jsou dostupné v atributech \texttt{Runtime}$Visibility$$Annotations$, kde $Visibility$ určuje, zda je anotace viditelná (\texttt{Visible}) či neviditelná (\texttt{Invisible}) za běhu programu, a $Type$ označuje jeden z typů anotací \texttt{Annotations}, \texttt{TypeAnnotations}, \texttt{ParameterAnnotations}.
-Atribut \texttt{AnnotationDefault} reprezentuje výchozí hodnotu elementu, který patří typu anotace.
-
-Další atributy jsou pouze informativní a mohou sloužit například k ladění chyb ve zdrojovém souboru. Atribut \texttt{SourceFile} obsahuje odkaz na název zdrojového kódu. Atribut \texttt{SourceDebugExtension} v sobě nese řetězec s ladícími informace. \texttt{LineNumberTable} reprezentuje mapování indexů do pole instrukcí na čísla řádků zdrojového kódu. Informace o lokálních proměnných metody mohou být dostupné v atributu \texttt{LocalVariableTable}, kde je obsažen rozsah instrukcí, ve kterém proměnná nese hodnotu, odkaz na název proměnné, odkaz na typ proměnné a index do pole lokálních proměnných. Stejné informace nese atribut \texttt{LocalVariableTypeTable}, ale pouze pro proměnné, jejichž typy používají typované proměnné nebo parametrizované typy. Atribut \texttt{Deprecated} slouží k indikaci toho, že třída, metoda, členská proměnná či rozhraní jsou zastaralé.
 
 %=========================================================================
