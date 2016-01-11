@@ -33,7 +33,7 @@ Typ souboru je definován prvními čtyřmi bajty, které jsou popsané symbolem
 
 \section{Konstanty}
 
-Tabulka konstant obsahuje některé číselné konstanty, všechny řetězce a symbolické informace o všech třídách, rozhraních, metodách a členských proměnných, které se v souboru, instrukcích i atributech vyskytují. Tato tabulka se nazývá \textit{constant pool} a slouží v podstatě jako databáze dat, do které se pomocí indexů odkazují další položky souboru. 
+Tabulka konstant obsahuje některé číselné konstanty, všechny řetězce a symbolické informace o všech třídách, rozhraních, metodách a členských proměnných, které se v souboru, instrukcích i atributech vyskytují. Tato tabulka se nazývá \textit{constant pool} a slouží v podstatě jako databáze dat, do které se pomocí indexů odkazují další položky souboru. Odkazem do tabulky konstant je tedy dále myšlen platný index do tabulky konstant adresující položku očekávaného typu.
 
 Struktura tabulky konstant je popsána pravidlem pro \N{constants}. Symbol \N{constant\_pool\_count} reprezentuje hodnotu $1 + n$, kde $n$ je počet položek v tabulce konstant. Položky tabulky jsou indexované od jedné. Nultý index je vyhrazen pro odkaz na žádnou z položek. Samotná tabulka je reprezentovaná symbolem \N{constant\_pool}.
 
@@ -73,6 +73,8 @@ Položky \N{constant\_methodHandle}, \N{constant\_methodType} a \N{constant\_inv
 
 
 % TODO interní formát jmen !!!!!!
+Názvy tříd a rozhraní jsou interně uváděné v úplném tvaru, ale z historických důvodů se tečky nahrazují lomítky. Například, třída \texttt{Object} má úplný název \texttt{java.lang.Object} a interní název \texttt{java/lang/Object}. Typ proměnné nebo metody je specifikován řetězcem. Základní datové typy jsou reprezentované písmeny \texttt{B} pro \texttt{byte}, \texttt{C} pro \texttt{char}, \texttt{D} pro \texttt{double}, \texttt{F} pro \texttt{float}, \texttt{I} pro \texttt{int}, \texttt{J} pro \texttt{long}, \texttt{S} pro \texttt{short}, \texttt{Z} pro \texttt{boolean}. Typ reference na objekt je reprezentovaný řetězcem \texttt{L}$ClassName$\texttt{;}, kde $ClassName$ je interní název třídy nebo rozhraní. Typ reference na jednorozměrné pole je reprezentovaný řetězcem \texttt{[}$ComponentType$, kde $ComponentType$ je řetězec reprezentující základní datový typ, referenci na objekt nebo referenci na pole. Pomocí zanoření referencí na pole lze definovat referenci na vícerozměrné pole. Například, řetězec \texttt{Ljava/lang/Object;} označuje referenci na objekt typu \texttt{Object} a \texttt{[[[I} označuje referenci na trojrozměrné pole typu \texttt{int}. Typ metody je reprezentován řetězcem, který se skládá z výčtu typů formálních parametrů metody a typu její návratové hodnoty. Tedy například, typ metody s hlavičkou \texttt{int method(boolean b, Object o)} bude specifikovaný řetětězcem \texttt{(BLjava/lang/Object;)I}. Nemá-li metoda žádné parametry či nevrací žádnou hodnotu, pak je odpovídající chybějící typ nahrazen písmenem \texttt{V}.
+
 
 \section{Třída}
 
