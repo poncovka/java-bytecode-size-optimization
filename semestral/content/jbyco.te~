@@ -1,0 +1,11 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Nástroj pro analýzu bajtkódu}\label{Tool}
+
+\section{Analýza problému a návrh řešení}\label{ToolDesign}
+
+
+\section{Popis implementace}\label{ToolImplementation}
+
+\section{Překlad a spuštění}\label{ToolRun}
+
+%=========================================================================

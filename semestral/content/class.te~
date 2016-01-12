@@ -34,7 +34,7 @@ Typ souboru je definován prvními čtyřmi bajty, které jsou popsané symbolem
 
 Tabulka konstant obsahuje některé číselné konstanty, všechny řetězce a symbolické informace o~všech třídách, rozhraních, metodách a členských proměnných, které se v~souboru, instrukcích i atributech vyskytují. Tato tabulka se nazývá \textit{constant pool} a slouží v~podstatě jako databáze dat, do které se pomocí indexů odkazují další položky souboru. Odkazem do tabulky konstant je tedy v~dalším textu myšlen platný index do tabulky konstant adresující položku očekávaného typu.
 
-Struktura tabulky konstant je popsána symbolem \N{constants}. Symbol \N{constant\_pool\_count} reprezentuje hodnotu $1 + n$, kde $n$ je počet položek v~tabulce konstant. Položky tabulky jsou indexované od jedné, neboť nultý index je vyhrazen pro odkaz na žádnou z~položek. Samotná tabulka je reprezentovaná symbolem \N{constant\_pool}.
+Struktura tabulky konstant je popsána pravidlem pro \N{constants}. Symbol \N{constant\_pool\_count} reprezentuje hodnotu $1 + n$, kde $n$ je počet položek v~tabulce konstant. Položky tabulky jsou indexované od jedné, neboť nultý index je vyhrazen pro odkaz na žádnou z~položek. Samotná tabulka je reprezentovaná symbolem \N{constant\_pool}.
 
 \begin{figure} [h!]
 

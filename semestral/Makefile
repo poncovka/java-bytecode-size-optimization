@@ -19,7 +19,7 @@ $(PROJECT).ps: $(PROJECT).dvi
 
 $(PROJECT).dvi: $(PROJECT).tex $(REF).bib
 	latex $(PROJECT)
-#	bibtex $(PROJECT)
+	bibtex $(PROJECT)
 	latex $(PROJECT)
 	latex $(PROJECT)
 
