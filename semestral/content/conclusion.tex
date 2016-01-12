@@ -3,5 +3,9 @@
 
 % Shrnutí toho, co jsem udělala, jakých výsledků jsem dosáhla a jak budu pokračovat.
 
+Popsala jsem virtuální stroj Java Virtual Machine a formát jeho instrukčního souboru. Vycházela jsem ze specifikace \cite{Lindholm:JVM} s cílem podat ji trochu jiným způsobem. Seznámila jsem se s nástroji pro manipulaci s bajtkódem BCEL, ASM, a Javassist, uvedla jejich stručný popis a vzájemně je porovnala. Dále jsem navrhla a implementovala vlastní nástroj \texttt{jbyco} pro analýzu bajtkódu. Stáhla jsem si velké množství \texttt{jar} souborů a pomocí \texttt{jbyco} jsem získala data, která jsem dále analyzovala. Při analýze jsem se zabývala celkovou velikostí položek v instrukčním souboru, sekvencemi instrukcí s častým výskytem a využitím lokálních proměnných.
+
+Budu pokračovat dokončením implementace nástroje \texttt{jbyco} a další analýzou bajtkódu. Konkrétně bych chtěla nalézt sekvence instrukcí pro různé stupně abstrakce operačních kódů a operandů. Tuto část mám rozpracovanou, ale nestihla jsem ji dokončit. Dále navrhnu, implementuji a otestuji nástroj pro optimalizaci velikosti bajtkódu. Vycházet budu z poznatků analýzy.
+
 
 %=========================================================================
