@@ -18,6 +18,7 @@ public class JarDirectory implements AbstractDirectory {
 	
 	public JarDirectory(Path path) {		
 		this.path = path;
+		System.err.println(path);
 	}
 
 	@Override

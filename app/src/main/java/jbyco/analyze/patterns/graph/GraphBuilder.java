@@ -139,7 +139,7 @@ public class GraphBuilder {
 			if (depth > 1) {
 				
 				// find a candidate
-				next = findCandidate(item);							
+				// next = findCandidate(item);							
 			}
 			
 			// or create new node

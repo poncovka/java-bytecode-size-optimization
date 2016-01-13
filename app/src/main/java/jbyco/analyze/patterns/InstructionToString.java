@@ -1,6 +1,20 @@
 package jbyco.analyze.patterns;
 
+import org.apache.bcel.Constants;
+import org.apache.bcel.classfile.Constant;
+import org.apache.bcel.classfile.ConstantClass;
+import org.apache.bcel.classfile.ConstantDouble;
+import org.apache.bcel.classfile.ConstantFieldref;
+import org.apache.bcel.classfile.ConstantFloat;
+import org.apache.bcel.classfile.ConstantInteger;
+import org.apache.bcel.classfile.ConstantInterfaceMethodref;
+import org.apache.bcel.classfile.ConstantLong;
+import org.apache.bcel.classfile.ConstantMethodref;
+import org.apache.bcel.classfile.ConstantNameAndType;
 import org.apache.bcel.classfile.ConstantPool;
+import org.apache.bcel.classfile.ConstantString;
+import org.apache.bcel.classfile.ConstantUtf8;
+import org.apache.bcel.classfile.Utility;
 import org.apache.bcel.generic.ACONST_NULL;
 import org.apache.bcel.generic.ANEWARRAY;
 import org.apache.bcel.generic.BranchInstruction;
@@ -23,7 +37,9 @@ import org.apache.bcel.generic.NEWARRAY;
 import org.apache.bcel.generic.RET;
 import org.apache.bcel.generic.TABLESWITCH;
 
-public class InstructionToString extends EmptyVisitor {
+import jbyco.lib.BytecodeVisitor;
+
+public class InstructionToString extends BytecodeVisitor {
 	
 	ConstantPool cp;
 	
@@ -88,7 +104,7 @@ public class InstructionToString extends EmptyVisitor {
 	private void addVariable(int index) {
 		
 		switch(varAbstraction) {
-			case 0: 	builder.append(index); break;
+			case 0: 	builder.append(" ").append(index); break;
 			case 1: 	builder.append(" V").append(-1); break; // TODO 
 			default: 	builder.append(" V");
 		}
@@ -107,13 +123,13 @@ public class InstructionToString extends EmptyVisitor {
 		}
 	}
 	
-	private void addConstantPoolIndex(int index, Object value) {
+	private void addConstantPoolIndex(int index) {
 		
 		String type = OPCODES_TYPES[instr.getOpcode()];
 		
 		switch(valAbstraction) {
 			case 0: 	builder.append(" ").append(index); break;
-			case 1: 	builder.append(" ").append(value); break;
+			case 1: 	builder.append(" "); cp.getConstant(index).accept(this); break;
 			case 2: 	builder.append(" ").append(type).append(-1); break; // TODO
 			default: 	builder.append(" ").append(type);
 		}
@@ -159,55 +175,55 @@ public class InstructionToString extends EmptyVisitor {
 	@Override
 	public void visitCHECKCAST(CHECKCAST i) {
 		int index = i.getIndex();
-		addConstantPoolIndex(index, cp.getConstant(index));
+		addConstantPoolIndex(index);
 	}
 	
 	@Override
 	public void visitINSTANCEOF(INSTANCEOF i) {
 		int index = i.getIndex();
-		addConstantPoolIndex(index, cp.getConstant(index));
+		addConstantPoolIndex(index);
 	}
 	
 	@Override
 	public void visitLDC(LDC i) {
 		int index = i.getIndex();
-		addConstantPoolIndex(index, cp.getConstant(index));
+		addConstantPoolIndex(index);
 	}
 	
 	@Override
 	public void visitLDC2_W(LDC2_W i) {
 		int index = i.getIndex();
-		addConstantPoolIndex(index, cp.getConstant(index));
+		addConstantPoolIndex(index);
 	}
 	
 	@Override
 	public void visitNEW(NEW i) {
 		int index = i.getIndex();
-		addConstantPoolIndex(index, cp.getConstant(index));
+		addConstantPoolIndex(index);
 	}
 	
 	@Override
 	public void visitINVOKEDYNAMIC(INVOKEDYNAMIC i) {
 		int index = i.getIndex();
-		addConstantPoolIndex(index, cp.getConstant(index));
+		addConstantPoolIndex(index);
 	}
 	
 	@Override
 	public void visitFieldInstruction(FieldInstruction i) {
 		int index = i.getIndex();
-		addConstantPoolIndex(index, cp.getConstant(index));
+		addConstantPoolIndex(index);
 	}
 	
 	@Override
 	public void visitInvokeInstruction(InvokeInstruction i) {
 		int index = i.getIndex();
-		addConstantPoolIndex(index, cp.getConstant(index));
+		addConstantPoolIndex(index);
 	}
 	
 	@Override
 	public void visitNEWARRAY(NEWARRAY i) {
 		int dims = 1;
-		String value = i.getType().toString();
+		String value = Constants.TYPE_NAMES[i.getTypecode()];
 		
 		switch(valAbstraction) {
 			case 0: 	builder.append(" ").append(i.getTypecode()); break;
@@ -220,12 +236,11 @@ public class InstructionToString extends EmptyVisitor {
 	@Override
 	public void visitANEWARRAY(ANEWARRAY i) {
 		int dims = 1;
-		String value = cp.getConstant(i.getIndex()).toString();
 		String type = OPCODES_TYPES[instr.getOpcode()];
 		
 		switch(valAbstraction) {
 			case 0: 	builder.append(" ").append(i.getIndex()); break;
-			case 1: 	builder.append(" ").append(dims).append(" ").append(value); break;
+			case 1: 	builder.append(" ").append(dims).append(" "); cp.getConstant(i.getIndex()); break;
 			case 2: 	builder.append(" ").append(dims).append(" ").append(type).append(-1); break;
 			default: 	
 		}
@@ -234,12 +249,11 @@ public class InstructionToString extends EmptyVisitor {
 	@Override
 	public void visitMULTIANEWARRAY(MULTIANEWARRAY i) {
 		int dims = i.getDimensions();
-		String value = cp.getConstant(i.getIndex()).toString();
 		String type = OPCODES_TYPES[instr.getOpcode()];
 		
 		switch(valAbstraction) {
 			case 0: 	builder.append(" ").append(dims).append(" ").append(i.getIndex()); break;
-			case 1: 	builder.append(" ").append(dims).append(" ").append(value); break;
+			case 1: 	builder.append(" ").append(dims).append(" "); cp.getConstant(i.getIndex()); break;
 			case 2: 	builder.append(" ").append(dims).append(" ").append(type).append(-1); break;
 			default: 	
 		}
@@ -269,6 +283,69 @@ public class InstructionToString extends EmptyVisitor {
 			case 2: 	builder.append(" ").append(i.toString(true)); break;
 			default: 	
 		}
+	}
+	
+	
+	@Override
+	public void visitConstantClass(ConstantClass c) {
+		cp.getConstant(c.getNameIndex()).accept(this);
+	}
+	
+	@Override
+	public void visitConstantDouble(ConstantDouble c) {
+		builder.append(c.getBytes());
+	}
+	
+	@Override
+	public void visitConstantFieldref(ConstantFieldref c) {
+		cp.getConstant(c.getNameAndTypeIndex()).accept(this);
+	}
+	
+	@Override
+	public void visitConstantFloat(ConstantFloat c) {
+		builder.append(c.getBytes());
+	}
+	
+	@Override
+	public void visitConstantInteger(ConstantInteger c) {
+		builder.append(c.getBytes());
+	}
+	
+	@Override
+	public void visitConstantInterfaceMethodref(ConstantInterfaceMethodref c) {
+		cp.getConstant(c.getClassIndex()).accept(this);
+		builder.append(".");
+		cp.getConstant(c.getNameAndTypeIndex()).accept(this);
+		builder.append("()");
+	}
+	
+	@Override
+	public void visitConstantLong(ConstantLong c) {
+		builder.append(c.getBytes());
+	}
+	@Override
+	public void visitConstantMethodref(ConstantMethodref c) {
+		cp.getConstant(c.getClassIndex()).accept(this);
+		builder.append(".");
+		cp.getConstant(c.getNameAndTypeIndex()).accept(this);
+		builder.append("()");
+	}
+	
+	@Override
+	public void visitConstantNameAndType(ConstantNameAndType c) {
+		cp.getConstant(c.getNameIndex()).accept(this);
+	}
+	
+	@Override
+	public void visitConstantString(ConstantString c) {
+		builder.append("'");
+		cp.getConstant(c.getStringIndex()).accept(this);
+		builder.append("'");
+	}
+	
+	@Override
+	public void visitConstantUtf8(ConstantUtf8 c) {
+		builder.append(Utility.replace(c.getBytes(), "\n", "\\n"));
 	}
 	
 

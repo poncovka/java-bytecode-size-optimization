@@ -5,17 +5,16 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.generic.Instruction;
 
 import jbyco.analyze.patterns.graph.GraphBuilder;
 import jbyco.analyze.patterns.graph.SuffixGraph;
 
-public class InstructionsLoader {
+public class InstructionsLoader2 {
 	
 	// max length of instruction sequencies
-	static final int MAXLENGTH = 10;
+	static final int MAXLENGTH = 20;
 	
 	// queue of node items
 	Queue<Object> queue;
@@ -35,7 +34,7 @@ public class InstructionsLoader {
 	// transformer
 	InstructionToString transformer;
 	
-	public InstructionsLoader(SuffixGraph graph) {
+	public InstructionsLoader2(SuffixGraph graph) {
 		this.graph = graph;
 		this.builder = new GraphBuilder(graph);
 		this.queue = new LinkedList<>();
@@ -52,15 +51,15 @@ public class InstructionsLoader {
 	public Object getItem(Instruction i) {
 		
 		// get string 
-		short opcode = i.getOpcode();
+		Object newitem = transformer.get(i);
 		
 		// get item
-		Object item = items.get(opcode);
+		Object item = items.get(newitem);
 		
 		// or create one
 		if (item == null) {
-			item = new Item(opcode);
-			items.put(opcode, item);
+			item = newitem;
+			items.put(item, item);
 		}
 		
 		// return item
@@ -103,19 +102,6 @@ public class InstructionsLoader {
 			queue.remove();
 		}
 		
-	}
-	
-	class Item {
-		short opcode;
-		
-		public Item(short opcode) {
-			this.opcode = opcode;
-		}
-		
-		@Override
-		public String toString() {
-			return Constants.OPCODE_NAMES[opcode];
-		}
 	}
 
 }
