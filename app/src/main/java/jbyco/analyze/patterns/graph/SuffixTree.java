@@ -8,12 +8,12 @@ import java.util.Stack;
 
 import jbyco.io.GmlExporter;
 
-public class SuffixGraph {
+public class SuffixTree {
 
 	// root node of the graph with no item
 	Node root;
 	
-	public SuffixGraph() {
+	public SuffixTree() {
 		root = new Node(new Root());
 	}
 	
@@ -23,13 +23,10 @@ public class SuffixGraph {
 	
 	public void print(PrintStream out) {
 		
-		out.printf("%-15s%-30s%-30s\n", "[node]", "[output]", "[paths]");
+		out.printf("%-15s%-30s%-30s\n", "[node]", "[output]", "[count]");
 		
 		Stack<Node> stack = new Stack<Node>();
-		Set<Node> visited = new HashSet<Node>();
-		
 		stack.push(root);
-		visited.add(root);
 		
 		while(!stack.isEmpty()) {
 			
@@ -37,14 +34,11 @@ public class SuffixGraph {
 			Node node = stack.pop();
 			
 			// print it
-			out.printf("%-15s%-30s%-30s\n", node, node.getOutputNodes(), node.getPaths());
+			out.printf("%-15s%-30s%-30s\n", node, node.getOutputNodes(), node.getCount());
 			
 			// add next nodes
 			for(Node next:node.getOutputNodes()) {
-				if (!visited.contains(next)) {
-					stack.push(next);
-					visited.add(next);
-				}
+				stack.push(next);
 			}
 		}
 		
@@ -60,10 +54,7 @@ public class SuffixGraph {
 		for (int cycle = 0; cycle < 2; cycle++) {
 			
 			Stack<Node> stack = new Stack<Node>();
-			Set<Node> visited = new HashSet<Node>();
-			
 			stack.push(root);
-			visited.add(root);
 			
 			while(!stack.isEmpty()) {
 				
@@ -82,17 +73,14 @@ public class SuffixGraph {
 					if (cycle == 1) {
 						
 						// get paths on the edge
-						Set<Path> epaths = node.getEdgePaths(next);
+						int count = node.getCount();
 						
 						// print edge
-						exporter.printEdge(node.getId(), next.getId(), epaths);
+						exporter.printEdge(node.getId(), next.getId(), count);
 					}
 					
 					// add next nodes
-					if (!visited.contains(next)) {
-						stack.push(next);
-						visited.add(next);
-					}
+					stack.push(next);
 				}
 			} // while end
 		} // for end

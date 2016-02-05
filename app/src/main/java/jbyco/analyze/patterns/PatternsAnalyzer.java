@@ -13,7 +13,7 @@ import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
-import jbyco.analyze.patterns.graph.SuffixGraph;
+import jbyco.analyze.patterns.graph.SuffixTree;
 import jbyco.io.PatternsPrinter;
 import jbyco.io.file.BytecodeFile;
 
@@ -26,13 +26,13 @@ public class PatternsAnalyzer implements Analyzer {
 	JavaClass klass;
 	
 	// suffix graph
-	SuffixGraph graph;
+	SuffixTree graph;
 	
 	// instruction loader
 	InstructionsLoader loader;
 	
 	public PatternsAnalyzer() {
-		graph = new SuffixGraph();
+		graph = new SuffixTree();
 		loader = new InstructionsLoader(graph);
 	}
 	
@@ -107,12 +107,10 @@ public class PatternsAnalyzer implements Analyzer {
 		
 		// print graph
 		System.out.println("Graph:");
-		//graph.print(System.out);
+		graph.print(System.out);
 		
 		System.out.println();
 		
-		// print header
-
 		// print patterns
 		System.out.println("Patterns:");
 		PatternsPrinter printer = new PatternsPrinter();

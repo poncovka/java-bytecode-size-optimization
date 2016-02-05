@@ -49,7 +49,7 @@ public class Main {
 		*/
 		
 		
-		SuffixGraph graph = new SuffixGraph();
+		SuffixTree graph = new SuffixTree();
 		GraphBuilder builder = new GraphBuilder(graph);
 		
 		System.err.println("BUILD GRAPH");
@@ -104,7 +104,7 @@ public class Main {
 		PatternsPrinter printer = new PatternsPrinter();
 		printer.print(graph, "", 1);
 		
-		System.out.printf("paths %s, nodes %d\n", new Path(), new Node("").getId());
+		System.out.printf("nodes %d\n", new Node("").getId());
 		
 	}
 }

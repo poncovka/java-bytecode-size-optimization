@@ -10,7 +10,7 @@ import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.generic.Instruction;
 
 import jbyco.analyze.patterns.graph.GraphBuilder;
-import jbyco.analyze.patterns.graph.SuffixGraph;
+import jbyco.analyze.patterns.graph.SuffixTree;
 
 public class InstructionsLoader {
 	
@@ -21,7 +21,7 @@ public class InstructionsLoader {
 	Queue<Object> queue;
 	
 	// graph
-	SuffixGraph graph;
+	SuffixTree graph;
 	
 	// graph builder
 	GraphBuilder builder;
@@ -35,7 +35,7 @@ public class InstructionsLoader {
 	// transformer
 	InstructionToString transformer;
 	
-	public InstructionsLoader(SuffixGraph graph) {
+	public InstructionsLoader(SuffixTree graph) {
 		this.graph = graph;
 		this.builder = new GraphBuilder(graph);
 		this.queue = new LinkedList<>();

@@ -10,9 +10,9 @@ import java.util.Stack;
 
 public class GraphSimplifier {
 
-	SuffixGraph graph;
+	SuffixTree graph;
 	
-	public GraphSimplifier(SuffixGraph graph) { 
+	public GraphSimplifier(SuffixTree graph) { 
 		this.graph = graph;
 	}
 	
@@ -58,7 +58,7 @@ public class GraphSimplifier {
 		for(Node next : node.getOutputNodes()) {
 			
 			// get number of paths on the edge to next
-			int npaths = node.getEdgePaths(next).size();
+			int npaths = 0; //node.getEdgePaths(next).size();
 			
 			// remember the node with wildcard
 			if(npaths <= threshold) {
@@ -87,12 +87,12 @@ public class GraphSimplifier {
 		for(Node next : wildcards.keySet()) {
 			
 			if(create) {
-				node.addPaths(next2, node.getEdgePaths(next));
+				//node.addPaths(next2, node.getEdgePaths(next));
 			}
 			
-			node.removeEdge(next);
-			next2.copyEdges(next);
-			next2.addPaths(next.getPaths());
+			//node.removeEdge(next);
+			//next2.copyEdges(next);
+			//next2.addPaths(next.getPaths());
 		}
 		
 		// add edge to next2

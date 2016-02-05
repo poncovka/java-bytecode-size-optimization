@@ -7,19 +7,18 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import jbyco.analyze.patterns.graph.Node;
-import jbyco.analyze.patterns.graph.Path;
-import jbyco.analyze.patterns.graph.SuffixGraph;
+import jbyco.analyze.patterns.graph.SuffixTree;
 import jbyco.analyze.patterns.graph.WildCard;
 
 public class PatternsPrinter {
 
-	SuffixGraph graph;
+	SuffixTree graph;
 	String delimiter;
 	int min;
 	
 	Deque<StackItem> stack;
 	
-	public void print(SuffixGraph graph, String delimiter, int min) {
+	public void print(SuffixTree graph, String delimiter, int min) {
 		
 		// init
 		init(graph, delimiter, min);
@@ -54,21 +53,16 @@ public class PatternsPrinter {
 		}
 	}
 	
-	private void init(SuffixGraph graph, String delimiter, int min) {
+	private void init(SuffixTree graph, String delimiter, int min) {
 		
 		this.graph = graph;
 		this.delimiter = delimiter;
 		this.min = min;
 		
 		Node root = this.graph.getRoot();
-		Set<Path> paths = new TreeSet<>();
-		
-		for (Node node:root.getOutputNodes()) {
-			paths.addAll(root.getEdgePaths(node));
-		}
 		
 		this.stack = new ArrayDeque<>();
-		this.stack.push(new StackItem(root, paths));
+		this.stack.push(new StackItem(root));
 		
 	}
 		
@@ -104,20 +98,13 @@ public class PatternsPrinter {
 	private class StackItem {
 		
 		public final Node node;
-		public final Set<Path> paths;
 		public final Iterator<Node> iterator;
 		public final int count;
 		
-		public StackItem(Node node, Set<Path> paths) {		
+		public StackItem(Node node) {		
 			this.node = node;
-			this.paths = paths;
 			this.iterator = node.getOutputNodes().iterator();
-			
-			int count = 0;
-			for (Path path:paths) {
-				count += path.getCount();
-			}
-			this.count = count; 
+			this.count = node.getCount(); 
 		}
 		
 		public boolean hasNext() {
@@ -125,20 +112,8 @@ public class PatternsPrinter {
 		}
 		
 		public StackItem next() {
-			
-			// get node
 			Node next = this.iterator.next();
-			
-			// calculate paths
-			Set<Path> paths = new TreeSet<>(this.paths);
-			paths.retainAll(this.node.getEdgePaths(next));
-			
-			// return new stack item
-			if (!paths.isEmpty()) {
-				return new StackItem(next, paths); 
-			}
-			
-			return null;
+			return new StackItem(next); 
 		}
 	}
 }
