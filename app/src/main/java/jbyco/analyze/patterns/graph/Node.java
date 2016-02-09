@@ -1,7 +1,7 @@
 package jbyco.analyze.patterns.graph;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 
 public class Node implements Comparable<Node> {
 	
@@ -28,7 +28,7 @@ public class Node implements Comparable<Node> {
 		
 		counter = 0;
 		in = null;
-		out = new LinkedList<>();
+		out = new ArrayList<Node>(0);	
 	}
 
 	static int getTotal() {
@@ -67,10 +67,13 @@ public class Node implements Comparable<Node> {
 	}
 
 	public void addEdge(Node node) {
-		
-		// add input and output nodes
 		this.addOutputNode(node);
 		node.addInputNode(this);
+	}
+	
+	public void removeEdge(Node node) {
+		this.removeOutputNode(node);
+		node.removeInputNode(this);
 	}
 	
 	private void addInputNode(Node node) {
@@ -79,8 +82,16 @@ public class Node implements Comparable<Node> {
 	
 	private void addOutputNode(Node node) {
 		out.add(node);		
-	}	
+	}
+
+	private void removeInputNode(Node node) {
+		in = null;
+	}
 	
+	private void removeOutputNode(Node node) {
+		out.remove(node);		
+	}		
+		
 	public void incrementCount() {
 		counter++;
 	}	

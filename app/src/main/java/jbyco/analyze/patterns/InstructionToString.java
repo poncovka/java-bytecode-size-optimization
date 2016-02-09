@@ -1,7 +1,6 @@
 package jbyco.analyze.patterns;
 
 import org.apache.bcel.Constants;
-import org.apache.bcel.classfile.Constant;
 import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.classfile.ConstantDouble;
 import org.apache.bcel.classfile.ConstantFieldref;
@@ -20,7 +19,6 @@ import org.apache.bcel.generic.ANEWARRAY;
 import org.apache.bcel.generic.BranchInstruction;
 import org.apache.bcel.generic.CHECKCAST;
 import org.apache.bcel.generic.ConstantPushInstruction;
-import org.apache.bcel.generic.EmptyVisitor;
 import org.apache.bcel.generic.FieldInstruction;
 import org.apache.bcel.generic.IINC;
 import org.apache.bcel.generic.INSTANCEOF;

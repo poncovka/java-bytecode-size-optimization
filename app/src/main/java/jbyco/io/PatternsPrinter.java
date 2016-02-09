@@ -3,8 +3,6 @@ package jbyco.io;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
 
 import jbyco.analyze.patterns.graph.Node;
 import jbyco.analyze.patterns.graph.SuffixTree;
@@ -28,7 +26,6 @@ public class PatternsPrinter {
 			
 			// get head
 			StackItem item = stack.getFirst();			
-			//System.out.println(item.node + " " + item.paths);
 						
 			// get next item
 			StackItem next = null;
@@ -69,7 +66,7 @@ public class PatternsPrinter {
 	private void printPattern() {
 		
 		// print frequency
-		System.out.printf("%-15s", stack.getFirst().count);
+		System.out.printf("%-15s", stack.getFirst().node.getCount());
 		
 		// for all nodes in a stack
 		Iterator<StackItem> iterator = stack.descendingIterator();
@@ -89,9 +86,9 @@ public class PatternsPrinter {
 	
 	private boolean isPrintable(StackItem item) {
 		return !(
-				   item.node == graph.getRoot() 
+				   item.node.getCount() < min
+				|| item.node == graph.getRoot()
 				|| item.node.getItem() instanceof WildCard
-				|| item.count < min
 				);
 	}
 	
@@ -99,12 +96,10 @@ public class PatternsPrinter {
 		
 		public final Node node;
 		public final Iterator<Node> iterator;
-		public final int count;
 		
 		public StackItem(Node node) {		
 			this.node = node;
 			this.iterator = node.getOutputNodes().iterator();
-			this.count = node.getCount(); 
 		}
 		
 		public boolean hasNext() {

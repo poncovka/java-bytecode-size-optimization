@@ -2,8 +2,6 @@ package jbyco.analyze.patterns.graph;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Stack;
 
 import jbyco.io.GmlExporter;
@@ -63,7 +61,6 @@ public class SuffixTree {
 				
 				// print nodes in the 1st cycle
 				if (cycle == 0) {
-					//exporter.printNode(node.getNumber(), node.getItem());
 					exporter.printNode(node.getId(), node);
 				}
 				
