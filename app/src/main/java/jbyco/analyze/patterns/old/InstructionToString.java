@@ -1,4 +1,4 @@
-package jbyco.analyze.patterns;
+package jbyco.analyze.patterns.old;
 
 import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.ConstantClass;

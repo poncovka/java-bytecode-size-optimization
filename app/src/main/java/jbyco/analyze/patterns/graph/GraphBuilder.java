@@ -1,5 +1,6 @@
 package jbyco.analyze.patterns.graph;
 
+import java.util.Collection;
 import java.util.Stack;
 
 public class GraphBuilder {
@@ -19,6 +20,17 @@ public class GraphBuilder {
 	public GraphBuilder(SuffixTree graph) {
 		this.graph = graph;
 		this.threshold = 1;
+	}
+	
+	public void addPath(Collection<?> items) {
+		
+		startPath();
+		
+		for (Object item : items) {
+			addNextNode(item);
+		}
+		
+		finishPath();
 	}
 	
 	public void startPath() {

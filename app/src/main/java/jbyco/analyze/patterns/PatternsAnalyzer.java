@@ -3,117 +3,144 @@ package jbyco.analyze.patterns;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.bcel.classfile.ClassFormatException;
-import org.apache.bcel.classfile.ClassParser;
-import org.apache.bcel.classfile.Code;
-import org.apache.bcel.classfile.JavaClass;
-import org.apache.bcel.classfile.Method;
-import org.apache.bcel.generic.ClassGenException;
-import org.apache.bcel.generic.Instruction;
-import org.apache.bcel.util.ByteSequence;
+import javax.swing.AbstractAction;
+
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.MethodNode;
 
 import jbyco.analyze.Analyzer;
+import jbyco.analyze.patterns.graph.GraphBuilder;
 import jbyco.analyze.patterns.graph.SuffixTree;
+import jbyco.analyze.patterns.instr.Abstractor;
+import jbyco.analyze.patterns.instr.ActiveLabelsFinder;
+import jbyco.analyze.patterns.instr.Instruction;
 import jbyco.io.PatternsPrinter;
 import jbyco.io.file.BytecodeFile;
 
 public class PatternsAnalyzer implements Analyzer {
-
-	// bytecode file to print
-	BytecodeFile file;
-	
-	// structure of class file
-	JavaClass klass;
-	
-	// suffix graph
+		
+	// max length of instruction sequences
+	static final int MAXLENGTH = 10;
+			
+	// graph
 	SuffixTree graph;
+			
+	// graph builder
+	GraphBuilder builder;
 	
-	// instruction loader
-	InstructionsLoader loader;
-	
+	// graph abstractor
+	Abstractor abstractor;
+		
 	public PatternsAnalyzer() {
 		graph = new SuffixTree();
-		loader = new InstructionsLoader(graph);
+		builder = new GraphBuilder(graph);
+		abstractor = new Abstractor();
 	}
 	
 	@Override
 	public void processFile(BytecodeFile file) {
 		
-		try {		
+		try {
+			
 			// get input stream
-			String filename = file.getName();
-			InputStream stream = file.getInputStream();
+			InputStream in = file.getInputStream();
 			
-			// parse class file
-			ClassParser parser = new ClassParser(stream, filename);
-			this.klass = parser.parse();
-
-			// init
-			this.file = file;
+			// read input stream
+			ClassReader reader = new ClassReader(in);
 			
-			// process
-			processMethods();
+			// create method node and process it
+			ClassVisitor visitor = new ClassVisitor(Opcodes.ASM5) {
+								
+				@Override
+				public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+					
+					MethodNode method = new MethodNode(access, name, desc, signature, exceptions) {
 						
-		} catch (ClassFormatException e) {
-			e.printStackTrace();
+						@Override
+						public void visitEnd() {
+							super.visitEnd();
+							processMethod(this);
+						}
+					};
+					
+					return method;
+				}
+			};
+			
+			// process the file
+			reader.accept(visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		
+		}		
 	}
-
-	protected void processMethods() {
+	
+	public void processMethod(MethodNode method) {
 		
-		// for all methods
-		for(Method m : klass.getMethods()) {
+		// find all active labels
+		ActiveLabelsFinder finder = new ActiveLabelsFinder();
+		method.accept(finder);
+		
+		// get list of instructions
+		InsnList list = method.instructions;
+		
+		// TODO transformer, find non active labels
+		
+		// visit every suffix
+		AbstractInsnNode start = list.getFirst();
+		while (start != null) {
 			
-			// get code
-			Code code = m.getCode();
-			if (code != null) {
+			// visit every instruction of the suffix
+			AbstractInsnNode node = start;
+			int visited = 0;
+			
+			while (node != null && visited < MAXLENGTH) {
 				
-				try {				
-					// init loader
-					loader.init(klass.getConstantPool());
+				// process the node if it is active
+				if (finder.isActive(node)) {
 					
-					// read bytecode
-					ByteSequence seq = new ByteSequence(code.getCode());
-					while (seq.available() > 0) {
-
-						// get an instruction
-						Instruction i = Instruction.readInstruction(seq);
-						
-						// process instruction
-						loader.loadInstruction(i);
-					}
+					// get abstracted instruction
+					node.accept(abstractor);
 					
-					// finish loading
-					loader.finish();
+					// end of the visit
+					visited++;
 				}
-				catch (ClassGenException e) {
-					System.err.println("Could read instructions from " + file.getName());
-					e.printStackTrace();
-				}
-				catch (IOException e) {
-					System.err.println("Could read instructions from " + file.getName());
-					e.printStackTrace();
-				}
-			}	
+				
+				// get next node
+				node = node.getNext();
+			}
+			
+			// add instructions to the graph
+			builder.addPath(abstractor.getList());
+			
+			// start from next node
+			start = start.getNext();
+			
+			// clear the instruction list
+			abstractor.clear();
 		}
 	}
 	
+
 	@Override
 	public void print() {
 		
 		// print graph
 		System.out.println("Graph:");
 		graph.print(System.out);
-		
+				
 		System.out.println();
-		
+				
 		// print patterns
 		System.out.println("Patterns:");
 		PatternsPrinter printer = new PatternsPrinter();
-		printer.print(graph, ";", 100);		
+		printer.print(graph, ";", 100);	
+		
 	}
+
 }

@@ -3,10 +3,10 @@ package jbyco.analyze.patterns.instr;
 public class Parameter {
 	
 	// type of parameter
-	Type type;
+	public final Type type;
 	
 	// number of the parameter
-	int number;
+	public final int number;
 	
 	public Parameter(Type type) {
 		this.type = type;
@@ -57,4 +57,44 @@ public class Parameter {
 			}		
 		}
 	}
+
+	@Override
+	public int hashCode() {
+		
+		final int prime = 31;
+		int result = 1;
+		
+		result = prime * result + number;
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (this == obj) {
+			return true;
+		}
+		
+		if (obj == null) {
+			return false;
+		}
+		
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		
+		Parameter other = (Parameter) obj;
+		
+		if (number != other.number) {
+			return false;
+		}
+		
+		if (type != other.type) {
+			return false;
+		}
+		
+		return true;
+	}	
 }
