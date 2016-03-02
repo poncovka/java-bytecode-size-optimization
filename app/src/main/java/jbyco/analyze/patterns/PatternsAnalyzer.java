@@ -3,14 +3,13 @@ package jbyco.analyze.patterns;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.swing.AbstractAction;
-
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import jbyco.analyze.Analyzer;
@@ -18,7 +17,6 @@ import jbyco.analyze.patterns.graph.GraphBuilder;
 import jbyco.analyze.patterns.graph.SuffixTree;
 import jbyco.analyze.patterns.instr.Abstractor;
 import jbyco.analyze.patterns.instr.ActiveLabelsFinder;
-import jbyco.analyze.patterns.instr.Instruction;
 import jbyco.io.PatternsPrinter;
 import jbyco.io.file.BytecodeFile;
 
@@ -81,7 +79,7 @@ public class PatternsAnalyzer implements Analyzer {
 	}
 	
 	public void processMethod(MethodNode method) {
-		
+				
 		// find all active labels
 		ActiveLabelsFinder finder = new ActiveLabelsFinder();
 		method.accept(finder);
@@ -89,11 +87,11 @@ public class PatternsAnalyzer implements Analyzer {
 		// get list of instructions
 		InsnList list = method.instructions;
 		
-		// TODO transformer, find non active labels
-		
 		// visit every suffix
 		AbstractInsnNode start = list.getFirst();
 		while (start != null) {
+			
+			// TODO restart after RETURN or JSR!!!
 			
 			// visit every instruction of the suffix
 			AbstractInsnNode node = start;
@@ -102,7 +100,7 @@ public class PatternsAnalyzer implements Analyzer {
 			while (node != null && visited < MAXLENGTH) {
 				
 				// process the node if it is active
-				if (finder.isActive(node)) {
+				if (isActive(node, finder)) {
 					
 					// get abstracted instruction
 					node.accept(abstractor);
@@ -124,6 +122,11 @@ public class PatternsAnalyzer implements Analyzer {
 			// clear the instruction list
 			abstractor.clear();
 		}
+	}
+	
+	protected boolean isActive(AbstractInsnNode node, ActiveLabelsFinder finder) {
+		return     !(node instanceof LabelNode) 
+				||  (finder.isActive(((LabelNode)node).getLabel()));
 	}
 	
 
