@@ -1,4 +1,4 @@
-package jbyco.analyze.patterns.instr;
+package jbyco.analyze.patterns.instr.label;
 
 import java.util.HashSet;
 import java.util.Set;

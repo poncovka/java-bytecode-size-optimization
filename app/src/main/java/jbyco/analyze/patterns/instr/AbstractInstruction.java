@@ -1,5 +1,5 @@
 package jbyco.analyze.patterns.instr;
 
-public interface Parameter {
+public interface AbstractInstruction {
 
 }

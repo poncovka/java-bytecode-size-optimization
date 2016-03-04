@@ -1,10 +1,10 @@
-package jbyco.analyze.patterns.instr;
+package jbyco.analyze.patterns.instr.operation;
 
 import org.objectweb.asm.Opcodes;
 
-public class TypedOperationFactory extends OperationFactory {
+public class TypedOperationFactory extends AbstractOperationFactory {
 
-	enum TypedOperation implements Operation {
+	enum TypedOperation implements AbstractOperation {
 		
 		NOP			(Opcodes.NOP),
 		ACONST 		(Opcodes.ACONST_NULL),
@@ -184,7 +184,7 @@ public class TypedOperationFactory extends OperationFactory {
 		}
 	}
 	
-	public Operation[] all() {
+	public AbstractOperation[] all() {
 		return TypedOperation.values();
 	}
 }

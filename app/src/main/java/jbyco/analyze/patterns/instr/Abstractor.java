@@ -9,36 +9,49 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import jbyco.analyze.patterns.instr.label.AbstractLabelFactory;
+import jbyco.analyze.patterns.instr.operation.AbstractOperation;
+import jbyco.analyze.patterns.instr.operation.AbstractOperationFactory;
+import jbyco.analyze.patterns.instr.param.AbstractParameter;
+import jbyco.analyze.patterns.instr.param.AbstractParameterFactory;
+
 public class Abstractor extends MethodVisitor {
 
 	// abstraction of the given instruction node
-	Collection<Instruction> list;
+	Collection<AbstractInstruction> list;
 	
 	// operation factory
-	OperationFactory operations;
+	AbstractOperationFactory operations;
 	
 	// parameter factory
-	ParameterFactory parameters;
+	AbstractParameterFactory parameters;
+	
+	// label factory
+	AbstractLabelFactory labels;
 		
-	public Abstractor(OperationFactory operations, ParameterFactory parameters) {
+	public Abstractor(AbstractOperationFactory operations, AbstractParameterFactory parameters, AbstractLabelFactory labels) {
 		super(Opcodes.ASM5);
 		
 		this.operations = operations;
 		this.parameters = parameters;
+		this.labels = labels;
 		
 		this.list = new LinkedList<>();
 	}
 	
-	public Collection<Instruction> getList() {
+	public Collection<AbstractInstruction> getList() {
 		return list;
 	}
 	
-	public void add(Operation operation, Object[] params) {
-		
-		// create instruction
-		Instruction instruction = new Instruction(operation, params);
-		
-		// add to the list
+	public void add(AbstractOperation operation, Collection<AbstractParameter> params) {
+		add(new Instruction(operation, (AbstractParameter[]) params.toArray()));
+	}
+	
+	public void add(AbstractOperation operation, AbstractParameter ...params) {
+		add(new Instruction(operation, params));
+	}
+	
+	public void add(AbstractInstruction instruction) {
 		list.add(instruction);
 	}
 
@@ -46,10 +59,10 @@ public class Abstractor extends MethodVisitor {
 	public void visitInsn(int opcode) {
 		
 		// get operation
-		Operation operation = operations.getOperation(opcode);
+		AbstractOperation operation = operations.getOperation(opcode);
 		
 		// get value
-		Object value = null;
+		AbstractParameter value = null;
 		
 		switch(opcode) {
 			case Opcodes.ACONST_NULL: 	value = parameters.getNull(); break;
@@ -69,21 +82,18 @@ public class Abstractor extends MethodVisitor {
 			case Opcodes.DCONST_1:		value = parameters.getDouble(1); break;
 		}
 		
-		// prepare parameters
-		Object[] params = (value == null) ? null : new Object[] {value};
-		
-		// add instruction
-		add(operation, params);
+		// add an instruction with null or array of parameters
+		add(operation, value);
 	}
 
 	@Override
 	public void visitIntInsn(int opcode, int operand) {
 		
 		// get operation
-		Operation operation = operations.getOperation(opcode);
+		AbstractOperation operation = operations.getOperation(opcode);
 				
 		// get value
-		Object param = null;
+		AbstractParameter param = null;
 
 		// NEWARRAY
 		if (opcode == Opcodes.NEWARRAY) {
@@ -110,71 +120,50 @@ public class Abstractor extends MethodVisitor {
 		}
 				
 		// add instruction
-		add(operation, new Object[] {param});
+		add(operation, param);
 	}
 
 	@Override
 	public void visitVarInsn(int opcode, int var) {
 		
-		// get operation
-		Operation operation = operations.getOperation(opcode);
-		
-		// get parameters
-		Object param = parameters.getVariable(var);
-				
 		// add instruction
-		add(operation, new Object[] {param});
+		add(operations.getOperation(opcode), parameters.getVariable(var));
 	}
 
 	@Override
 	public void visitTypeInsn(int opcode, String type) {
-		
-		// get operation
-		Operation operation = operations.getOperation(opcode);
-		
-		// get parameters
-		Object param = parameters.getClass(type);
-				
+
 		// add instruction
-		add(operation, new Object[] {param});
+		add(operations.getOperation(opcode), parameters.getClass(type));
 	}
 
 	@Override
 	public void visitFieldInsn(int opcode, String owner, String name, String desc) {
 		
-		// get operation
-		Operation operation = operations.getOperation(opcode);
-		
 		// get parameters
-		Object param1 = parameters.getClass(owner);
-		Object param2 = parameters.getField(name, desc);
+		AbstractParameter p1 = parameters.getClass(owner);
+		AbstractParameter p2 = parameters.getField(name, desc);
 				
 		// add instruction
-		add(operation, new Object[] {param1, param2});
+		add(operations.getOperation(opcode), p1, p2);
 	}
 
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
 		
-		// get operation
-		Operation operation = operations.getOperation(opcode);
-		
 		// get parameters
-		Object param1 = parameters.getClass(owner);
-		Object param2 = parameters.getMethod(name, desc);
+		AbstractParameter param1 = parameters.getClass(owner);
+		AbstractParameter param2 = parameters.getMethod(name, desc);
 								
 		// add instruction
-		add(operation, new Object[] {param1, param2});
+		add(operations.getOperation(opcode), param1, param2);
 	}
 
 	@Override
 	public void visitInvokeDynamicInsn(String name, String desc, Handle bsm, Object... bsmArgs) {
-		
-		// get operation
-		Operation operation = operations.getOperation(Opcodes.INVOKEDYNAMIC);
 
 		// get parameters
-		Collection<Object> params = new LinkedList<>();
+		Collection<AbstractParameter> params = new LinkedList<>();
 				
 		params.add(parameters.getMethod(name, desc));
 		params.add(parameters.getHandle(bsm));
@@ -184,43 +173,28 @@ public class Abstractor extends MethodVisitor {
 		}
 						
 		// add instruction
-		add(operation, params.toArray());
+		add(operations.getOperation(Opcodes.INVOKEDYNAMIC), params);
 	}
 
 	@Override
 	public void visitJumpInsn(int opcode, Label label) {
-		
-		// get operation
-		Operation operation = operations.getOperation(opcode);
-		
-		// get parameter 
-		Object param = parameters.getLabel(label);
 				
 		// add instruction
-		add(operation, new Object[] {param});
+		add(operations.getOperation(opcode), labels.getLabel(label));
 	}
 
 	@Override
 	public void visitLabel(Label label) {
 		
-		// get operation
-		Operation operation = operations.getNone();
-		
-		// get parameter 
-		Object param = parameters.getLabel(label);
-				
 		// add instruction
-		add(operation, new Object[] {param});
+		add(labels.getLabel(label));
 	}
 
 	@Override
 	public void visitLdcInsn(Object cst) {
 		
-		// get operation
-		Operation operation = operations.getOperation(Opcodes.LDC);
-		
 		// get parameters
-		Collection<Object> params = new LinkedList<>();
+		Collection<AbstractParameter> params = new LinkedList<>();
 		
 		if (cst instanceof Integer) {
 			params.add(parameters.getInt((Integer)cst)); 
@@ -263,78 +237,63 @@ public class Abstractor extends MethodVisitor {
 		}
 						
 		// add instruction
-		add(operation, params.toArray());
+		add(operations.getOperation(Opcodes.LDC), params);
 	}
 
 	@Override
 	public void visitIincInsn(int var, int increment) {
 		
-		// get operation
-		Operation operation = operations.getOperation(Opcodes.IINC);
-		
-		// get parameter 
-		Object param = parameters.getInt(increment);
-				
 		// add instruction
-		add(operation, new Object[] {param});
+		add(operations.getOperation(Opcodes.IINC), parameters.getInt(increment));
 	}
 
 	@Override
-	public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
-		
-		// get operation
-		Operation operation = operations.getOperation(Opcodes.TABLESWITCH);
+	public void visitTableSwitchInsn(int min, int max, Label dflt, Label... lbs) {
 		
 		// get parameters
-		Collection<Object> params = new LinkedList<>();
+		Collection<AbstractParameter> params = new LinkedList<>();
 		
 		params.add(parameters.getInt(min));
 		params.add(parameters.getInt(max));
-		params.add(parameters.getLabel(dflt));
+		params.add(labels.getLabel(dflt));
 		
-		for (Label label : labels) {
-			params.add(parameters.getLabel(label));
+		for (Label label : lbs) {
+			params.add(labels.getLabel(label));
 		}
 				
 		// add instruction
-		add(operation, params.toArray());
+		add(operations.getOperation(Opcodes.TABLESWITCH), params);
 	}
 
 	@Override
-	public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
-		
-		// get operation
-		Operation operation = operations.getOperation(Opcodes.LOOKUPSWITCH);
+	public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] lbs) {
 		
 		// get parameters
-		Collection<Object> params = new LinkedList<>();
+		Collection<AbstractParameter> params = new LinkedList<>();
 		
-		params.add(parameters.getLabel(dflt));
+		params.add(labels.getLabel(dflt));
 		
 		for (int key : keys) {
 			params.add(parameters.getInt(key));
 		}
 		
-		for (Label label : labels) {
-			params.add(parameters.getLabel(label));
+		for (Label label : lbs) {
+			params.add(labels.getLabel(label));
 		}
 				
 		// add instruction
-		add(operation, params.toArray());
+		add(operations.getOperation(Opcodes.LOOKUPSWITCH), params);
 	}
 
 	@Override
 	public void visitMultiANewArrayInsn(String desc, int dims) {
 		
-		// get operation
-		Operation operation = operations.getOperation(Opcodes.MULTIANEWARRAY);
-		
 		// get parameter 
-		Object param1 = parameters.getClass(desc);
-		Object param2 = parameters.getInt(dims);
+		AbstractParameter param1 = parameters.getClass(desc);
+		AbstractParameter param2 = parameters.getInt(dims);
 				
 		// add instruction
-		add(operation, new Object[] {param1, param2});
+		add(operations.getOperation(Opcodes.MULTIANEWARRAY), param1, param2);
 	}
 
 }

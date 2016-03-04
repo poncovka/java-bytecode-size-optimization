@@ -2,20 +2,23 @@ package jbyco.analyze.patterns.instr;
 
 import java.util.Arrays;
 
-public class Instruction {
+import jbyco.analyze.patterns.instr.operation.AbstractOperation;
+import jbyco.analyze.patterns.instr.param.AbstractParameter;
+
+public class Instruction implements AbstractInstruction {
 	
 	// abstraction of opcode
-	final Operation operation;
+	final AbstractOperation operation;
 	
 	// parameters of the instruction
-	final Object[] parameters;
+	final AbstractParameter[] parameters;
 	
-	public Instruction(Operation operation, Object[] params) {
+	public Instruction(AbstractOperation operation, AbstractParameter[] params) {
 		this.operation = operation;
 		this.parameters = params;
 	}
 	
-	public Operation getOperation() {
+	public AbstractOperation getOperation() {
 		return operation;
 	}
 	
