@@ -30,11 +30,11 @@ public class MulticomponentParameter implements AbstractParameter {
 				first = false;
 			}
 			
-			buffer.append(component);
+			buffer.append(component.toString());
 		}
 		
 		buffer.append(')');
-		return super.toString();
+		return buffer.toString();
 	}
 
 	@Override

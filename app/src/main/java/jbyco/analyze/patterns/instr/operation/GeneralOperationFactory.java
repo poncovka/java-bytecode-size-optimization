@@ -28,13 +28,17 @@ public class GeneralOperationFactory extends AbstractOperationFactory {
 				    Opcodes.LDC
 				    ),
 	    LOAD		(
-		    		Opcodes.ILOAD,
+	    			Opcodes.ILOAD,
 		    	    Opcodes.LLOAD,
 		    	    Opcodes.FLOAD,
 		    	    Opcodes.DLOAD,
 		    	    Opcodes.ALOAD
 	    			),
 	    ALOAD		(
+	    			Opcodes.IALOAD,
+	    			Opcodes.LALOAD,
+	    			Opcodes.FALOAD,
+	    			Opcodes.DALOAD,
 	    			Opcodes.AALOAD,
 	    			Opcodes.BALOAD,
 	    			Opcodes.CALOAD,
