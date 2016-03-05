@@ -39,4 +39,9 @@ public class NumberedParameterFactory extends FullParameterFactory {
 		return p2;
 	}
 	
+	@Override
+	public void restart() {
+		map = new HashMap<>();
+		numbers = new EnumMap<>(Type.class);
+	}
 }

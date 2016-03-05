@@ -44,7 +44,7 @@ public class SizeAnalyzer implements Analyzer {
 			// init
 			this.file = file;
 			this.visitor.init(this.klass.getConstantPool());
-			
+						
 			// process file
 			new DescendingVisitor(this.klass, this.visitor).visit();
 						

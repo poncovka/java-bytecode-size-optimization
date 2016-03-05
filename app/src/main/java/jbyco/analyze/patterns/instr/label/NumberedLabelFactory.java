@@ -23,7 +23,7 @@ public class NumberedLabelFactory implements AbstractLabelFactory {
 		return label2;
 	}
 	
-	public void reset() {
+	public void restart() {
 		maxNumber = 0;
 		map = new HashMap<>();
 	}

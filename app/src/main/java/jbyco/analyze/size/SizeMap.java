@@ -11,7 +11,6 @@ public class SizeMap  {
 		
 		public int count;
 		public int realSize;
-		public int fullSize;
 		
 		public Item() {
 			init();
@@ -20,7 +19,6 @@ public class SizeMap  {
 		public void init () {
 			count = 0;
 			realSize = 0;
-			fullSize = 0;
 		}
 	}
 
@@ -38,7 +36,7 @@ public class SizeMap  {
 		}
 	}
 	
-	public void add(String key, int realSize, int fullSize) {
+	public void add(String key, int realSize) {
 		
 		// get item
 		Item item = map.get(key);
@@ -52,23 +50,19 @@ public class SizeMap  {
 		// update item
 		item.count++;
 		item.realSize += realSize;
-		item.fullSize += fullSize;
 	}
 		
 	public void print() {
 		
-		String format = "%-50s %-20s %-20s %-20s %-20s %-20s\n";
-		System.out.printf(format, "KEY", "COUNT", "REAL SIZE", "FULL SIZE", "AVG REAL", "AVG FULL");
-		
+		String format = "%-50s %-20s %-20s %-20s\n";
+		System.out.printf(format, "KEY", "COUNT", "REAL SIZE", "AVG REAL");		
 		for (String key : map.keySet()) {
 			Item item = map.get(key);
 			System.out.printf(format, 
 				key, 
 				item.count, 
 				item.realSize, 
-				item.fullSize,
-				Utils.intDivToString(item.realSize, item.count),
-				Utils.intDivToString(item.fullSize, item.count)
+				Utils.intDivToString(item.realSize, item.count)
 			);	
 		}
 	}

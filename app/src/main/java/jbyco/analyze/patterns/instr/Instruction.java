@@ -33,7 +33,7 @@ public class Instruction implements AbstractInstruction {
 		
 		for (Object parameter : parameters) {
 			buffer.append(' ');
-			buffer.append(parameter.toString());
+			buffer.append(parameter);
 		}
 		
 		return buffer.toString();

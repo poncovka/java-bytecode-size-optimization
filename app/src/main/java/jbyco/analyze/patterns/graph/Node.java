@@ -58,7 +58,7 @@ public class Node implements Comparable<Node> {
 	public Node findNextNode(Object item) {
 		
 		for(Node next : out) {
-			if (next.item == item) {
+			if (next.item.equals(item)) {
 				return next;
 			}
 		}

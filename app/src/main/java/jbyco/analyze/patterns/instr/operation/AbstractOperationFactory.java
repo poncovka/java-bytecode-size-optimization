@@ -24,9 +24,21 @@ public abstract class AbstractOperationFactory {
 	
 	// get operation for given opcode
 	public AbstractOperation getOperation(int opcode) {
-		return map[opcode];
+		
+		// get operation
+		AbstractOperation op = map[opcode];
+		
+		// check if exists
+		if (op == null) {
+			throw new NullPointerException("Unknown opcode " + opcode + ".");
+		}
+		
+		// return operation
+		return op;
 	}
 	
 	// get all operations
 	public abstract AbstractOperation[] all();
+	
+	public void restart() {};
 }

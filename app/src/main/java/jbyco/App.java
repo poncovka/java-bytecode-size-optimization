@@ -12,6 +12,15 @@ import com.beust.jcommander.Parameters;
 import jbyco.analyze.Analyzer;
 import jbyco.analyze.locals.LocalsAnalyzer;
 import jbyco.analyze.patterns.PatternsAnalyzer;
+import jbyco.analyze.patterns.instr.label.AbstractLabelFactory;
+import jbyco.analyze.patterns.instr.label.NumberedLabelFactory;
+import jbyco.analyze.patterns.instr.operation.AbstractOperationFactory;
+import jbyco.analyze.patterns.instr.operation.GeneralOperationFactory;
+import jbyco.analyze.patterns.instr.operation.TypedOperationFactory;
+import jbyco.analyze.patterns.instr.param.AbstractParameterFactory;
+import jbyco.analyze.patterns.instr.param.FullParameterFactory;
+import jbyco.analyze.patterns.instr.param.GeneralParameterFactory;
+import jbyco.analyze.patterns.instr.param.NumberedParameterFactory;
 import jbyco.analyze.size.SizeAnalyzer;
 import jbyco.io.BytecodeFiles;
 import jbyco.io.BytecodePrinter;
@@ -35,14 +44,12 @@ public class App {
 		MainArgs mainArgs = new MainArgs();
 		PrintArgs printArgs = new PrintArgs();
 		AnalyzeArgs analyzeArgs = new AnalyzeArgs();
-		PatternsArgs patternsArgs = new PatternsArgs();
 		
 		// process params
 		JCommander commander = new JCommander(mainArgs);
 		commander.setProgramName("jbyco");
 		commander.addCommand("print", printArgs);
 		commander.addCommand("analyze", analyzeArgs);
-		commander.addCommand("patterns", patternsArgs);
 		
 		try {
 			commander.parse(args);
@@ -63,7 +70,6 @@ public class App {
 		switch(command) {
 			case "print" 	: app.run(printArgs); break;
 			case "analyze" 	: app.run(analyzeArgs); break;
-			case "patterns" : app.run(patternsArgs); break;
 			default			: commander.usage(); break;
 		}
 		
@@ -123,7 +129,22 @@ public class App {
 			analyzer = new LocalsAnalyzer();
 		}
 		else if (args.patterns) {
-			analyzer = new PatternsAnalyzer();
+			
+			// init
+			AbstractOperationFactory operations;
+			AbstractParameterFactory parameters;
+			AbstractLabelFactory labels;
+			
+			operations = new GeneralOperationFactory();
+			//operation = new TypedOperationFactory();
+			
+			parameters = new GeneralParameterFactory();
+			//parameters = new NumberedParameterFactory();
+			//parameters = new FullParameterFactory();
+			
+			labels = new NumberedLabelFactory();
+			
+			analyzer = new PatternsAnalyzer(operations, parameters, labels);
 		}
 		else {
 			// TODO default statistics
@@ -143,22 +164,6 @@ public class App {
 		}
 		
 		analyzer.print();
-	}
-	
-	public void run(PatternsArgs args) {
-		System.out.println("Analyzing patterns...");
-		
-		// process all given paths
-		for (String path : args.paths) {
-			 
-			// start to search files
-			BytecodeFiles files = new BytecodeFiles(path);
-			
-			// iterate over class files
-			for (BytecodeFile file:files) {
-				
-			}	
-		}
 	}
 
 }
@@ -210,17 +215,4 @@ class AnalyzeArgs {
 	@Parameter(names = "--patterns", description = "Analyze patterns in instruction sequencies.")
 	public boolean patterns = false;
 	
-}
-
-@Parameters(commandDescription = "Analyze byte code patterns in class files methods.")
-class PatternsArgs {
-	
-	@Parameter(description = "PATHS", required = true)
-	public List<String> paths = new ArrayList<>();
-
-	@Parameter(names = "--generate", description = "Generate a file with a suffix graph.")
-	public boolean generateGraph = false;
-
-	@Parameter(names = "--simplify", description = "Simplify the patterns.")
-	public boolean simplify = false;
 }

@@ -2,12 +2,14 @@ package jbyco.analyze.patterns;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -16,7 +18,10 @@ import jbyco.analyze.Analyzer;
 import jbyco.analyze.patterns.graph.GraphBuilder;
 import jbyco.analyze.patterns.graph.SuffixTree;
 import jbyco.analyze.patterns.instr.Abstractor;
-import jbyco.analyze.patterns.instr.ActiveLabelsFinder;
+import jbyco.analyze.patterns.instr.label.AbstractLabelFactory;
+import jbyco.analyze.patterns.instr.label.ActiveLabelsFinder;
+import jbyco.analyze.patterns.instr.operation.AbstractOperationFactory;
+import jbyco.analyze.patterns.instr.param.AbstractParameterFactory;
 import jbyco.io.PatternsPrinter;
 import jbyco.io.file.BytecodeFile;
 
@@ -34,14 +39,17 @@ public class PatternsAnalyzer implements Analyzer {
 	// graph abstractor
 	Abstractor abstractor;
 		
-	public PatternsAnalyzer() {
+	public PatternsAnalyzer(AbstractOperationFactory operations, AbstractParameterFactory parameters, AbstractLabelFactory labels) {
 		graph = new SuffixTree();
 		builder = new GraphBuilder(graph);
-		abstractor = new Abstractor();
+		abstractor = new Abstractor(operations, parameters, labels);
 	}
 	
 	@Override
 	public void processFile(BytecodeFile file) {
+		
+		
+		
 		
 		try {
 			
@@ -51,27 +59,16 @@ public class PatternsAnalyzer implements Analyzer {
 			// read input stream
 			ClassReader reader = new ClassReader(in);
 			
-			// create method node and process it
-			ClassVisitor visitor = new ClassVisitor(Opcodes.ASM5) {
-								
-				@Override
-				public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-					
-					MethodNode method = new MethodNode(access, name, desc, signature, exceptions) {
-						
-						@Override
-						public void visitEnd() {
-							super.visitEnd();
-							processMethod(this);
-						}
-					};
-					
-					return method;
-				}
-			};
+			// create class node
+			ClassNode visitor = new ClassNode(Opcodes.ASM5);
 			
-			// process the file
+			// start the visit
 			reader.accept(visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+			
+			// process methods
+			for (Object method : visitor.methods) {
+				processMethod((MethodNode)method);
+			}
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -120,7 +117,7 @@ public class PatternsAnalyzer implements Analyzer {
 			start = start.getNext();
 			
 			// clear the instruction list
-			abstractor.clear();
+			abstractor.restart();
 		}
 	}
 	
@@ -134,15 +131,14 @@ public class PatternsAnalyzer implements Analyzer {
 	public void print() {
 		
 		// print graph
-		System.out.println("Graph:");
-		graph.print(System.out);
-				
-		System.out.println();
+		//System.out.println("Graph:");
+		//graph.print(System.out);		
+		//System.out.println();
 				
 		// print patterns
 		System.out.println("Patterns:");
 		PatternsPrinter printer = new PatternsPrinter();
-		printer.print(graph, ";", 100);	
+		printer.print(graph, ";", 1);	
 		
 	}
 

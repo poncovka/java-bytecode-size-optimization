@@ -39,20 +39,27 @@ public class Abstractor extends MethodVisitor {
 		this.list = new LinkedList<>();
 	}
 	
-	public Collection<AbstractInstruction> getList() {
-		return list;
-	}
-	
-	public void add(AbstractOperation operation, Collection<AbstractParameter> params) {
-		add(new Instruction(operation, (AbstractParameter[]) params.toArray()));
-	}
-	
 	public void add(AbstractOperation operation, AbstractParameter ...params) {
 		add(new Instruction(operation, params));
 	}
 	
+	public void add(AbstractOperation operation, Collection<AbstractParameter> params) {
+		add(new Instruction(operation, (AbstractParameter[]) params.toArray(new AbstractParameter[params.size()])));
+	}
+	
 	public void add(AbstractInstruction instruction) {
 		list.add(instruction);
+	}
+	
+	public Collection<AbstractInstruction> getList() {
+		return list;
+	}
+	
+	public void restart() {
+		list = new LinkedList<>();
+		operations.restart();
+		parameters.restart();
+		labels.restart();
 	}
 
 	@Override
@@ -82,8 +89,10 @@ public class Abstractor extends MethodVisitor {
 			case Opcodes.DCONST_1:		value = parameters.getDouble(1); break;
 		}
 		
-		// add an instruction with null or array of parameters
-		add(operation, value);
+		// add an instruction
+		if (value == null)   	add(operation);
+		else 					add(operation, value);
+		
 	}
 
 	@Override

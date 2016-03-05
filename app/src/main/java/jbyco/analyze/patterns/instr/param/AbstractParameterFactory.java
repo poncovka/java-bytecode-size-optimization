@@ -17,4 +17,6 @@ public interface AbstractParameterFactory {
 	
 	public AbstractParameter getNull();
 	public AbstractParameter getThis();
+	
+	public void restart();
 }

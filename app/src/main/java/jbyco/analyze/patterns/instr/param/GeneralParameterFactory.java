@@ -63,5 +63,8 @@ public class GeneralParameterFactory implements AbstractParameterFactory {
 	public AbstractParameter getThis() {
 		return Value.THIS;
 	}
+
+	@Override
+	public void restart() {}
 	
 }
