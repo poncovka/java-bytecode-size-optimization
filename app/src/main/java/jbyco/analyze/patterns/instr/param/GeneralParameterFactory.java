@@ -1,12 +1,15 @@
 package jbyco.analyze.patterns.instr.param;
 
-import org.objectweb.asm.Handle;
-
 public class GeneralParameterFactory implements AbstractParameterFactory {
 	
 	@Override
 	public AbstractParameter getVariable(int index) {
 		return Type.VARIABLE;
+	}
+	
+	@Override
+	public AbstractParameter getMethodParameter(int index) {
+		return Type.PARAMETER;
 	}
 
 	@Override
@@ -47,11 +50,6 @@ public class GeneralParameterFactory implements AbstractParameterFactory {
 	@Override
 	public AbstractParameter getMethod(String name, String desc) {
 		return Type.METHOD;
-	}
-
-	@Override
-	public AbstractParameter getHandle(Handle handle) {
-		return Type.HANDLER;
 	}
 
 	@Override

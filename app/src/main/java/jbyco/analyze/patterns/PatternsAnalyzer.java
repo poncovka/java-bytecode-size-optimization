@@ -36,13 +36,19 @@ public class PatternsAnalyzer implements Analyzer {
 	// graph builder
 	GraphBuilder builder;
 	
-	// graph abstractor
-	Abstractor abstractor;
+	// factories
+	AbstractOperationFactory operations;
+	AbstractParameterFactory parameters;
+	AbstractLabelFactory labels;
 		
 	public PatternsAnalyzer(AbstractOperationFactory operations, AbstractParameterFactory parameters, AbstractLabelFactory labels) {
-		graph = new SuffixTree();
-		builder = new GraphBuilder(graph);
-		abstractor = new Abstractor(operations, parameters, labels);
+		
+		this.operations = operations;
+		this.parameters = parameters;
+		this.labels = labels;
+		
+		this.graph = new SuffixTree();
+		this.builder = new GraphBuilder(graph);
 	}
 	
 	@Override
@@ -73,7 +79,20 @@ public class PatternsAnalyzer implements Analyzer {
 	}
 	
 	public void processMethod(MethodNode method) {
-				
+						
+		// create abstractor
+		Abstractor abstractor = 
+				new Abstractor(
+						method.access, 
+						method.name, 
+						method.desc, 
+						method.signature, 
+						null, 
+						operations, 
+						parameters, 
+						labels
+				);
+		
 		// find all active labels
 		ActiveLabelsFinder finder = new ActiveLabelsFinder();
 		method.accept(finder);
@@ -107,16 +126,19 @@ public class PatternsAnalyzer implements Analyzer {
 				node = node.getNext();
 			}
 			
-			
-			
 			// add instructions to the graph
 			builder.addPath(abstractor.getList());
 			
 			// start from next node
 			start = start.getNext();
 			
-			// clear the instruction list
-			abstractor.restart();
+			// clear abstractor list
+			abstractor.getList().clear();
+			
+			// restart factories
+			operations.restart();
+			parameters.restart();
+			labels.restart();
 		}
 	}
 	
@@ -137,7 +159,7 @@ public class PatternsAnalyzer implements Analyzer {
 		// print patterns
 		System.out.println("Patterns:");
 		PatternsPrinter printer = new PatternsPrinter();
-		printer.print(graph, ";", 100);	
+		printer.print(graph, ";", 0);	
 		
 	}
 

@@ -1,6 +1,6 @@
 package jbyco.analyze.patterns.instr.param;
 
-import org.objectweb.asm.Handle;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 public class FullParameterFactory implements AbstractParameterFactory {
 	
@@ -11,6 +11,11 @@ public class FullParameterFactory implements AbstractParameterFactory {
 	@Override
 	public AbstractParameter getVariable(int index) {
 		return createParameter(Type.VARIABLE, new Integer(index));
+	}
+	
+	@Override
+	public AbstractParameter getMethodParameter(int index) {
+		return createParameter(Type.PARAMETER, new Integer(index));
 	}
 
 	@Override
@@ -35,7 +40,8 @@ public class FullParameterFactory implements AbstractParameterFactory {
 
 	@Override
 	public AbstractParameter getString(String s) {
-		return createParameter(Type.STRING, s);
+		String s2 = "\"" + StringEscapeUtils.escapeJava(s) + "\"";
+		return createParameter(Type.STRING,  s2);
 	}
 
 	@Override
@@ -51,12 +57,6 @@ public class FullParameterFactory implements AbstractParameterFactory {
 	@Override
 	public AbstractParameter getMethod(String name, String desc) {
 		return createParameter(Type.METHOD, name, desc);
-	}
-
-	@Override
-	public AbstractParameter getHandle(Handle handle) {
-		// TODO
-		return createParameter(Type.HANDLER, handle);
 	}
 
 	@Override

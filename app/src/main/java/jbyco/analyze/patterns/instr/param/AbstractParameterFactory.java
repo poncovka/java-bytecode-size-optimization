@@ -1,7 +1,5 @@
 package jbyco.analyze.patterns.instr.param;
 
-import org.objectweb.asm.Handle;
-
 public interface AbstractParameterFactory {
 	
 	public AbstractParameter getVariable(int index);
@@ -13,7 +11,7 @@ public interface AbstractParameterFactory {
 	public AbstractParameter getClass(String internalName);
 	public AbstractParameter getField(String name, String desc);
 	public AbstractParameter getMethod(String name, String desc);
-	public AbstractParameter getHandle(Handle handle);
+	public AbstractParameter getMethodParameter(int index);
 	
 	public AbstractParameter getNull();
 	public AbstractParameter getThis();

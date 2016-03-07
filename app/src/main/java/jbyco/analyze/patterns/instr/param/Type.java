@@ -4,6 +4,7 @@ public enum Type implements AbstractParameter {
 	
 	LABEL 		("LABEL"),
 	VARIABLE 	("V"),
+	PARAMETER	("P"),
 	INT 		("I"),
 	FLOAT 		("F"),
 	LONG 		("L"),
@@ -11,8 +12,7 @@ public enum Type implements AbstractParameter {
 	STRING 		("S"),
 	CLASS		("CLASS"),
 	FIELD		("FIELD"),
-	METHOD		("METHOD"),
-	HANDLER		("HANDLER");
+	METHOD		("METHOD");
 	
 	private final String abbr;
 	

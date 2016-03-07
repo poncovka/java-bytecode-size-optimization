@@ -28,15 +28,45 @@ public class Abstractor extends MethodVisitor {
 	
 	// label factory
 	AbstractLabelFactory labels;
+	
+	// max index of method arguments
+	int maxArgs = 0;
+	
+	// is it static method?
+	boolean isStatic = false;
 		
-	public Abstractor(AbstractOperationFactory operations, AbstractParameterFactory parameters, AbstractLabelFactory labels) {
+	public Abstractor(	int access,
+   					  	String name,
+			            String desc,
+			            String signature,
+			            String[] exceptions,
+			            AbstractOperationFactory operations, 
+			            AbstractParameterFactory parameters, 
+			            AbstractLabelFactory labels
+			          ) {
+		
 		super(Opcodes.ASM5);
 		
+		// is the method static?
+		this.isStatic = ((access & Opcodes.ACC_STATIC) != 0);
+		
+		// what is the maximal index of method arguments?
+		this.maxArgs = isStatic ? 1 : 0;
+		
+		for (Type type : Type.getArgumentTypes(desc)) {
+			
+			// get sort of type
+			int sort = type.getSort();
+			
+			// add number of variables
+			maxArgs = (sort == Opcodes.DOUBLE || sort == Opcodes.LONG) ? 2 : 1;
+		}
+		
+		// init
+		this.list = new ArrayList<>();
 		this.operations = operations;
 		this.parameters = parameters;
 		this.labels = labels;
-		
-		this.list = new ArrayList<>();
 	}
 	
 	public void add(AbstractOperation operation, AbstractParameter ...params) {
@@ -55,11 +85,20 @@ public class Abstractor extends MethodVisitor {
 		return list;
 	}
 	
-	public void restart() {
-		list = new ArrayList<>();
-		operations.restart();
-		parameters.restart();
-		labels.restart();
+	public AbstractParameter processVariable(int index) {
+		
+		// this
+		if (index == 0 && !isStatic) {
+			return parameters.getThis();
+		}
+		// method parameter
+		else if (index <= maxArgs) {
+			return parameters.getMethodParameter(index);
+		}
+		// variable
+		else {
+			return parameters.getVariable(index);
+		}
 	}
 	
 	public Collection<AbstractParameter> processConstantValue(Object cst) {
@@ -79,7 +118,7 @@ public class Abstractor extends MethodVisitor {
 			list.add(parameters.getDouble((Double)cst));
 
 		} else if (cst instanceof String) {
-			list.add(parameters.getString((String)cst));
+			list.add(parameters.getString(((String)cst)));
 
 		} else if (cst instanceof Type) {
 
@@ -198,7 +237,7 @@ public class Abstractor extends MethodVisitor {
 	public void visitVarInsn(int opcode, int var) {
 		
 		// add instruction
-		add(operations.getOperation(opcode), parameters.getVariable(var));
+		add(operations.getOperation(opcode), processVariable(var));
 	}
 
 	@Override
@@ -276,7 +315,7 @@ public class Abstractor extends MethodVisitor {
 	public void visitIincInsn(int var, int increment) {
 		
 		// add instruction
-		add(operations.getOperation(Opcodes.IINC), parameters.getInt(increment));
+		add(operations.getOperation(Opcodes.IINC), processVariable(var), parameters.getInt(increment));
 	}
 
 	@Override

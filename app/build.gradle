@@ -39,6 +39,9 @@ dependencies {
     
     // command line parser
     compile 'com.beust:jcommander:1.48'
+    
+    // string escape
+    compile 'org.apache.commons:commons-lang3:3.4'
 
 	// junit
     testCompile 'junit:junit:4.12'
