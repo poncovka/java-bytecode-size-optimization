@@ -48,9 +48,6 @@ public class PatternsAnalyzer implements Analyzer {
 	@Override
 	public void processFile(BytecodeFile file) {
 		
-		
-		
-		
 		try {
 			
 			// get input stream
@@ -109,6 +106,8 @@ public class PatternsAnalyzer implements Analyzer {
 				// get next node
 				node = node.getNext();
 			}
+			
+			
 			
 			// add instructions to the graph
 			builder.addPath(abstractor.getList());

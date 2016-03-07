@@ -85,6 +85,9 @@ public class GraphBuilder {
 	
 	public void pruneGraph() {
 				
+		// init
+		// long denominator = threshold * Node.getTotal();
+		
 		// init stack
 		Stack<Node> stack = new Stack<>();
 		stack.push(graph.getRoot());
@@ -95,8 +98,12 @@ public class GraphBuilder {
 			// get the node
 			Node node = stack.pop();
 			
+			// should we prune the node?
+			boolean pruned = (node.getCount() <= threshold); 
+				// && ((node.getId() * node.getCount() / denominator) < 0.25);
+			
 			// prune?
-			if (node.getCount() <= threshold) {
+			if (pruned) {
 								
 				Node prev = node.getInputNode();
 				

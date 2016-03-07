@@ -2,6 +2,8 @@ package jbyco.analyze.patterns.instr.operation;
 
 import org.objectweb.asm.Opcodes;
 
+import jbyco.analyze.patterns.instr.param.AbstractParameter;
+
 public class TypedOperationFactory extends AbstractOperationFactory {
 
 	enum TypedOperation implements AbstractOperation {
@@ -184,7 +186,35 @@ public class TypedOperationFactory extends AbstractOperationFactory {
 		}
 	}
 	
-	public AbstractOperation[] all() {
+	public enum TypedHandleOperation implements AbstractHandleOperation {
+		
+		H_GETFIELD	(Opcodes.H_GETFIELD),
+		H_GETSTATIC	(Opcodes.H_GETSTATIC),
+		H_PUTFIELD	(Opcodes.H_PUTFIELD),
+		H_PUTSTATIC	(Opcodes.H_PUTSTATIC),	
+		H_INVOKEVIRTUAL (Opcodes.H_INVOKEVIRTUAL),
+		H_INVOKESTATIC (Opcodes.H_INVOKESTATIC),
+		H_INVOKESPECIAL (Opcodes.H_INVOKESPECIAL),
+		H_NEWINVOKESPECIAL (Opcodes.H_NEWINVOKESPECIAL),
+		H_INVOKEINTERFACE (Opcodes.H_INVOKEINTERFACE);
+	
+		private int[] tags;
+		
+		private TypedHandleOperation(int ...tags) {
+			this.tags = tags;
+		}
+		
+		public int[] getOpcodes() {
+			return this.tags;
+		}
+	}
+	
+	public AbstractOperation[] allOperations() {
 		return TypedOperation.values();
+	}
+
+	@Override
+	public AbstractOperation[] allHandleOperations() {
+		return TypedHandleOperation.values();
 	}
 }

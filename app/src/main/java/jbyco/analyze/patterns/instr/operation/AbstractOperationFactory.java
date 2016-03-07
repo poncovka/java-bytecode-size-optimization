@@ -2,28 +2,32 @@ package jbyco.analyze.patterns.instr.operation;
 
 public abstract class AbstractOperationFactory {
 	
-	// map opcode->operation
-	AbstractOperation[] map = new AbstractOperation[256];
-			
+	// map opcode -> operation
+	AbstractOperation[] operationMap = new AbstractOperation[256];
+	
+	// map handle kind -> operation
+	AbstractOperation[] handleMap = new AbstractHandleOperation[10];		
+	
 	public AbstractOperationFactory() {
+		init(operationMap, allOperations());
+		init(handleMap, allHandleOperations());
+	}
+	
+	private void init(AbstractOperation[] map, AbstractOperation[] operations) {
 		
 		// for all operations
-		for (AbstractOperation operation : all()) {
+		for (AbstractOperation operation : operations) {
+			
 			// for all opcodes
 			for (int opcode : operation.getOpcodes()) {
+				
 				// add pairs opcode,operation 
-				add(opcode, operation);
+				map[opcode] = operation;
 			}
-		}
+		}	
 	}
-	
-	// add new pair, TODO: check opcode
-	private void add(int opcode, AbstractOperation operation) {
-		map[opcode] = operation;
-	}
-	
-	// get operation for given opcode
-	public AbstractOperation getOperation(int opcode) {
+		
+	private AbstractOperation get(AbstractOperation[] map, int opcode) {
 		
 		// get operation
 		AbstractOperation op = map[opcode];
@@ -37,8 +41,20 @@ public abstract class AbstractOperationFactory {
 		return op;
 	}
 	
-	// get all operations
-	public abstract AbstractOperation[] all();
+	public AbstractOperation getOperation(int opcode) {
+		return get(operationMap, opcode);
+	}
 	
+	public AbstractHandleOperation getHandleOperation(int tag) {
+		return (AbstractHandleOperation) get(handleMap, tag);
+	}
+	
+	// get all operations
+	public abstract AbstractOperation[] allOperations();
+	
+	// get all handle operations
+	public abstract AbstractOperation[] allHandleOperations();
+	
+	// restart the factory
 	public void restart() {};
 }

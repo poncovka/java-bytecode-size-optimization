@@ -230,10 +230,41 @@ public class GeneralOperationFactory extends AbstractOperationFactory {
 		}
 		
 	}
+	
+	public enum GeneralHandleOperation implements AbstractOperation {
+		
+		H_GETFIELD	(Opcodes.H_GETFIELD),
+		H_GETSTATIC	(Opcodes.H_GETSTATIC),
+		H_PUTFIELD	(Opcodes.H_PUTFIELD),
+		H_PUTSTATIC	(Opcodes.H_PUTSTATIC),
+		H_INVOKE 	(
+					Opcodes.H_INVOKEVIRTUAL,
+					Opcodes.H_INVOKESTATIC,
+					Opcodes.H_INVOKESPECIAL,
+					Opcodes.H_INVOKEINTERFACE
+					),
+		H_NEWINVOKE (Opcodes.H_NEWINVOKESPECIAL);
+	
+		private int[] tags;
+		
+		private GeneralHandleOperation(int ...tags) {
+			this.tags = tags;
+		}
+		
+		public int[] getOpcodes() {
+			return this.tags;
+		}
+		
+	}
 
 	@Override
-	public AbstractOperation[] all() {
+	public AbstractOperation[] allOperations() {
 		return GeneralOperation.values();
+	}
+
+	@Override
+	public AbstractOperation[] allHandleOperations() {
+		return GeneralHandleOperation.values();
 	}
 		
 }

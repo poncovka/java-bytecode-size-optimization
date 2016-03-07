@@ -1,7 +1,7 @@
 package jbyco.analyze.patterns.instr;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
@@ -36,7 +36,7 @@ public class Abstractor extends MethodVisitor {
 		this.parameters = parameters;
 		this.labels = labels;
 		
-		this.list = new LinkedList<>();
+		this.list = new ArrayList<>();
 	}
 	
 	public void add(AbstractOperation operation, AbstractParameter ...params) {
@@ -56,10 +56,72 @@ public class Abstractor extends MethodVisitor {
 	}
 	
 	public void restart() {
-		list = new LinkedList<>();
+		list = new ArrayList<>();
 		operations.restart();
 		parameters.restart();
 		labels.restart();
+	}
+	
+	public Collection<AbstractParameter> processConstantValue(Object cst) {
+		
+		Collection<AbstractParameter> list = new ArrayList<>();
+		
+		if (cst instanceof Integer) {
+			list.add(parameters.getInt((Integer)cst)); 
+
+		} else if (cst instanceof Float) {
+			list.add(parameters.getFloat((Float)cst));
+
+		} else if (cst instanceof Long) {
+			list.add(parameters.getLong((Long)cst));
+
+		} else if (cst instanceof Double) {
+			list.add(parameters.getDouble((Double)cst));
+
+		} else if (cst instanceof String) {
+			list.add(parameters.getString((String)cst));
+
+		} else if (cst instanceof Type) {
+
+			Type type = (Type) cst;
+			int sort = type.getSort();
+
+			if (sort == Type.OBJECT) {
+				list.add(parameters.getClass(type.getInternalName()));
+				
+			} else if (sort == Type.ARRAY) {
+				list.add(parameters.getClass(type.getInternalName()));
+				
+			} else if (sort == Type.METHOD) {
+				list.add(parameters.getClass(type.getInternalName()));
+				list.add(parameters.getMethod("-", type.getDescriptor()));
+				
+			} else { // primitive type
+				list.add(parameters.getClass(type.getInternalName()));
+			}
+		} else if (cst instanceof Handle) {
+			
+			Handle handle = (Handle)cst;
+			
+			// tag
+			list.add(operations.getHandleOperation(handle.getTag()));
+			
+			// owner
+			list.add(parameters.getClass(handle.getOwner()));
+			
+			// field or method
+			if (handle.getTag() <= Opcodes.H_PUTSTATIC) {
+				list.add(parameters.getField(handle.getName(), handle.getDesc()));
+			}
+			else {
+				list.add(parameters.getMethod(handle.getName(), handle.getDesc()));
+			}
+
+		} else {
+			throw new IllegalArgumentException("Illegal constant value " + cst + ".");
+		}
+		
+		return list;
 	}
 
 	@Override
@@ -110,15 +172,15 @@ public class Abstractor extends MethodVisitor {
 			String type;
 			
 			switch(operand) {
-				case Opcodes.T_BOOLEAN: type = "x"; break;
-				case Opcodes.T_BYTE: 	type = "x"; break;
-				case Opcodes.T_CHAR: 	type = "x"; break;
-				case Opcodes.T_DOUBLE: 	type = "x"; break;
-				case Opcodes.T_FLOAT: 	type = "x"; break;
-				case Opcodes.T_INT: 	type = "x"; break;
-				case Opcodes.T_LONG: 	type = "x"; break;
-				case Opcodes.T_SHORT: 	type = "x"; break;
-				default:				type = "x"; // TODO exception
+				case Opcodes.T_BOOLEAN: type = "[Z"; break;
+				case Opcodes.T_BYTE: 	type = "[B"; break;
+				case Opcodes.T_CHAR: 	type = "[C"; break;
+				case Opcodes.T_DOUBLE: 	type = "[D"; break;
+				case Opcodes.T_FLOAT: 	type = "[F"; break;
+				case Opcodes.T_INT: 	type = "[I"; break;
+				case Opcodes.T_LONG: 	type = "[J"; break;
+				case Opcodes.T_SHORT: 	type = "[S"; break;
+				default: 				throw new IllegalArgumentException("Unknown type of the array.");
 			}
 			
 			param = parameters.getClass(type);
@@ -172,13 +234,17 @@ public class Abstractor extends MethodVisitor {
 	public void visitInvokeDynamicInsn(String name, String desc, Handle bsm, Object... bsmArgs) {
 
 		// get parameters
-		Collection<AbstractParameter> params = new LinkedList<>();
+		Collection<AbstractParameter> params = new ArrayList<>();
 				
+		// method
 		params.add(parameters.getMethod(name, desc));
-		params.add(parameters.getHandle(bsm));
-		
+
+		// handle
+		params.addAll(processConstantValue(bsm));
+				
+		// handle arguments
 		for (Object arg : bsmArgs) {
-			// TODO
+			params.addAll(processConstantValue(arg));
 		}
 						
 		// add instruction
@@ -201,52 +267,9 @@ public class Abstractor extends MethodVisitor {
 
 	@Override
 	public void visitLdcInsn(Object cst) {
-		
-		// get parameters
-		Collection<AbstractParameter> params = new LinkedList<>();
-		
-		if (cst instanceof Integer) {
-			params.add(parameters.getInt((Integer)cst)); 
-
-		} else if (cst instanceof Float) {
-			params.add(parameters.getFloat((Float)cst));
-
-		} else if (cst instanceof Long) {
-			params.add(parameters.getLong((Long)cst));
-
-		} else if (cst instanceof Double) {
-			params.add(parameters.getDouble((Double)cst));
-
-		} else if (cst instanceof String) {
-			params.add(parameters.getString((String)cst));
-
-		} else if (cst instanceof Type) {
-
-			Type type = (Type) cst;
-			int sort = type.getSort();
-
-			if (sort == Type.OBJECT) {
-				params.add(parameters.getClass(type.getInternalName()));
-				
-			} else if (sort == Type.ARRAY) {
-				params.add(parameters.getClass(type.getInternalName()));
-				
-			} else if (sort == Type.METHOD) {
-				params.add(parameters.getClass(type.getInternalName()));
-				params.add(parameters.getMethod("XXX", type.getDescriptor()));
-				
-			} else {
-				// TODO throw an exception
-			}
-		} else if (cst instanceof Handle) {
-			params.add(parameters.getHandle((Handle)cst));
-
-		} else {
-			// TODO throw an exception
-		}
 						
 		// add instruction
-		add(operations.getOperation(Opcodes.LDC), params);
+		add(operations.getOperation(Opcodes.LDC), processConstantValue(cst));
 	}
 
 	@Override
@@ -260,7 +283,7 @@ public class Abstractor extends MethodVisitor {
 	public void visitTableSwitchInsn(int min, int max, Label dflt, Label... lbs) {
 		
 		// get parameters
-		Collection<AbstractParameter> params = new LinkedList<>();
+		Collection<AbstractParameter> params = new ArrayList<>();
 		
 		params.add(parameters.getInt(min));
 		params.add(parameters.getInt(max));
@@ -278,7 +301,7 @@ public class Abstractor extends MethodVisitor {
 	public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] lbs) {
 		
 		// get parameters
-		Collection<AbstractParameter> params = new LinkedList<>();
+		Collection<AbstractParameter> params = new ArrayList<>();
 		
 		params.add(labels.getLabel(dflt));
 		
@@ -298,8 +321,8 @@ public class Abstractor extends MethodVisitor {
 	public void visitMultiANewArrayInsn(String desc, int dims) {
 		
 		// get parameter 
-		AbstractParameter param1 = parameters.getClass(desc);
-		AbstractParameter param2 = parameters.getInt(dims);
+		AbstractParameter param1 = parameters.getInt(dims);
+		AbstractParameter param2 = parameters.getClass(desc);
 				
 		// add instruction
 		add(operations.getOperation(Opcodes.MULTIANEWARRAY), param1, param2);
