@@ -1,6 +1,8 @@
 package jbyco.analyze.size;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 import jbyco.lib.Utils;
 
@@ -10,7 +12,7 @@ public class SizeMap  {
 	private class Item {
 		
 		public int count;
-		public int realSize;
+		public int size;
 		
 		public Item() {
 			init();
@@ -18,12 +20,12 @@ public class SizeMap  {
 		
 		public void init () {
 			count = 0;
-			realSize = 0;
+			size = 0;
 		}
 	}
 
 	// map string->item
-	HashMap<String, Item> map;
+	Map<String, Item> map;
 	
 	public SizeMap() {
 		this.map = new HashMap<>();
@@ -49,20 +51,31 @@ public class SizeMap  {
 		
 		// update item
 		item.count++;
-		item.realSize += realSize;
+		item.size += realSize;
 	}
 		
 	public void print() {
 		
-		String format = "%-50s %-20s %-20s %-20s\n";
-		System.out.printf(format, "KEY", "COUNT", "REAL SIZE", "AVG REAL");		
+		// ordering
+		Map<String, Item> map = new TreeMap<>(this.map);
+		
+		// format
+		String format = "%-50s %-20s %-20s %-20s %-20s\n";
+		
+		// header
+		System.out.printf(format, "KEY", "COUNT", "SIZE", "AVG", "SIZE/FILE");
+		
+		// get file item
+		Item file = this.map.get("FILE");
+		
 		for (String key : map.keySet()) {
 			Item item = map.get(key);
 			System.out.printf(format, 
 				key, 
 				item.count, 
-				item.realSize, 
-				Utils.intDivToString(item.realSize, item.count)
+				item.size, 
+				Utils.intDivToString(item.size, item.count),
+				Utils.doubleDivToString(item.size, file.size)
 			);	
 		}
 	}

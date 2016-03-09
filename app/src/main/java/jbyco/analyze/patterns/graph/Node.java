@@ -24,16 +24,15 @@ public class Node implements Comparable<Node> {
 	public Node(Object item) {
 		
 		this.id = maxid++;
-		
-		if (id > maxid) {
-			throw new ArithmeticException("Overflow of node's idetifier.");
-		}
-		
 		this.item = item;
 		
-		counter = 0;
-		in = null;
-		out = new ArrayList<Node>(0);	
+		if (this.id > maxid) {
+			throw new ArithmeticException("Integer overflow.");
+		}
+		
+		this.counter = 0;
+		this.in = null;
+		this.out = new ArrayList<Node>(0);	
 	}
 
 	static int getTotal() {
