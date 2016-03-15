@@ -21,6 +21,7 @@ import jbyco.analyze.patterns.instr.param.FullParameterFactory;
 import jbyco.analyze.patterns.instr.param.GeneralParameterFactory;
 import jbyco.analyze.patterns.instr.param.NumberedParameterFactory;
 import jbyco.analyze.size.SizeAnalyzer;
+import jbyco.analyze.statistics.StatisticsCollector;
 import jbyco.io.BytecodeFiles;
 import jbyco.io.BytecodePrinter;
 import jbyco.io.file.BytecodeFile;
@@ -123,7 +124,8 @@ public class App {
 		Analyzer analyzer;
 		
 		if (args.size) {
-			analyzer = new SizeAnalyzer();
+			//analyzer = new SizeAnalyzer();
+			analyzer = new StatisticsCollector();
 		}
 		else if (args.locals) {
 			analyzer = new LocalsAnalyzer();

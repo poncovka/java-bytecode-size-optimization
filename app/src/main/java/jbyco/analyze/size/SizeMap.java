@@ -10,18 +10,8 @@ public class SizeMap  {
 
 	// item of the map
 	private class Item {
-		
-		public int count;
-		public int size;
-		
-		public Item() {
-			init();
-		}
-		
-		public void init () {
-			count = 0;
-			size = 0;
-		}
+		public int count = 0;
+		public int size = 0;
 	}
 
 	// map string->item
@@ -31,14 +21,7 @@ public class SizeMap  {
 		this.map = new HashMap<>();
 	}
 	
-	public void init() {
-		
-		for (Item item : map.values()) {
-			item.init();
-		}
-	}
-	
-	public void add(String key, int realSize) {
+	public void add(String key, int size) {
 		
 		// get item
 		Item item = map.get(key);
@@ -51,7 +34,7 @@ public class SizeMap  {
 		
 		// update item
 		item.count++;
-		item.size += realSize;
+		item.size += size;
 	}
 		
 	public void print() {
@@ -60,10 +43,10 @@ public class SizeMap  {
 		Map<String, Item> map = new TreeMap<>(this.map);
 		
 		// format
-		String format = "%-50s %-20s %-20s %-20s %-20s\n";
+		String format = "%-50s %-20s %-20s %-20s\n";
 		
 		// header
-		System.out.printf(format, "KEY", "COUNT", "SIZE", "AVG", "SIZE/FILE");
+		System.out.printf(format, "KEY", "SIZE", "AVG", "SIZE/FILE");
 		
 		// get file item
 		Item file = this.map.get("FILE");
@@ -72,7 +55,6 @@ public class SizeMap  {
 			Item item = map.get(key);
 			System.out.printf(format, 
 				key, 
-				item.count, 
 				item.size, 
 				Utils.intDivToString(item.size, item.count),
 				Utils.doubleDivToString(item.size, file.size)
