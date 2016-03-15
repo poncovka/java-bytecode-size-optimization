@@ -16,6 +16,7 @@ import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
+import jbyco.io.BytecodeFiles;
 import jbyco.io.file.BytecodeFile;
 
 public class LocalsAnalyzer implements Analyzer {
@@ -120,5 +121,24 @@ public class LocalsAnalyzer implements Analyzer {
 	
 	public void print() {
 		map.print();
+	}
+	
+	public static void main(String[] args) {
+		
+		// init analyzer
+		Analyzer analyzer = new LocalsAnalyzer();
+		
+		// process files
+		for (String path : args) {
+			
+			BytecodeFiles files = new BytecodeFiles(path);
+			
+			for (BytecodeFile file : files) {
+				analyzer.processFile(file);
+			}
+		}
+		
+		// print results
+		analyzer.print();
 	}
 }

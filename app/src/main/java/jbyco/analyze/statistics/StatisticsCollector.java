@@ -14,6 +14,7 @@ import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
+import jbyco.io.BytecodeFiles;
 import jbyco.io.file.BytecodeFile;
 
 public class StatisticsCollector implements Analyzer {
@@ -126,6 +127,25 @@ public class StatisticsCollector implements Analyzer {
 	@Override
 	public void print() {
 		map.print();
+	}
+	
+	public static void main(String[] args) {
+		
+		// init analyzer
+		Analyzer analyzer = new StatisticsCollector();
+		
+		// process files
+		for (String path : args) {
+			
+			BytecodeFiles files = new BytecodeFiles(path);
+			
+			for (BytecodeFile file : files) {
+				analyzer.processFile(file);
+			}
+		}
+		
+		// print results
+		analyzer.print();
 	}
 
 }

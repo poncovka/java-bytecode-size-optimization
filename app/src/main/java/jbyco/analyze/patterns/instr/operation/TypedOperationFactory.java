@@ -2,8 +2,6 @@ package jbyco.analyze.patterns.instr.operation;
 
 import org.objectweb.asm.Opcodes;
 
-import jbyco.analyze.patterns.instr.param.AbstractParameter;
-
 public class TypedOperationFactory extends AbstractOperationFactory {
 
 	enum TypedOperation implements AbstractOperation {

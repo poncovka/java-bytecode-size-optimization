@@ -4,11 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -24,8 +21,12 @@ import jbyco.analyze.patterns.instr.Abstractor;
 import jbyco.analyze.patterns.instr.InstructionCache;
 import jbyco.analyze.patterns.instr.label.AbstractLabelFactory;
 import jbyco.analyze.patterns.instr.label.ActiveLabelsFinder;
+import jbyco.analyze.patterns.instr.label.NumberedLabelFactory;
 import jbyco.analyze.patterns.instr.operation.AbstractOperationFactory;
+import jbyco.analyze.patterns.instr.operation.TypedOperationFactory;
 import jbyco.analyze.patterns.instr.param.AbstractParameterFactory;
+import jbyco.analyze.patterns.instr.param.FullParameterFactory;
+import jbyco.io.BytecodeFiles;
 import jbyco.io.PatternsPrinter;
 import jbyco.io.file.BytecodeFile;
 
@@ -187,6 +188,38 @@ public class PatternsAnalyzer implements Analyzer {
 		PatternsPrinter printer = new PatternsPrinter();
 		printer.print(graph, ";", 100);	
 		
+	}
+	
+	public static void main(String[] args) {
+		
+		AbstractOperationFactory operations;
+		AbstractParameterFactory parameters;
+		AbstractLabelFactory labels;
+		
+		//operations = new GeneralOperationFactory();
+		operations = new TypedOperationFactory();
+		
+		//parameters = new GeneralParameterFactory();
+		//parameters = new NumberedParameterFactory();
+		parameters = new FullParameterFactory();
+		
+		labels = new NumberedLabelFactory();
+		
+		// init analyzer
+		Analyzer analyzer = new PatternsAnalyzer(operations, parameters, labels);
+		
+		// process files
+		for (String path : args) {
+			
+			BytecodeFiles files = new BytecodeFiles(path);
+			
+			for (BytecodeFile file : files) {
+				analyzer.processFile(file);
+			}
+		}
+		
+		// print results
+		analyzer.print();
 	}
 
 }

@@ -22,4 +22,21 @@ public class Utils {
 		return (y == 0) ? "0" : format.format(x * 1.0 / y); 
 	}
 	
+	public static <T> String arrayToString(T[] array, String delimiter) {
+		
+		StringBuilder builder = new StringBuilder();
+		
+		// first item
+		if (0 < array.length) {
+			builder.append(array[0]);
+		}
+		
+		// other items separated by delimiter
+		for (int i = 1; i < array.length; i++) {
+			builder.append(delimiter);
+			builder.append(array[i]);
+		}
+				
+		return builder.toString();
+	}
 }
