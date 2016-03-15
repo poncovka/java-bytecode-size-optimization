@@ -3,6 +3,7 @@ package jbyco.analyze.size;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.BitSet;
 
 import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Attribute;
@@ -10,6 +11,9 @@ import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.Constant;
+import org.apache.bcel.classfile.ConstantCP;
+import org.apache.bcel.classfile.ConstantClass;
+import org.apache.bcel.classfile.ConstantNameAndType;
 import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.classfile.ConstantUtf8;
 import org.apache.bcel.classfile.Field;
@@ -51,6 +55,9 @@ public class SizeAnalyzer implements Analyzer {
 						
 			// process file
 			processClassFile(this.klass);
+			
+			// process strings in a file
+			processStrings(this.klass);
 						
 		} catch (ClassFormatException e) {
 			e.printStackTrace();
@@ -58,6 +65,44 @@ public class SizeAnalyzer implements Analyzer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	static public int getConstantSize(Constant c) {
+		
+		int size = 0;
+		
+		// get basic size
+		switch(c.getTag()) {
+			case Constants.CONSTANT_Integer: 			
+			case Constants.CONSTANT_Float: 				size = 5; break;
+			case Constants.CONSTANT_Long: 				
+			case Constants.CONSTANT_Double: 			size = 9; break;
+			case Constants.CONSTANT_Utf8: 				size = 3; break;
+			case Constants.CONSTANT_String: 			size = 3; break;
+			case Constants.CONSTANT_NameAndType: 		size = 5; break;
+			case Constants.CONSTANT_Class: 				size = 3; break;
+			case Constants.CONSTANT_Fieldref: 			
+			case Constants.CONSTANT_Methodref: 				
+			case Constants.CONSTANT_InterfaceMethodref: size = 5; break;
+			case Constants.CONSTANT_MethodHandle: 		size = 4; break;
+			case Constants.CONSTANT_MethodType: 		size = 3; break;
+			case Constants.CONSTANT_InvokeDynamic: 		size = 5; break;
+			default: throw new IllegalArgumentException("Unknown constant tag " + c + ".");
+		}
+		
+		// add variable size
+		if (c instanceof ConstantUtf8) {
+			try {
+				
+				ConstantUtf8 c2 = (ConstantUtf8) c;
+				size += c2.getBytes().getBytes("UTF-8").length;
+				
+			} catch (UnsupportedEncodingException e) {
+				throw new IllegalArgumentException("Unreadable CONSTANT_Utf8 " + c + ".");
+			}
+		}
+		
+		return size;
 	}
 	
 	protected void processClassFile(JavaClass klass) {
@@ -71,7 +116,7 @@ public class SizeAnalyzer implements Analyzer {
 		map.add("FILE", klass.getBytes().length);
 		
 	}
-	
+
 	protected void processConstantPool(ConstantPool pool) {
 		
 		int total = 0;
@@ -181,45 +226,99 @@ public class SizeAnalyzer implements Analyzer {
 		}	
 	}
 	
-	static public int getConstantSize(Constant c) {
-	
-		int size = 0;
+	private void processStrings(JavaClass klass) {
 		
-		// get basic size
-		switch(c.getTag()) {
-			case Constants.CONSTANT_Integer: 			
-			case Constants.CONSTANT_Float: 				size = 5; break;
-			case Constants.CONSTANT_Long: 				
-			case Constants.CONSTANT_Double: 			size = 9; break;
-			case Constants.CONSTANT_Utf8: 				size = 3; break;
-			case Constants.CONSTANT_String: 			size = 3; break;
-			case Constants.CONSTANT_NameAndType: 		size = 5; break;
-			case Constants.CONSTANT_Class: 				size = 3; break;
-			case Constants.CONSTANT_Fieldref: 			
-			case Constants.CONSTANT_Methodref: 				
-			case Constants.CONSTANT_InterfaceMethodref: size = 5; break;
-			case Constants.CONSTANT_MethodHandle: 		size = 4; break;
-			case Constants.CONSTANT_MethodType: 		size = 3; break;
-			case Constants.CONSTANT_InvokeDynamic: 		size = 5; break;
-			default: throw new IllegalArgumentException("Unknown constant tag " + c + ".");
+		// get constant pool
+		ConstantPool cp = klass.getConstantPool();
+		
+		// calculate length of constant pool
+		int length = cp.getLength() + 1;
+		
+		// init bit sets
+		BitSet classNames = new BitSet(length);
+		BitSet methodNames = new BitSet(length);
+		BitSet fieldNames = new BitSet(length);
+		BitSet methodSignatures = new BitSet(length);
+		BitSet fieldSignatures = new BitSet(length);
+		
+		// process fields
+		for (Field f : klass.getFields()) {
+			fieldNames.set(f.getNameIndex());
+			fieldSignatures.set(f.getSignatureIndex());
 		}
 		
-		// add variable size
-		if (c instanceof ConstantUtf8) {
-			try {
+		// process methods
+		for (Method m : klass.getMethods()) {
+			methodNames.set(m.getNameIndex());
+			methodSignatures.set(m.getSignatureIndex());
+		}
+		
+		// process constants
+		for (Constant c : cp.getConstantPool()) {
+			
+			//  ConstantFieldref, ConstantInterfaceMethodref, ConstantMethodref
+			if(c instanceof ConstantCP) {
+								
+				Constant c2 = cp.getConstant(((ConstantCP)c).getNameAndTypeIndex());
 				
-				ConstantUtf8 c2 = (ConstantUtf8) c;
-				size += c2.getBytes().getBytes("UTF-8").length;
-				
-			} catch (UnsupportedEncodingException e) {
-				throw new IllegalArgumentException("Unreadable CONSTANT_Utf8 " + c + ".");
+				// ConstantNameAndType
+				if (c2 instanceof ConstantNameAndType) {
+					
+					ConstantNameAndType c3 = (ConstantNameAndType) c2;
+					int nameIndex = c3.getNameIndex();
+					int sigIndex = c3.getSignatureIndex();
+					
+					// process field name and signature
+					if (c.getTag() == Constants.CONSTANT_Fieldref) {
+						fieldNames.set(nameIndex);
+						fieldSignatures.set(sigIndex);
+					}
+					// process method name and signature
+					else {
+						methodNames.set(nameIndex);
+						methodSignatures.set(sigIndex);
+					}
+				}
+			}
+			// ConstantClass
+			else if (c instanceof ConstantClass) {
+				classNames.set(((ConstantClass)c).getNameIndex());
 			}
 		}
 		
-		return size;
+		// process indexes
+		processStringIndexes(cp, classNames, 		"CLASS_NAME");
+		processStringIndexes(cp, methodNames, 		"METHOD_NAME");
+		processStringIndexes(cp, fieldNames, 		"FIELD_NAME");
+		processStringIndexes(cp, methodSignatures, 	"METHOD_SIGNATURE");
+		processStringIndexes(cp, fieldSignatures, 	"FIELD_SIGNATURE");
+	}
+	
+	protected void processStringIndexes(ConstantPool cp, BitSet set, String description) {
+		
+		int total = 0;
+		
+		for (int i = set.nextSetBit(0); i >= 0; i = set.nextSetBit(i+1)) {
+			
+			// get size
+			int size = getConstantSize(cp.getConstant(i)) - 3;
+			
+			// add to total size
+			total += size;
+			
+			// add size to map
+			map.add("STRING_" + description, size);
+			
+		     // overflow protection
+		     if (i == Integer.MAX_VALUE) {
+		         break;
+		     }
+		 }
+		
+		// add total to map
+		map.add("FILE_STRINGS_" + description, total);
 	}
 
-	
 	@Override
 	public void print() {
 		this.map.print();

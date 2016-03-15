@@ -11,7 +11,6 @@ import com.beust.jcommander.Parameters;
 
 import jbyco.analyze.Analyzer;
 import jbyco.analyze.locals.LocalsAnalyzer;
-import jbyco.analyze.patterns.PatternsAnalyzer;
 import jbyco.analyze.patterns.instr.label.AbstractLabelFactory;
 import jbyco.analyze.patterns.instr.label.NumberedLabelFactory;
 import jbyco.analyze.patterns.instr.operation.AbstractOperationFactory;
@@ -25,6 +24,7 @@ import jbyco.analyze.size.SizeAnalyzer;
 import jbyco.io.BytecodeFiles;
 import jbyco.io.BytecodePrinter;
 import jbyco.io.file.BytecodeFile;
+import jbyco.analyze.patterns.PatternsAnalyzer;
 
 // java jbyco print -h -c -f -m -a filename
 // java jbyco help
@@ -135,12 +135,12 @@ public class App {
 			AbstractParameterFactory parameters;
 			AbstractLabelFactory labels;
 			
-			operations = new GeneralOperationFactory();
-			//operation = new TypedOperationFactory();
+			//operations = new GeneralOperationFactory();
+			operations = new TypedOperationFactory();
 			
-			parameters = new GeneralParameterFactory();
+			//parameters = new GeneralParameterFactory();
 			//parameters = new NumberedParameterFactory();
-			//parameters = new FullParameterFactory();
+			parameters = new FullParameterFactory();
 			
 			labels = new NumberedLabelFactory();
 			
