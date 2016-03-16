@@ -30,7 +30,6 @@ import jbyco.analyze.patterns.instr.param.FullParameterFactory;
 import jbyco.analyze.patterns.instr.param.GeneralParameterFactory;
 import jbyco.analyze.patterns.instr.param.NumberedParameterFactory;
 import jbyco.io.BytecodeFiles;
-import jbyco.io.PatternsPrinter;
 import jbyco.io.file.BytecodeFile;
 import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
@@ -205,21 +204,21 @@ public class PatternsAnalyzer implements Analyzer {
 	
 	enum Option implements AbstractOption {
 		
-		MAX_LENGTH			("Set maximal length of a pattern. Default: 10.",
+		MAX_LENGTH			("Set the maximal length of a pattern. Default: 10.",
 							 "--max-length"),
-		MIN_FREQUENCY		("Set minimal frequency of a printed pattern. Default: 100.",
+		MIN_FREQUENCY		("Set the minimal frequency of a printed pattern. Default: 100.",
 							 "--min-frequency"),
 		DELIMITER			("Set a string used to separate instruction in patterns. Default: ';'.",
 							 "--delimiter"),
-		GENERAL_OPERATIONS ("Use general form of operations.",
+		GENERAL_OPERATIONS ("Use a general form of operations.",
 							 "-o1", "--general-operations"),
-		TYPED_OPERATIONS 	("Use typed form of operations. Default option.",
+		TYPED_OPERATIONS 	("Use a typed form of operations. Default option.",
 							 "-o2", "--typed-operations"),
-		GENERAL_PARAMETERS	("Use general form of parameters.",
+		GENERAL_PARAMETERS	("Use a general form of parameters.",
 							 "-p1", "--general-parameters"),
-		NUMBERED_PARAMETERS	("Use numbered form of parameters.",
+		NUMBERED_PARAMETERS	("Use a numbered form of parameters.",
 							 "-p2", "--numbered-parameters"),
-		FULL_PARAMETERS		("Use full form of parameters. Default option.",
+		FULL_PARAMETERS		("Use a full form of parameters. Default option.",
 							 "-p3", "--full-parameters"),
 		HELP				("Show this message.", 
 							 "-h", "--help");
@@ -274,8 +273,14 @@ public class PatternsAnalyzer implements Analyzer {
 			String arg = args[i];
 			Option option = (Option)options.getOption(arg);
 			
+			// help
+			if (option == Option.HELP) {
+				options.help();
+				return;
+			}
+			
 			// set max length
-			if (option == Option.MAX_LENGTH) {
+			else if (option == Option.MAX_LENGTH) {
 				
 				if (++i < args.length) {
 					MAX_LENGTH = Integer.parseUnsignedInt(args[i]);
@@ -325,10 +330,7 @@ public class PatternsAnalyzer implements Analyzer {
 			else if (option == Option.FULL_PARAMETERS) {
 				parameters = new FullParameterFactory();
 			}
-			else if (option == Option.HELP) {
-				options.help();
-				return;
-			}
+			
 			// files
 			else {
 				break;

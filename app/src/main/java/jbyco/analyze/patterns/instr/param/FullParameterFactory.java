@@ -2,6 +2,8 @@ package jbyco.analyze.patterns.instr.param;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import jbyco.lib.Utils;
+
 public class FullParameterFactory implements AbstractParameterFactory {
 	
 	public AbstractParameter createParameter(Type type, Object ...components) {
@@ -40,8 +42,7 @@ public class FullParameterFactory implements AbstractParameterFactory {
 
 	@Override
 	public AbstractParameter getString(String s) {
-		String s2 = "\"" + StringEscapeUtils.escapeJava(s) + "\"";
-		return createParameter(Type.STRING,  s2);
+		return createParameter(Type.STRING,  Utils.getEscapedString(s, "\""));
 	}
 
 	@Override

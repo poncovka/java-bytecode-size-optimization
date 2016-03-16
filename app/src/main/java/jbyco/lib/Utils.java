@@ -4,6 +4,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 public class Utils {
 
 	public static String intDivToString(int x, int y) {
@@ -39,4 +41,8 @@ public class Utils {
 				
 		return builder.toString();
 	}
+	
+	public static String getEscapedString(String string, String quoted) {
+		return quoted + StringEscapeUtils.escapeJava(string) + quoted;
+	} 
 }

@@ -6,6 +6,8 @@ import jbyco.analyze.locals.LocalsAnalyzer;
 import jbyco.analyze.patterns.PatternsAnalyzer;
 import jbyco.analyze.size.SizeAnalyzer;
 import jbyco.analyze.statistics.StatisticsCollector;
+import jbyco.io.BytecodePrinter;
+import jbyco.io.BytecodePrinter;
 import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
 import jbyco.lib.Utils;
@@ -70,8 +72,9 @@ public class App {
 			// run command
 			switch(option) {
 				case HELP:					options.help(); 
+											return;
+				case PRINT:					BytecodePrinter.main(arguments);
 											break;
-				case PRINT:					break;
 				case STATISTICS:			StatisticsCollector.main(arguments);
 											break;
 				case ANALYZE_LOCALS:		LocalsAnalyzer.main(arguments);

@@ -1,4 +1,4 @@
-package jbyco.io;
+package jbyco.analyze.patterns;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

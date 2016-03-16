@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
-import jbyco.io.PatternsPrinter;
+import jbyco.analyze.patterns.PatternsPrinter;
 
 public class Main {
 	

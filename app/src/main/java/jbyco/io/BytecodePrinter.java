@@ -2,69 +2,93 @@ package jbyco.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.PrintWriter;
 
 import org.apache.bcel.Constants;
-import org.apache.bcel.classfile.Attribute;
 import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.Constant;
+import org.apache.bcel.classfile.ConstantCP;
 import org.apache.bcel.classfile.ConstantClass;
-import org.apache.bcel.classfile.ConstantDouble;
-import org.apache.bcel.classfile.ConstantFieldref;
-import org.apache.bcel.classfile.ConstantFloat;
-import org.apache.bcel.classfile.ConstantInteger;
-import org.apache.bcel.classfile.ConstantInterfaceMethodref;
-import org.apache.bcel.classfile.ConstantLong;
-import org.apache.bcel.classfile.ConstantMethodref;
-import org.apache.bcel.classfile.ConstantNameAndType;
 import org.apache.bcel.classfile.ConstantPool;
-import org.apache.bcel.classfile.ConstantString;
 import org.apache.bcel.classfile.ConstantUtf8;
-import org.apache.bcel.classfile.EmptyVisitor;
-import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
-import org.apache.bcel.classfile.Method;
-import org.apache.bcel.classfile.Utility;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 import jbyco.io.file.BytecodeFile;
+import jbyco.lib.AbstractOption;
+import jbyco.lib.AbstractOptions;
 
 public class BytecodePrinter {
 	
-	// output stream
-	PrintStream out;
+	static boolean CODE 	= true;
+	static boolean DEBUG 	= false;
+	static boolean FRAMES 	= false;
+	static boolean EXPANDED = false;
+	static boolean POOL 	= false;
 	
-	// bytecode file to print
-	BytecodeFile file;
-	
-	// structure of class file
-	JavaClass klass;
-	
-	// constant visitor
-	ConstantVisitor visitor;
-	
-	public BytecodePrinter() {
+	static public int getFlags() {
 		
-		this.out = System.out;
-		this.file = null;
-		this.klass = null;
+		int flags = 0;
 		
-		this.visitor = new ConstantVisitor();
+		if (!CODE) 			flags |= ClassReader.SKIP_CODE;
+		if (!DEBUG)			flags |= ClassReader.SKIP_DEBUG;
+		if (EXPANDED)		flags |= ClassReader.EXPAND_FRAMES;
+		else if (!FRAMES)	flags |= ClassReader.SKIP_FRAMES;
+		
+		return flags;
 	}
 	
-	public void setFile(BytecodeFile file) {
+	public void print(BytecodeFile file) {
 		
+		printFile(file);
+		
+		if (POOL) {
+			System.out.println();
+			printConstanPool(file);
+		}
+		
+	}
+	
+	public void printFile(BytecodeFile file) {
+		
+		try {
+			
+			// get input stream
+			InputStream in = file.getInputStream();
+			
+			// read input stream
+			ClassReader reader = new ClassReader(in);
+			
+			// print bytecode
+			ClassVisitor visitor = new TraceClassVisitor(new PrintWriter(System.out));  
+			
+			// start the visit
+			reader.accept(visitor, getFlags());
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void printConstanPool(BytecodeFile file) {
+				
 		try {		
 			// get input stream
-			String filename = file.getName();
 			InputStream stream = file.getInputStream();
 			
 			// parse class file
-			ClassParser parser = new ClassParser(stream, filename);
-			this.klass = parser.parse();
-
-			// set file
-			this.file = file;
+			ClassParser parser = new ClassParser(stream, file.getName());
+			JavaClass klass = parser.parse();
+			
+			// init printer
+			ConstantPoolPrinter printer = new ConstantPoolPrinter();
+			
+			// print
+			printer.print(klass);
 			
 		} catch (ClassFormatException e) {
 			e.printStackTrace();
@@ -72,226 +96,110 @@ public class BytecodePrinter {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public void printSummary() {
-		print(klass, file.getName());	
+		
 	}
 	
-	public void printConstantPool() {
-		print(klass.getConstantPool());
+	
+
+	///////////////////////////////////////////////////////////////// MAIN
+	
+	enum Option implements AbstractOption {
+		
+		PRINT_BASIC 	("Print withount code.",
+						 "--basic"),
+		PRINT_DEBUG 	("Print debug information.",
+						 "--debug"),
+		PRINT_FRAMES	("Print frames.",
+						 "--frames"),
+		PRINT_EFRAMES 	("Print expanded frames.",
+						 "--expanded-frames"),
+		PRINT_POOL		("Print the constant pool.",
+						 "--pool"),
+		HELP			("Show this message.",
+						 "-h", "--help");
+		
+		String description;
+		String[] names;
+		
+		private Option(String description, String ...names) {
+			this.description = description;
+			this.names = names;
+		}
+
+		@Override
+		public String getDescription() {
+			return this.description;
+		}
+
+		@Override
+		public String[] getNames() {
+			return this.names;
+		}
 	}
 	
-	public void printMethods() {
-		print(klass.getMethods());
-	}
-		
-	public void print(JavaClass klass, String filename) {
-		
-		// print header summary
-		
-		printDict("File:", filename);
-		printDict("Version:", klass.getMajor() + "." + klass.getMinor());
-		printDict("Constant pool:", klass.getConstantPool().getLength() - 1 + " entries");
-		
-		printDict("Access flags:", Utility.accessToString(klass.getAccessFlags()));
-		printDict("Class:", klass.getClassName());
-		printDict("Superclass:", klass.getSuperclassName());
-		
-		// print interfaces summary
-		
-		out.println();
-		out.printf("%d interfaces:\n", klass.getInterfaceNames().length);
-		
-		for (String name : klass.getInterfaceNames()) {
-			printList(name);
-		}
-		
-		// print fields summary
-		
-		out.println();
-		out.printf("%d fields:\n", klass.getFields().length);
-		
-		for (Field field : klass.getFields()) {
-			printList(field);
-		}
-		
-		// print methods summary
-		
-		out.println();
-		out.printf("%d methods:\n", klass.getMethods().length);
-		
-		for (Method method : klass.getMethods()) {
-			printList(method);
-		}
-		
-		// print attributes summary
-		
-		out.println();
-		out.printf("%d attributes:\n", klass.getAttributes().length);
+	static class Options extends AbstractOptions {
 
-		for (Attribute attr : klass.getAttributes()) {
-			printList(attr);
+		@Override
+		public AbstractOption[] all() {
+			return Option.values();
 		}
 		
-		out.println();
 	}
 	
-	public void print(ConstantPool pool) {
+	public static void main(String[] args) {
 		
-		out.println("Constant pool:\n");
+		Options options = new Options();
 		
-		for(int i = 1; i < pool.getLength(); i++) {
+		// process options
+		int i = 0;
+		for (; i < args.length; i++) {
 			
-			// get constant
-			Constant c = pool.getConstant(i);
+			String arg = args[i];
+			Option option = (Option)options.getOption(arg);
 			
-			// get info
-			String info = visitor.getInfo(c);
+			// files
+			if (option == null) {
+				break;
+			}
 			
-			// print constant
-			printConstant(i, c.getTag(), info);
-		}
-		
-		out.println();
-	}
-	
-	public void print(Method[] methods) {
-		
-		out.println("Methods:\n");
-		
-		for(int i = 1; i < methods.length; i++) {
-			
-			// get method
-			Method method = methods[i];
-			
-			// print method
-			printMethod(i, method.toString(), method.getCode().toString());			
-		}	
-		
-		out.println();
-	}
-	
-	public void printConstant(int index, int tag, String info) {
-		out.printf("%-5s %-20s (%s)\n", "[" + index + "]", Constants.CONSTANT_NAMES[tag], info);
-	}
-	
-	public void printMethod(int index, String method, String code) {
-		out.printf("%-5s %s\n\n%s\n", "[" + index + "]", method, code);
-	}
-	
-	public void printDict(String key, String item) {
-		out.printf("%-15s %s\n", key, item);
-	}
-	
-	public void printList(Object item) {
-		out.printf("      %s\n", item);
-	}
-
-	private class ConstantVisitor extends EmptyVisitor {
-
-		StringBuffer buffer = new StringBuffer();
-		
-		public String getInfo(Constant c) {
-			
-			// init buffer
-			buffer.setLength(0);
-			
-			// get info
-			c.accept(this);
-			
-			// return string
-			return buffer.toString();
+			// process option
+			switch(option) {
+				case PRINT_POOL:	POOL = true;
+									break;
+				case PRINT_DEBUG:	DEBUG = true;
+									break;
+				case PRINT_FRAMES:	FRAMES = true;
+									break;
+				case PRINT_EFRAMES:	EXPANDED = true;
+									break;
+				case PRINT_BASIC:	CODE = false;
+									DEBUG = false;
+									FRAMES = false;
+									EXPANDED = false;
+									POOL = false;
+									break;
+				case HELP:			options.help();
+									return;
+			}
 		}
 		
-		@Override
-		public void visitConstantClass(ConstantClass c) {
-			buffer
-			.append("name_index = ")
-			.append(c.getNameIndex());
+		// init printer
+		BytecodePrinter printer = new BytecodePrinter();
+		
+		// print files
+		for(; i < args.length; i++) {
+			
+			// get files
+			BytecodeFiles files = new BytecodeFiles(args[i]);
+			
+			// process files
+			for (BytecodeFile file : files) {
+				
+				// print
+				printer.print(file);
+			}
+			
 		}
-
-		@Override
-		public void visitConstantDouble(ConstantDouble c) {
-			buffer
-			.append("bytes = ")
-			.append(c.getBytes());
-		}
-
-		@Override
-		public void visitConstantFieldref(ConstantFieldref c) {
-			buffer
-			.append("class_index = ")
-			.append(c.getClassIndex())
-			.append(", ")
-			.append("name_and_type_index = ")
-			.append(c.getNameAndTypeIndex());			
-		}
-
-		@Override
-		public void visitConstantFloat(ConstantFloat c) {
-			buffer
-			.append("bytes = ")
-			.append(c.getBytes());			
-		}
-
-		@Override
-		public void visitConstantInteger(ConstantInteger c) {
-			buffer
-			.append("bytes = ")
-			.append(c.getBytes());
-		}
-
-		@Override
-		public void visitConstantInterfaceMethodref(ConstantInterfaceMethodref c) {
-			buffer
-			.append("class_index = ")
-			.append(c.getClassIndex())
-			.append(", ")
-			.append("name_and_type_index = ")
-			.append(c.getNameAndTypeIndex());			
-		}
-
-		@Override
-		public void visitConstantLong(ConstantLong c) {
-			buffer
-			.append("bytes = ")
-			.append(c.getBytes());			
-		}
-
-		@Override
-		public void visitConstantMethodref(ConstantMethodref c) {
-			buffer
-			.append("class_index = ")
-			.append(c.getClassIndex())
-			.append(", ")
-			.append("name_and_type_index = ")
-			.append(c.getNameAndTypeIndex());			
-		}
-
-		@Override
-		public void visitConstantNameAndType(ConstantNameAndType c) {
-			buffer
-			.append("name_index = ")
-			.append(c.getNameIndex())
-			.append(", ")
-			.append("descriptor_index = ")
-			.append(c.getSignatureIndex());
-		}
-
-		@Override
-		public void visitConstantString(ConstantString c) {
-			buffer
-			.append("string_index = ")
-			.append(c.getStringIndex());
-		}
-
-		@Override
-		public void visitConstantUtf8(ConstantUtf8 c) {
-			buffer
-			.append('"')
-			.append(Utility.replace(c.getBytes(), "\n", "\\n"))
-			.append('"');			
-		}	
+		
 	}
 }
