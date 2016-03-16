@@ -23,17 +23,28 @@ import jbyco.analyze.patterns.instr.label.AbstractLabelFactory;
 import jbyco.analyze.patterns.instr.label.ActiveLabelsFinder;
 import jbyco.analyze.patterns.instr.label.NumberedLabelFactory;
 import jbyco.analyze.patterns.instr.operation.AbstractOperationFactory;
+import jbyco.analyze.patterns.instr.operation.GeneralOperationFactory;
 import jbyco.analyze.patterns.instr.operation.TypedOperationFactory;
 import jbyco.analyze.patterns.instr.param.AbstractParameterFactory;
 import jbyco.analyze.patterns.instr.param.FullParameterFactory;
+import jbyco.analyze.patterns.instr.param.GeneralParameterFactory;
+import jbyco.analyze.patterns.instr.param.NumberedParameterFactory;
 import jbyco.io.BytecodeFiles;
 import jbyco.io.PatternsPrinter;
 import jbyco.io.file.BytecodeFile;
+import jbyco.lib.AbstractOption;
+import jbyco.lib.AbstractOptions;
 
 public class PatternsAnalyzer implements Analyzer {
 		
-	// max length of instruction sequences
-	static final int MAXLENGTH = 10;
+	// max length of patterns
+	static int MAX_LENGTH = 10;
+	
+	// minimal frequency of printed patterns
+	static int MIN_FREQUENCY = 100;
+	
+	// delimiter used to separate the instructions in patterns
+	static String DELIMITER = ";";
 			
 	// graph
 	SuffixTree graph;
@@ -123,7 +134,7 @@ public class PatternsAnalyzer implements Analyzer {
 			AbstractInsnNode node = start;
 			int visited = 0;
 			
-			while (node != null && visited < MAXLENGTH) {
+			while (node != null && visited < MAX_LENGTH) {
 				
 				// process the node if it is active
 				if (isActive(node, finder)) {
@@ -186,33 +197,154 @@ public class PatternsAnalyzer implements Analyzer {
 		// print patterns
 		System.out.println("Patterns:");
 		PatternsPrinter printer = new PatternsPrinter();
-		printer.print(graph, ";", 100);	
+		printer.print(graph, DELIMITER, MIN_FREQUENCY);	
+		
+	}
+	
+	///////////////////////////////////////////////////////////////// MAIN
+	
+	enum Option implements AbstractOption {
+		
+		MAX_LENGTH			("Set maximal length of a pattern. Default: 10.",
+							 "--max-length"),
+		MIN_FREQUENCY		("Set minimal frequency of a printed pattern. Default: 100.",
+							 "--min-frequency"),
+		DELIMITER			("Set a string used to separate instruction in patterns. Default: ';'.",
+							 "--delimiter"),
+		GENERAL_OPERATIONS ("Use general form of operations.",
+							 "-o1", "--general-operations"),
+		TYPED_OPERATIONS 	("Use typed form of operations. Default option.",
+							 "-o2", "--typed-operations"),
+		GENERAL_PARAMETERS	("Use general form of parameters.",
+							 "-p1", "--general-parameters"),
+		NUMBERED_PARAMETERS	("Use numbered form of parameters.",
+							 "-p2", "--numbered-parameters"),
+		FULL_PARAMETERS		("Use full form of parameters. Default option.",
+							 "-p3", "--full-parameters"),
+		HELP				("Show this message.", 
+							 "-h", "--help");
+
+		String description;
+		String[] names;
+		
+		private Option(String description, String ...names) {
+			this.description = description;
+			this.names = names;
+		}
+		
+		@Override
+		public String getDescription() {
+			return description;
+		}
+
+		@Override
+		public String[] getNames() {
+			return names;
+		}
+		
+	}
+	
+	static class Options extends AbstractOptions {
+
+		@Override
+		public AbstractOption[] all() {
+			return Option.values();
+		}
 		
 	}
 	
 	public static void main(String[] args) {
 		
-		AbstractOperationFactory operations;
-		AbstractParameterFactory parameters;
-		AbstractLabelFactory labels;
+		// get options and map of options
+		Options options = new Options();
 		
-		//operations = new GeneralOperationFactory();
-		operations = new TypedOperationFactory();
+		// set default values
+		MAX_LENGTH = 10;
+		MIN_FREQUENCY = 100;
+		DELIMITER = ";";
 		
-		//parameters = new GeneralParameterFactory();
-		//parameters = new NumberedParameterFactory();
-		parameters = new FullParameterFactory();
+		AbstractOperationFactory operations = new TypedOperationFactory();
+		AbstractParameterFactory parameters = new FullParameterFactory();
+		AbstractLabelFactory labels = new NumberedLabelFactory();
 		
-		labels = new NumberedLabelFactory();
+		int i = 0;
+		for (;i < args.length; i++) {
+			
+			// get option
+			String arg = args[i];
+			Option option = (Option)options.getOption(arg);
+			
+			// set max length
+			if (option == Option.MAX_LENGTH) {
+				
+				if (++i < args.length) {
+					MAX_LENGTH = Integer.parseUnsignedInt(args[i]);
+				}
+				else {
+					throw new IllegalArgumentException("Missing argument for " + arg);
+				}
+			}
+			
+			// set min frequency
+			else if (option == Option.MIN_FREQUENCY) {
+				
+				if (++i < args.length) {
+					MIN_FREQUENCY = Integer.parseUnsignedInt(args[i]);
+				}
+				else {
+					throw new IllegalArgumentException("Missing argument for " + arg);
+				}
+			}
+			
+			// set delimiter
+			else if (option == Option.DELIMITER) {
+				
+				if (++i < args.length) {
+					DELIMITER = args[i];
+				}
+				else {
+					throw new IllegalArgumentException("Missing argument for " + arg);
+				}
+			}
+			
+			// set type of operations
+			else if (option == Option.GENERAL_OPERATIONS) {
+				operations = new GeneralOperationFactory();
+			}
+			else if (option == Option.TYPED_OPERATIONS) {
+				operations = new TypedOperationFactory();
+			}
+			
+			// set type of parameters
+			else if (option == Option.GENERAL_PARAMETERS) {
+				parameters = new GeneralParameterFactory();
+			}
+			else if (option == Option.NUMBERED_PARAMETERS) {
+				parameters = new NumberedParameterFactory();
+			}
+			else if (option == Option.FULL_PARAMETERS) {
+				parameters = new FullParameterFactory();
+			}
+			else if (option == Option.HELP) {
+				options.help();
+				return;
+			}
+			// files
+			else {
+				break;
+			}
+		}
 		
 		// init analyzer
 		Analyzer analyzer = new PatternsAnalyzer(operations, parameters, labels);
 		
-		// process files
-		for (String path : args) {
+		// analyze files
+		for (; i < args.length; i++) {
 			
-			BytecodeFiles files = new BytecodeFiles(path);
+			// get files on the path
+			BytecodeFiles files = new BytecodeFiles(args[i]);
 			
+			// process files on the path
 			for (BytecodeFile file : files) {
 				analyzer.processFile(file);
 			}

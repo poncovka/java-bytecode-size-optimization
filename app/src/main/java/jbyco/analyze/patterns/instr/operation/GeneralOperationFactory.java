@@ -231,7 +231,7 @@ public class GeneralOperationFactory extends AbstractOperationFactory {
 		
 	}
 	
-	public enum GeneralHandleOperation implements AbstractOperation {
+	public enum GeneralHandleOperation implements AbstractHandleOperation {
 		
 		H_GETFIELD	(Opcodes.H_GETFIELD),
 		H_GETSTATIC	(Opcodes.H_GETSTATIC),

@@ -6,7 +6,6 @@ import java.util.Iterator;
 
 import jbyco.analyze.patterns.graph.Node;
 import jbyco.analyze.patterns.graph.SuffixTree;
-import jbyco.analyze.patterns.graph.WildCard;
 
 public class PatternsPrinter {
 
@@ -88,7 +87,6 @@ public class PatternsPrinter {
 		return !(
 				   item.node.getCount() < min
 				|| item.node == graph.getRoot()
-				|| item.node.getItem() instanceof WildCard
 				);
 	}
 	

@@ -1,18 +1,18 @@
 package jbyco;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import jbyco.analyze.locals.LocalsAnalyzer;
 import jbyco.analyze.patterns.PatternsAnalyzer;
 import jbyco.analyze.size.SizeAnalyzer;
 import jbyco.analyze.statistics.StatisticsCollector;
+import jbyco.lib.AbstractOption;
+import jbyco.lib.AbstractOptions;
 import jbyco.lib.Utils;
 
 public class App {
-
-	enum Command {
+	
+	enum Option implements AbstractOption {
 		
 		ANALYZE_SIZE 		("Print sizes of items in classfiles.",
 							 "--analyze-size"),
@@ -28,63 +28,63 @@ public class App {
 							 "-h", "--help");
 		
 		String description;
-		String[] args;
+		String[] names;
 		
-		private Command(String description, String ...args) {
+		private Option(String description, String ...names) {
 			this.description = description;
-			this.args = args;
+			this.names = names;
 		}
-	}
-		
-	public static void main(String[] args) {
-		
-		// get map of commands
-		Map<String, Command> map = getCommandMap();
-		
-		// process the first argument
-		if (args.length > 0 && map.containsKey(args[0])) {
-			
-			// get command and remaining arguments
-			String arg = args[0];
-			String[] arguments = Arrays.copyOfRange(args, 1, args.length);
-			
-			Command command = map.get(arg);
-			
-			// run command
-			switch(command) {
-				case HELP:					help(); break;
-				case PRINT:					break;
-				case STATISTICS:			StatisticsCollector.main(arguments);break;
-				case ANALYZE_LOCALS:		LocalsAnalyzer.main(arguments);break;
-				case ANALYZE_PATTERNS:		PatternsAnalyzer.main(arguments);break;
-				case ANALYZE_SIZE:			SizeAnalyzer.main(arguments); break;
-			};
+
+		@Override
+		public String getDescription() {
+			return this.description;
 		}
-		else {
-			help();
-			throw new IllegalArgumentException("Unkown argument in '" + Utils.arrayToString(args, " ") + "'.");
+
+		@Override
+		public String[] getNames() {
+			return this.names;
 		}	
 	}
 	
-	public static void help() {
-		
-		// print arguments and description
-		for (Command command : Command.values()) {
-			System.out.printf("%-30s %s\n", Utils.arrayToString(command.args, ", "), command.description);
+	static class Options extends AbstractOptions {
+
+		@Override
+		public AbstractOption[] all() {
+			return Option.values();
 		}
+		
 	}
 	
-	public static Map<String, Command> getCommandMap() {
+	public static void main(String[] args) {
 		
-		// create map arg -> command
-		Map<String, Command> map = new HashMap<>();
+		// get options and map of options
+		Options options = new Options();
 		
-		for (Command command : Command.values()) {
-			for (String arg : command.args) {
-				map.put(arg, command);
-			}
+		// process the first argument
+		if (args.length > 0 && options.isOption(args[0])) {
+			
+			// get option and remaining arguments
+			Option option = (Option)options.getOption(args[0]);
+			String[] arguments = Arrays.copyOfRange(args, 1, args.length);
+			
+			// run command
+			switch(option) {
+				case HELP:					options.help(); 
+											break;
+				case PRINT:					break;
+				case STATISTICS:			StatisticsCollector.main(arguments);
+											break;
+				case ANALYZE_LOCALS:		LocalsAnalyzer.main(arguments);
+											break;
+				case ANALYZE_PATTERNS:		PatternsAnalyzer.main(arguments);
+											break;
+				case ANALYZE_SIZE:			SizeAnalyzer.main(arguments); 
+											break;
+			};
 		}
-		
-		return map;
+		else {
+			options.help();
+			throw new IllegalArgumentException("Unkown argument in '" + Utils.arrayToString(args, " ") + "'.");
+		}	
 	}
 }
