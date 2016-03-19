@@ -1,4 +1,4 @@
-package jbyco.analyze.patterns.instr.param;
+package jbyco.analyze.patterns.parameters;
 
 public enum Value implements AbstractParameter {
 	

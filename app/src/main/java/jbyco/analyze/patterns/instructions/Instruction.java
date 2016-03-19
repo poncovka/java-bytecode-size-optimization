@@ -1,9 +1,9 @@
-package jbyco.analyze.patterns.instr;
+package jbyco.analyze.patterns.instructions;
 
 import java.util.Arrays;
 
-import jbyco.analyze.patterns.instr.operation.AbstractOperation;
-import jbyco.analyze.patterns.instr.param.AbstractParameter;
+import jbyco.analyze.patterns.operations.AbstractOperation;
+import jbyco.analyze.patterns.parameters.AbstractParameter;
 
 public class Instruction implements AbstractInstruction {
 	
@@ -22,7 +22,7 @@ public class Instruction implements AbstractInstruction {
 		return operation;
 	}
 	
-	public Object[] getParameters() {
+	public AbstractParameter[] getParameters() {
 		return parameters;
 	}
 	

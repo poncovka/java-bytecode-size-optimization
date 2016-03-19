@@ -1,23 +1,23 @@
-package jbyco.analyze.patterns.instr;
+package jbyco.analyze.patterns;
 
-public class CachedInstruction implements AbstractInstruction {
+public class Cached<T> {
 	
 	final int id;
 	static int maxid = 0;
-	final AbstractInstruction instr;
+	final T item;
 	
-	public CachedInstruction(AbstractInstruction instr) {
+	public Cached(T item) {
 		this.id = maxid++;
-		this.instr = instr;
+		this.item = item;
 		
-		if (id > maxid) {
+		if (maxid == 0) {
 			throw new ArithmeticException("Integer overflow.");
 		}
 	}
 	
 	@Override
 	public String toString() {
-		return instr.toString();
+		return item.toString();
 	}
 
 	@Override
@@ -40,10 +40,14 @@ public class CachedInstruction implements AbstractInstruction {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		CachedInstruction other = (CachedInstruction) obj;
+		
+		Cached<?> other = (Cached<?>) obj;
 		if (id != other.id) {
 			return false;
 		}
 		return true;
 	}
+
+
+	
 }

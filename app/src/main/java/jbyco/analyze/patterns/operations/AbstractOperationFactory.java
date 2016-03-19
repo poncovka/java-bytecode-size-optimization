@@ -1,4 +1,4 @@
-package jbyco.analyze.patterns.instr.operation;
+package jbyco.analyze.patterns.operations;
 
 public abstract class AbstractOperationFactory {
 	

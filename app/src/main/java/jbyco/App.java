@@ -7,7 +7,6 @@ import jbyco.analyze.patterns.PatternsAnalyzer;
 import jbyco.analyze.size.SizeAnalyzer;
 import jbyco.analyze.statistics.StatisticsCollector;
 import jbyco.io.BytecodePrinter;
-import jbyco.io.BytecodePrinter;
 import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
 import jbyco.lib.Utils;

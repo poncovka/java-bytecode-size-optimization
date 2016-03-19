@@ -16,19 +16,18 @@ import org.objectweb.asm.tree.MethodNode;
 import jbyco.analyze.Analyzer;
 import jbyco.analyze.patterns.graph.GraphBuilder;
 import jbyco.analyze.patterns.graph.SuffixTree;
-import jbyco.analyze.patterns.instr.AbstractInstruction;
-import jbyco.analyze.patterns.instr.Abstractor;
-import jbyco.analyze.patterns.instr.InstructionCache;
-import jbyco.analyze.patterns.instr.label.AbstractLabelFactory;
-import jbyco.analyze.patterns.instr.label.ActiveLabelsFinder;
-import jbyco.analyze.patterns.instr.label.NumberedLabelFactory;
-import jbyco.analyze.patterns.instr.operation.AbstractOperationFactory;
-import jbyco.analyze.patterns.instr.operation.GeneralOperationFactory;
-import jbyco.analyze.patterns.instr.operation.TypedOperationFactory;
-import jbyco.analyze.patterns.instr.param.AbstractParameterFactory;
-import jbyco.analyze.patterns.instr.param.FullParameterFactory;
-import jbyco.analyze.patterns.instr.param.GeneralParameterFactory;
-import jbyco.analyze.patterns.instr.param.NumberedParameterFactory;
+import jbyco.analyze.patterns.instructions.AbstractInstruction;
+import jbyco.analyze.patterns.instructions.Abstractor;
+import jbyco.analyze.patterns.labels.AbstractLabelFactory;
+import jbyco.analyze.patterns.labels.ActiveLabelsFinder;
+import jbyco.analyze.patterns.labels.NumberedLabelFactory;
+import jbyco.analyze.patterns.operations.AbstractOperationFactory;
+import jbyco.analyze.patterns.operations.GeneralOperationFactory;
+import jbyco.analyze.patterns.operations.TypedOperationFactory;
+import jbyco.analyze.patterns.parameters.AbstractParameterFactory;
+import jbyco.analyze.patterns.parameters.FullParameterFactory;
+import jbyco.analyze.patterns.parameters.GeneralParameterFactory;
+import jbyco.analyze.patterns.parameters.NumberedParameterFactory;
 import jbyco.io.BytecodeFiles;
 import jbyco.io.file.BytecodeFile;
 import jbyco.lib.AbstractOption;
@@ -52,7 +51,7 @@ public class PatternsAnalyzer implements Analyzer {
 	GraphBuilder builder;
 	
 	// instruction cache
-	InstructionCache cache;
+	Cache cache;
 	
 	// factories
 	AbstractOperationFactory operations;
@@ -71,7 +70,7 @@ public class PatternsAnalyzer implements Analyzer {
 		
 		this.graph = new SuffixTree();
 		this.builder = new GraphBuilder(graph);
-		this.cache = new InstructionCache();
+		this.cache = new Cache();
 	}
 	
 	@Override
@@ -170,18 +169,18 @@ public class PatternsAnalyzer implements Analyzer {
 				||  (finder.isActive(((LabelNode)node).getLabel()));
 	}
 	
-	protected Collection<AbstractInstruction> useCache(Collection<AbstractInstruction> list) {
+	protected Collection<?> useCache(Collection<AbstractInstruction> l) {
 		
 		// create new list
-		Collection<AbstractInstruction> list2 = new ArrayList<>(list.size());
+		Collection<AbstractInstruction> l2 = new ArrayList<>(l.size());
 		
 		// cache all instructions
-		for (AbstractInstruction i : list) {
-			list2.add(cache.get(i));
+		for (AbstractInstruction instruction : l) {
+			l2.add(cache.getCachedInstruction(instruction));
 		}
 		
 		// return created list
-		return list2;
+		return l2;
 	}
 	
 

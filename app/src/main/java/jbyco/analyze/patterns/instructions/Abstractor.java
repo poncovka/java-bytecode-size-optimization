@@ -1,4 +1,4 @@
-package jbyco.analyze.patterns.instr;
+package jbyco.analyze.patterns.instructions;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,11 +9,11 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import jbyco.analyze.patterns.instr.label.AbstractLabelFactory;
-import jbyco.analyze.patterns.instr.operation.AbstractOperation;
-import jbyco.analyze.patterns.instr.operation.AbstractOperationFactory;
-import jbyco.analyze.patterns.instr.param.AbstractParameter;
-import jbyco.analyze.patterns.instr.param.AbstractParameterFactory;
+import jbyco.analyze.patterns.labels.AbstractLabelFactory;
+import jbyco.analyze.patterns.operations.AbstractOperation;
+import jbyco.analyze.patterns.operations.AbstractOperationFactory;
+import jbyco.analyze.patterns.parameters.AbstractParameter;
+import jbyco.analyze.patterns.parameters.AbstractParameterFactory;
 
 public class Abstractor extends MethodVisitor {
 

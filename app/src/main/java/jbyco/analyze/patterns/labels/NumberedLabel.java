@@ -1,18 +1,18 @@
-package jbyco.analyze.patterns.instr.param;
+package jbyco.analyze.patterns.labels;
 
-public class NumberedParameter implements AbstractParameter {
+import jbyco.analyze.patterns.parameters.Type;
 
-	final Type type;
+public class NumberedLabel implements AbstractLabel {
+
 	final int number;
 	
-	public NumberedParameter(Type type, int number) {
-		this.type = type;
+	public NumberedLabel(int number) {
 		this.number = number;
 	}
-
+	
 	@Override
 	public String toString() {
-		return type.toString() + "(" + number + ")";
+		return Type.LABEL.toString() + "(" + number + ")";
 	}
 
 	@Override
@@ -20,35 +20,26 @@ public class NumberedParameter implements AbstractParameter {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + number;
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		
 		if (this == obj) {
 			return true;
 		}
-		
 		if (obj == null) {
 			return false;
 		}
-		
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		
-		NumberedParameter other = (NumberedParameter) obj;
-		
+		NumberedLabel other = (NumberedLabel) obj;
 		if (number != other.number) {
 			return false;
 		}
-		
-		if (type != other.type) {
-			return false;
-		}
-		
 		return true;
-	}	
+	}
+	
+	
 }

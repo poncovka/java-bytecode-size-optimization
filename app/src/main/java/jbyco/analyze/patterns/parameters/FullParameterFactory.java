@@ -1,55 +1,61 @@
-package jbyco.analyze.patterns.instr.param;
+package jbyco.analyze.patterns.parameters;
 
-public class GeneralParameterFactory implements AbstractParameterFactory {
+import jbyco.lib.Utils;
+
+public class FullParameterFactory implements AbstractParameterFactory {
+	
+	public AbstractParameter createParameter(Type type, Object ...components) {
+		return new MulticomponentParameter(type, components);
+	}
 	
 	@Override
 	public AbstractParameter getVariable(int index) {
-		return Type.VARIABLE;
+		return createParameter(Type.VARIABLE, new Integer(index));
 	}
 	
 	@Override
 	public AbstractParameter getMethodParameter(int index) {
-		return Type.PARAMETER;
+		return createParameter(Type.PARAMETER, new Integer(index));
 	}
 
 	@Override
 	public AbstractParameter getInt(int i) {
-		return Type.INT;
+		return createParameter(Type.INT, new Integer(i));
 	}
 
 	@Override
 	public AbstractParameter getFloat(float f) {
-		return Type.FLOAT;
+		return createParameter(Type.FLOAT, new Float(f));
 	}
 
 	@Override
 	public AbstractParameter getLong(long l) {
-		return Type.LONG;
+		return createParameter(Type.LONG, new Long(l));
 	}
 
 	@Override
 	public AbstractParameter getDouble(double d) {
-		return Type.DOUBLE;
+		return createParameter(Type.DOUBLE, new Double(d));
 	}
 
 	@Override
 	public AbstractParameter getString(String s) {
-		return Type.STRING;
+		return createParameter(Type.STRING,  Utils.getEscapedString(s, "\""));
 	}
 
 	@Override
 	public AbstractParameter getClass(String internalName) {
-		return Type.CLASS;
+		return createParameter(Type.CLASS, internalName);
 	}
 
 	@Override
 	public AbstractParameter getField(String name, String desc) {
-		return Type.FIELD;
+		return createParameter(Type.FIELD, name, desc);
 	}
 
 	@Override
 	public AbstractParameter getMethod(String name, String desc) {
-		return Type.METHOD;
+		return createParameter(Type.METHOD, name, desc);
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package jbyco.analyze.patterns.instr.label;
+package jbyco.analyze.patterns.labels;
 
 import org.objectweb.asm.Label;
 

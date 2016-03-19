@@ -1,4 +1,4 @@
-package jbyco.analyze.patterns.instr.operation;
+package jbyco.analyze.patterns.operations;
 
 import org.objectweb.asm.Opcodes;
 
