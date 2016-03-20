@@ -1,23 +1,28 @@
-package jbyco.analyze.patterns;
+package jbyco.analyze.patterns.instructions;
 
-public class Cached<T> {
-	
+public class CachedInstruction implements AbstractInstruction, Comparable<CachedInstruction> {
+
 	final int id;
 	static int maxid = 0;
-	final T item;
+	final AbstractInstruction instruction;
 	
-	public Cached(T item) {
+	public CachedInstruction(AbstractInstruction instruction) {
+		
 		this.id = maxid++;
-		this.item = item;
+		this.instruction = instruction;
 		
 		if (maxid == 0) {
 			throw new ArithmeticException("Integer overflow.");
 		}
 	}
 	
+	public int getId() {
+		return id;
+	}
+	
 	@Override
 	public String toString() {
-		return item.toString();
+		return instruction.toString();
 	}
 
 	@Override
@@ -41,13 +46,16 @@ public class Cached<T> {
 			return false;
 		}
 		
-		Cached<?> other = (Cached<?>) obj;
+		CachedInstruction other = (CachedInstruction) obj;
 		if (id != other.id) {
 			return false;
 		}
 		return true;
 	}
 
+	@Override
+	public int compareTo(CachedInstruction instruction) {
+		return Integer.compare(this.id, instruction.id);
+	}
 
-	
 }

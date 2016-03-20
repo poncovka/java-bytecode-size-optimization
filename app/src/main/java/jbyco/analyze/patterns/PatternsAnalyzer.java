@@ -15,9 +15,11 @@ import org.objectweb.asm.tree.MethodNode;
 
 import jbyco.analyze.Analyzer;
 import jbyco.analyze.patterns.graph.GraphBuilder;
+import jbyco.analyze.patterns.graph.Node;
 import jbyco.analyze.patterns.graph.SuffixTree;
 import jbyco.analyze.patterns.instructions.AbstractInstruction;
 import jbyco.analyze.patterns.instructions.Abstractor;
+import jbyco.analyze.patterns.instructions.Cache;
 import jbyco.analyze.patterns.labels.AbstractLabelFactory;
 import jbyco.analyze.patterns.labels.ActiveLabelsFinder;
 import jbyco.analyze.patterns.labels.NumberedLabelFactory;
@@ -195,8 +197,7 @@ public class PatternsAnalyzer implements Analyzer {
 		// print patterns
 		System.out.println("Patterns:");
 		PatternsPrinter printer = new PatternsPrinter();
-		printer.print(graph, DELIMITER, MIN_FREQUENCY);	
-		
+		printer.print(graph, DELIMITER, MIN_FREQUENCY);		
 	}
 	
 	///////////////////////////////////////////////////////////////// MAIN
