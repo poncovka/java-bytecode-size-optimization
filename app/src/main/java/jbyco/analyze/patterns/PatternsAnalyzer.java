@@ -185,6 +185,9 @@ public class PatternsAnalyzer implements Analyzer {
 		return l2;
 	}
 	
+	public void finish() {
+		builder.pruneGraph();
+	}
 
 	@Override
 	public void print() {
@@ -351,6 +354,9 @@ public class PatternsAnalyzer implements Analyzer {
 				analyzer.processFile(file);
 			}
 		}
+		
+		// last prune
+		analyzer.finish();
 		
 		// print results
 		analyzer.print();
