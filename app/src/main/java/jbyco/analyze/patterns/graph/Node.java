@@ -1,9 +1,11 @@
 package jbyco.analyze.patterns.graph;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Node implements Comparable<Node> {
+public class Node {
 	
 	// identifier
 	static int maxid = 0;
@@ -19,7 +21,7 @@ public class Node implements Comparable<Node> {
 	Node in;
 	
 	// set of output nodes
-	Collection<Node> out;
+	Map<Object, Node> out;
 
 	public Node(Object item) {
 		
@@ -32,7 +34,7 @@ public class Node implements Comparable<Node> {
 		
 		this.counter = 0;
 		this.in = null;
-		this.out = new ArrayList<Node>(0);	
+		this.out = null;	
 	}
 
 	static int getTotal() {
@@ -43,31 +45,66 @@ public class Node implements Comparable<Node> {
 		return id;
 	}
 	
+	public int getCount() {
+		return counter;
+	}
+	
+	public void incrementCount() {
+		counter++;
+	}
+	
 	public Object getItem() {
 		return item;
+	}
+
+	public void setItem(Object item) {
+		this.item = item;
+	}
+
+	private void addInputNode(Node node) {
+		in = node;
 	}
 	
 	public Node getInputNode() {
 		return in;
 	}
 
-	public Collection<Node> getOutputNodes() {
-		return out;
+	private void removeInputNode(Node node) {
+		in = null;
+	}
+
+	private void addOutputNode(Node node) {
+		
+		// init the output nodes map
+		if (out == null) {
+			out =  new HashMap<>(1, 16.0f);
+		}
+		
+		out.put(node.getItem(), node);		
 	}
 	
-	public int getCount() {
-		return counter;
+	public Collection<Node> getOutputNodes() {
+		if (out == null) 	return Collections.emptyList();
+		else				return out.values();
 	}
 	
 	public Node findNextNode(Object item) {
+		if (out == null) 	return null;
+		else				return out.get(item);
+	}
+	
+	private void removeOutputNode(Node node) {
 		
-		for(Node next : out) {
-			if (next.item.equals(item)) {
-				return next;
-			}
+		if (out == null) {
+			return;
 		}
 		
-		return null;
+		out.remove(node.getItem());
+		
+		// remove the output nodes map
+		if (out.isEmpty()) {
+			out = null;
+		}
 	}
 
 	public void addEdge(Node node) {
@@ -79,39 +116,10 @@ public class Node implements Comparable<Node> {
 		this.removeOutputNode(node);
 		node.removeInputNode(this);
 	}
-	
-	private void addInputNode(Node node) {
-		in = node;
-	}
-	
-	private void addOutputNode(Node node) {
-		out.add(node);		
-	}
-
-	private void removeInputNode(Node node) {
-		in = null;
-	}
-	
-	private void removeOutputNode(Node node) {
-		out.remove(node);		
-	}		
 		
-	public void incrementCount() {
-		counter++;
-	}	
-	
-	public void setItem(Object item) {
-		this.item = item;
-	}
-	
 	@Override
 	public String toString() {
 		return "(" + id + (item == null ? "" : "," + item.toString()) + ")";
-	}
-
-	@Override
-	public int compareTo(Node node) {
-		return Integer.compare(id, node.id);
 	}
 	
 }
