@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# create directory for outputs
+name=$(date '+%Y_%m_%d_%H_%M_%S')
+path="../output/$name"
+mkdir -p $path
+
+# get input directory
+input=$1
+
+echo $path
+
+# run analysis
+./run --analyze-size $input >$path/size.out
+./run --analyze-locals $input >$path/locals.out
+./run --stats $input >$path/stats.out
+
+#./run --analyze-patterns -o1 -p1 --min-frequency 1 -w 2  "../simplein" | sort -k1,1nr -k2,2
+
+# max length
+for length in 10 25 50
+do
+  # wildcards
+  for wi in 0 1 2 3 4 5
+  do
+    # operations
+    for oi in "o1" "o2"
+    do
+      # parameters
+      for pi in "p1" "p2" "p3"
+      do
+
+      # prepare output
+      output="${path}/patterns_${length}_${wi}_${oi}_${pi}.out"
+      echo $output
+
+      # run analysis
+      ./run --analyze-patterns --max-length $length -w $wi -$oi -$pi $input | sort -k1,1nr -k2,2 >$output
+
+      # merge with other files
+      output2="${path}/patterns_${oi}_${pi}.out"
+      sort -k1,1nr -k2,2 --merge $output $output2 >$output2
+
+      output3="${path}/patterns.out"
+      sort -k1,1nr -k2,2 --merge $output $output3 >$output3
+
+      done
+    done
+  done
+done

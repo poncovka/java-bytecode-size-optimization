@@ -4,4 +4,4 @@
 args=$@
 
 # run gradle with arguments
-gradle run -Dmyargs="$args"
+gradle -q run -Dmyargs="$args"
