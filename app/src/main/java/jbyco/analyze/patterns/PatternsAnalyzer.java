@@ -283,7 +283,7 @@ public class PatternsAnalyzer implements Analyzer {
 	@Override
 	public void print() {
 		PatternsPrinter printer = new PatternsPrinter();
-		printer.print(graph, DELIMITER, MIN_FREQUENCY);		
+		printer.print(graph, DELIMITER, MIN_FREQUENCY, WILDCARDS);		
 	}
 	
 	

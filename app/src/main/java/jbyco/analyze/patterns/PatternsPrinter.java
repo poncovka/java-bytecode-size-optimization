@@ -6,19 +6,21 @@ import java.util.Iterator;
 
 import jbyco.analyze.patterns.graph.Node;
 import jbyco.analyze.patterns.graph.SuffixTree;
+import jbyco.analyze.patterns.graph.WildCard;
 
 public class PatternsPrinter {
 
 	SuffixTree graph;
 	String delimiter;
 	int min;
+	int wildcards;
 	
 	Deque<StackItem> stack;
 	
-	public void print(SuffixTree graph, String delimiter, int min) {
+	public void print(SuffixTree graph, String delimiter, int min, int wildcards) {
 		
 		// init
-		init(graph, delimiter, min);
+		init(graph, delimiter, min, wildcards);
 		
 		// process stack
 		while(!stack.isEmpty()) {
@@ -49,16 +51,17 @@ public class PatternsPrinter {
 		}
 	}
 	
-	private void init(SuffixTree graph, String delimiter, int min) {
+	private void init(SuffixTree graph, String delimiter, int min, int wildcards) {
 		
 		this.graph = graph;
 		this.delimiter = delimiter;
 		this.min = min;
+		this.wildcards = wildcards;
 		
 		Node root = this.graph.getRoot();
 		
 		this.stack = new ArrayDeque<>();
-		this.stack.push(new StackItem(root));
+		this.stack.push(new StackItem(root, 0));
 		
 	}
 		
@@ -84,19 +87,30 @@ public class PatternsPrinter {
 	}
 	
 	private boolean isPrintable(StackItem item) {
-		return !(
-				   item.node.getCount() < min
-				|| item.node == graph.getRoot()
-				);
+		return 
+				item.node.getCount() >= min
+			&&  item.wildcards == wildcards
+			&&  !isRoot(item)
+			&&  !isWildCard(item);
+	}
+	
+	private boolean isRoot(StackItem item) {
+		return item.node == graph.getRoot();
+	}
+	
+	private boolean isWildCard(StackItem item) {
+		return item.node.getItem() instanceof WildCard;
 	}
 	
 	private class StackItem {
 		
 		public final Node node;
 		public final Iterator<Node> iterator;
+		public int wildcards;
 		
-		public StackItem(Node node) {		
+		public StackItem(Node node, int wildcards) {		
 			this.node = node;
+			this.wildcards = wildcards + (isWildCard(this) ? 1 : 0);	
 			this.iterator = node.getOutputNodes().iterator();
 		}
 		
@@ -106,7 +120,7 @@ public class PatternsPrinter {
 		
 		public StackItem next() {
 			Node next = this.iterator.next();
-			return new StackItem(next); 
+			return new StackItem(next, wildcards); 
 		}
 	}
 }
