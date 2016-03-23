@@ -15,11 +15,11 @@ import org.objectweb.asm.tree.MethodNode;
 
 import jbyco.analyze.Analyzer;
 import jbyco.analyze.patterns.graph.GraphBuilder;
-import jbyco.analyze.patterns.graph.Node;
 import jbyco.analyze.patterns.graph.SuffixTree;
 import jbyco.analyze.patterns.instructions.AbstractInstruction;
 import jbyco.analyze.patterns.instructions.Abstractor;
 import jbyco.analyze.patterns.instructions.Cache;
+import jbyco.analyze.patterns.instructions.WildInstruction;
 import jbyco.analyze.patterns.labels.AbstractLabelFactory;
 import jbyco.analyze.patterns.labels.ActiveLabelsFinder;
 import jbyco.analyze.patterns.labels.NumberedLabelFactory;
@@ -34,6 +34,8 @@ import jbyco.io.BytecodeFiles;
 import jbyco.io.file.BytecodeFile;
 import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
+import jbyco.lib.Combination;
+import jbyco.lib.Utils;
 
 public class PatternsAnalyzer implements Analyzer {
 		
@@ -45,6 +47,8 @@ public class PatternsAnalyzer implements Analyzer {
 	
 	// delimiter used to separate the instructions in patterns
 	static String DELIMITER = ";";
+	
+	static int WILDCARDS = 0;
 			
 	// graph
 	SuffixTree graph;
@@ -59,6 +63,9 @@ public class PatternsAnalyzer implements Analyzer {
 	AbstractOperationFactory operations;
 	AbstractParameterFactory parameters;
 	AbstractLabelFactory labels;
+	
+	// active labels of the current method
+	ActiveLabelsFinder activeLabels;
 		
 	public PatternsAnalyzer (
 			AbstractOperationFactory operations, 
@@ -73,6 +80,10 @@ public class PatternsAnalyzer implements Analyzer {
 		this.graph = new SuffixTree();
 		this.builder = new GraphBuilder(graph);
 		this.cache = new Cache();
+	}
+	
+	public SuffixTree getGraph() {
+		return graph;
 	}
 	
 	@Override
@@ -118,43 +129,24 @@ public class PatternsAnalyzer implements Analyzer {
 				);
 		
 		// find all active labels
-		ActiveLabelsFinder finder = new ActiveLabelsFinder();
-		method.accept(finder);
+		activeLabels = new ActiveLabelsFinder();
+		method.accept(activeLabels);
 		
-		// get list of instructions
-		InsnList list = method.instructions;
-		
+		// process instructions
+		processInstructions(abstractor, method.instructions);	
+	}
+	
+	public void processInstructions(Abstractor abstractor, InsnList list) {
+
 		// visit every suffix
 		AbstractInsnNode start = list.getFirst();
 		while (start != null) {
 			
-			// TODO restart after RETURN or JSR!!!
+			// abstract instruction suffix
+			abstractInstructions(abstractor, start);
 			
-			// visit every instruction of the suffix
-			AbstractInsnNode node = start;
-			int visited = 0;
-			
-			while (node != null && visited < MAX_LENGTH) {
-				
-				// process the node if it is active
-				if (isActive(node, finder)) {
-					
-					// get abstracted instruction
-					node.accept(abstractor);
-					
-					// end of the visit
-					visited++;
-				}
-				
-				// get next node
-				node = node.getNext();
-			}
-			
-			// add cached instructions to the graph
-			builder.addPath(useCache(abstractor.getList()));
-			
-			// start from next node
-			start = start.getNext();
+			// process abstracted suffix
+			processSuffix(abstractor.getList());
 			
 			// clear abstractor list
 			abstractor.getList().clear();
@@ -163,15 +155,114 @@ public class PatternsAnalyzer implements Analyzer {
 			operations.restart();
 			parameters.restart();
 			labels.restart();
+			
+			// start from next node
+			start = start.getNext();
 		}
 	}
 	
-	protected boolean isActive(AbstractInsnNode node, ActiveLabelsFinder finder) {
-		return     !(node instanceof LabelNode) 
-				||  (finder.isActive(((LabelNode)node).getLabel()));
+	public void processSuffix(Collection<AbstractInstruction> suffix) {
+		
+		// cache objects in a list
+		suffix = useCache(suffix);
+					
+		// add the suffix to the graph
+		if (WILDCARDS == 0) {
+			addSuffix(suffix);
+		}
+		else {
+			addSuffixWithWildcards(suffix);
+		}
+
 	}
 	
-	protected Collection<?> useCache(Collection<AbstractInstruction> l) {
+	public void addSuffix(Collection<AbstractInstruction> suffix) {
+		builder.addPath(suffix);
+	}
+	
+	public void addSuffixWithWildcards(Collection<AbstractInstruction> suffix) {
+		
+		// get size of the suffix
+		int length = suffix.size();
+		
+		// too small suffix
+		if (length <= 2 || length < 2 * WILDCARDS + 1) {
+			return;
+		}
+				
+		// create an array of instructions
+		AbstractInstruction[] instructions = suffix.toArray(new AbstractInstruction[0]);
+		
+		// create iterator over all combinations
+		Combination iterator = new Combination(2 * WILDCARDS, 1, length - 1);
+		
+		while (iterator.hasNext()) {
+			
+			// get combination
+			int[] combination = iterator.next();
+			
+			// start path
+			builder.startPath();
+
+			int i = 0;
+			int j = 0;
+			
+			while (0 <= i && i < length) {
+				
+				// get interval (a,b)
+				int a = Utils.getOrDefault(combination, j++, length);
+				int b = Utils.getOrDefault(combination, j++, length);
+				
+				// add instructions before a
+				while (i < a) {
+					builder.addNextNode(instructions[i]);
+					i++;
+				}
+				
+				// i == a, add wild card if a is in boundaries
+				if (i < length) {
+					builder.addNextNode(WildInstruction.getInstance());
+				}
+				
+				// skip instructions till b
+				i = b;
+			}
+			
+			// finish path
+			builder.finishPath();
+		}
+	}	
+	
+	
+	public void abstractInstructions(Abstractor abstractor, AbstractInsnNode start) {
+
+		// visit every instruction of the suffix
+		AbstractInsnNode node = start;
+		int visited = 0;
+		
+		while (node != null && visited < MAX_LENGTH) {
+			
+			// process the node if it is active
+			if (isActive(node)) {
+				
+				// get abstracted instruction
+				node.accept(abstractor);
+				
+				// end of the visit
+				visited++;
+			}
+			
+			// get next node
+			node = node.getNext();
+		}	
+	}
+	
+	protected boolean isActive(AbstractInsnNode node) {
+		return     !(node instanceof LabelNode) 
+				||  (activeLabels.isActive(((LabelNode)node).getLabel()));
+	}
+	
+	protected Collection<AbstractInstruction> useCache(Collection<AbstractInstruction> l) {
 		
 		// create new list
 		Collection<AbstractInstruction> l2 = new ArrayList<>(l.size());
@@ -191,17 +282,10 @@ public class PatternsAnalyzer implements Analyzer {
 
 	@Override
 	public void print() {
-		
-		// print graph
-		//System.out.println("Graph:");
-		//graph.print(System.out);		
-		//System.out.println();
-				
-		// print patterns
-		System.out.println("Patterns:");
 		PatternsPrinter printer = new PatternsPrinter();
 		printer.print(graph, DELIMITER, MIN_FREQUENCY);		
 	}
+	
 	
 	///////////////////////////////////////////////////////////////// MAIN
 	
@@ -223,6 +307,8 @@ public class PatternsAnalyzer implements Analyzer {
 							 "-p2", "--numbered-parameters"),
 		FULL_PARAMETERS		("Use a full form of parameters. Default option.",
 							 "-p3", "--full-parameters"),
+		WILDCARDS			("Set the number of wildcards in a pattern. Default: 0.",
+							"-w", "--wildcards"),
 		HELP				("Show this message.", 
 							 "-h", "--help");
 
@@ -315,6 +401,17 @@ public class PatternsAnalyzer implements Analyzer {
 				}
 			}
 			
+			// set wildcards
+			else if (option == Option.WILDCARDS) {
+				
+				if (++i < args.length) {
+					WILDCARDS = Integer.parseUnsignedInt(args[i]);
+				}
+				else {
+					throw new IllegalArgumentException("Missing argument for " + arg);
+				}
+			}
+			
 			// set type of operations
 			else if (option == Option.GENERAL_OPERATIONS) {
 				operations = new GeneralOperationFactory();
@@ -356,7 +453,7 @@ public class PatternsAnalyzer implements Analyzer {
 		}
 		
 		// last prune
-		analyzer.finish();
+		//analyzer.finish();
 		
 		// print results
 		analyzer.print();

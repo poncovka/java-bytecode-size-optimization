@@ -12,14 +12,13 @@ public class GraphBuilder {
 	Node node;
 		
 	// threshold for pruning
-	int threshold;
+	int threshold = 0;
 	
 	// maximal memory usage in percents
 	int maxMemoryUsage = 50;
 		
 	public GraphBuilder(SuffixTree graph) {
 		this.graph = graph;
-		this.threshold = 1;
 	}
 	
 	public void addPath(Collection<?> items) {
