@@ -3,6 +3,9 @@ package jbyco.analyze.patterns.parameters;
 public class GeneralParameterFactory implements AbstractParameterFactory {
 	
 	@Override
+	public void init() {}
+	
+	@Override
 	public AbstractParameter getVariable(int index) {
 		return Type.VARIABLE;
 	}
@@ -61,8 +64,5 @@ public class GeneralParameterFactory implements AbstractParameterFactory {
 	public AbstractParameter getThis() {
 		return Value.THIS;
 	}
-
-	@Override
-	public void restart() {}
 	
 }

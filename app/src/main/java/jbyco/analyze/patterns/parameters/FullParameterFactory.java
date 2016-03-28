@@ -4,6 +4,9 @@ import jbyco.lib.Utils;
 
 public class FullParameterFactory implements AbstractParameterFactory {
 	
+	@Override
+	public void init() {}
+	
 	public AbstractParameter createParameter(Type type, Object ...components) {
 		return new MulticomponentParameter(type, components);
 	}
@@ -67,8 +70,5 @@ public class FullParameterFactory implements AbstractParameterFactory {
 	public AbstractParameter getThis() {
 		return Value.THIS;
 	}
-
-	@Override
-	public void restart() {}
 	
 }

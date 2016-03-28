@@ -6,10 +6,11 @@ import java.util.Iterator;
 
 import jbyco.analyze.patterns.graph.Node;
 import jbyco.analyze.patterns.graph.SuffixTree;
-import jbyco.analyze.patterns.graph.WildCard;
 
 public class PatternsPrinter {
 
+	static final String NULL_TO_STRING = "*";
+	
 	SuffixTree graph;
 	String delimiter;
 	int min;
@@ -76,14 +77,24 @@ public class PatternsPrinter {
 			
 			// print items in nodes
 			StackItem item = iterator.next();
+			Node node = item.node; 
 			
-			if (item.node != graph.getRoot()) {
-				System.out.printf("%s%s", item.node.getItem(), delimiter);
+			if (node != graph.getRoot()) {	
+				System.out.printf("%s%s", getString(node), delimiter);
 			}
 		}
 		
 		// new line
 		System.out.println();
+	}
+	
+	private String getString(Node node) {
+		
+		// get item of the node
+		Object obj = node.getItem();
+		
+		// return string
+		return (obj == null) ? NULL_TO_STRING : obj.toString();
 	}
 	
 	private boolean isPrintable(StackItem item) {
@@ -99,7 +110,7 @@ public class PatternsPrinter {
 	}
 	
 	private boolean isWildCard(StackItem item) {
-		return item.node.getItem() instanceof WildCard;
+		return item.node.getItem() == null;
 	}
 	
 	private class StackItem {

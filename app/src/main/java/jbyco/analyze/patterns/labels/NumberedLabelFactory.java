@@ -7,8 +7,17 @@ import org.objectweb.asm.Label;
 
 public class NumberedLabelFactory implements AbstractLabelFactory {
 	
-	int maxNumber = 0;
-	Map<Label, NumberedLabel> map = new HashMap<>();
+	int maxNumber;
+	Map<Label, NumberedLabel> map;
+	
+	public NumberedLabelFactory() {
+		init();
+	}
+	
+	public void init() {
+		maxNumber = 0;
+		map = new HashMap<>();
+	}
 	
 	@Override
 	public AbstractLabel getLabel(Label label) {
@@ -22,11 +31,5 @@ public class NumberedLabelFactory implements AbstractLabelFactory {
 		
 		return label2;
 	}
-	
-	public void restart() {
-		maxNumber = 0;
-		map = new HashMap<>();
-	}
-
 
 }

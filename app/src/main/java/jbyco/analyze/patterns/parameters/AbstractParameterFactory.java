@@ -2,6 +2,8 @@ package jbyco.analyze.patterns.parameters;
 
 public interface AbstractParameterFactory {
 	
+	public void init();
+	
 	public AbstractParameter getVariable(int index);
 	public AbstractParameter getInt(int i);
 	public AbstractParameter getFloat(float f);
@@ -15,6 +17,4 @@ public interface AbstractParameterFactory {
 	
 	public AbstractParameter getNull();
 	public AbstractParameter getThis();
-	
-	public void restart();
 }

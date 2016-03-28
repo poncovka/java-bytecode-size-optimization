@@ -63,10 +63,16 @@ public class Abstractor extends MethodVisitor {
 		}
 		
 		// init
-		this.list = new ArrayList<>();
 		this.operations = operations;
 		this.parameters = parameters;
 		this.labels = labels;
+		
+		// restart
+		init();
+	}
+	
+	public void init() {
+		this.list = new ArrayList<>();
 	}
 	
 	public void add(AbstractOperation operation, AbstractParameter ...params) {

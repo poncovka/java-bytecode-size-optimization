@@ -7,10 +7,20 @@ import java.util.Map;
 public class NumberedParameterFactory extends FullParameterFactory {
 
 	// dictionary of created parameters
-	Map<AbstractParameter, AbstractParameter> map = new HashMap<>();
+	Map<AbstractParameter, AbstractParameter> map;
 	
 	// dictionary of max numbers used in numbered parameters
-	Map<Type, Integer> numbers = new EnumMap<>(Type.class);
+	Map<Type, Integer> numbers;
+	
+	public NumberedParameterFactory() {
+		init();
+	}
+	
+	@Override
+	public void init() {
+		map = new HashMap<>();
+		numbers = new EnumMap<>(Type.class);
+	}
 	
 	@Override
 	public AbstractParameter createParameter(Type type, Object... components) {
@@ -39,9 +49,4 @@ public class NumberedParameterFactory extends FullParameterFactory {
 		return p2;
 	}
 	
-	@Override
-	public void restart() {
-		map = new HashMap<>();
-		numbers = new EnumMap<>(Type.class);
-	}
 }

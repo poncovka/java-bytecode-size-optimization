@@ -7,16 +7,6 @@ import java.util.Locale;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 public class Utils {
-
-	public static int getOrDefault(int[] combination, int index, int value) {
-		
-		if (0 <= index && index < combination.length) {
-			return combination[index];
-		}
-		else {
-			return value;
-		}
-	}
 	
 	public static String intDivToString(int x, int y) {
 		return (y == 0) ? "0" : Integer.toString(x/y);

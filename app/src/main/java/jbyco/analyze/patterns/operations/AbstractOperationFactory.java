@@ -9,9 +9,13 @@ public abstract class AbstractOperationFactory {
 	AbstractOperation[] handleMap = new AbstractHandleOperation[10];		
 	
 	public AbstractOperationFactory() {
+		init();
+	}
+	
+	public void init() {
 		init(operationMap, allOperations());
 		init(handleMap, allHandleOperations());
-	}
+	};
 	
 	private void init(AbstractOperation[] map, AbstractOperation[] operations) {
 		
@@ -55,6 +59,4 @@ public abstract class AbstractOperationFactory {
 	// get all handle operations
 	public abstract AbstractOperation[] allHandleOperations();
 	
-	// restart the factory
-	public void restart() {};
 }

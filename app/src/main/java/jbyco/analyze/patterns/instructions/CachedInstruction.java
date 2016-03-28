@@ -1,6 +1,6 @@
 package jbyco.analyze.patterns.instructions;
 
-public class CachedInstruction implements AbstractInstruction, Comparable<CachedInstruction> {
+public class CachedInstruction implements AbstractInstruction {
 
 	final int id;
 	static int maxid = 0;
@@ -18,6 +18,10 @@ public class CachedInstruction implements AbstractInstruction, Comparable<Cached
 	
 	public int getId() {
 		return id;
+	}
+	
+	public AbstractInstruction getInstruction() {
+		return instruction;
 	}
 	
 	@Override
@@ -51,11 +55,6 @@ public class CachedInstruction implements AbstractInstruction, Comparable<Cached
 			return false;
 		}
 		return true;
-	}
-
-	@Override
-	public int compareTo(CachedInstruction instruction) {
-		return Integer.compare(this.id, instruction.id);
 	}
 
 }

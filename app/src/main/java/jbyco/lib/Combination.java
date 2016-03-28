@@ -13,7 +13,7 @@ public class Combination implements Iterator<int[]> {
 	public Combination(int n, int min, int max) {
 	
 		// check arguments
-		if (n <= 0 || min >= max || max - min + 1 < n ) {
+		if (!check(n, min, max)) {
 			throw new IllegalArgumentException();
 		}
 		
@@ -28,6 +28,10 @@ public class Combination implements Iterator<int[]> {
 		this.index = 0;
 	}
 
+	public static boolean check(int n, int min, int max) {
+		return n > 0 && min < max && max - min + 1 >= n;
+	}
+	
 	@Override
 	public boolean hasNext() {
 		return 0 <= index && index < array.length;

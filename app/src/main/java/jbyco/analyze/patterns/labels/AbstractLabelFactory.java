@@ -4,7 +4,7 @@ import org.objectweb.asm.Label;
 
 public interface AbstractLabelFactory {
 
+	public void init();
 	public AbstractLabel getLabel(Label label);
-	public void restart();
 	
 }
