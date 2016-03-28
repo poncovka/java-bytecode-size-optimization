@@ -3,14 +3,15 @@ package jbyco.analyze.patterns.parameters;
 public enum Type implements AbstractParameter {
 	
 	LABEL 		("LABEL"),
-	VARIABLE 	("V"),
-	PARAMETER	("P"),
+	VARIABLE 	("VAR"),
+	PARAMETER	("PAR"),
 	INT 		("I"),
 	FLOAT 		("F"),
 	LONG 		("L"),
 	DOUBLE 		("D"),
 	STRING 		("S"),
-	CLASS		("CLASS"),
+	CLASS		("OBJECT"),
+	ARRAY		("ARRAY"),
 	FIELD		("FIELD"),
 	METHOD		("METHOD");
 	

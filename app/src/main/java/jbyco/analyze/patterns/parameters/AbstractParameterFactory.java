@@ -11,6 +11,7 @@ public interface AbstractParameterFactory {
 	public AbstractParameter getDouble(double d);
 	public AbstractParameter getString(String s);
 	public AbstractParameter getClass(String internalName);
+	public AbstractParameter getArray(String internalName);
 	public AbstractParameter getField(String name, String desc);
 	public AbstractParameter getMethod(String name, String desc);
 	public AbstractParameter getMethodParameter(int index);

@@ -46,6 +46,11 @@ public class GeneralParameterFactory implements AbstractParameterFactory {
 	}
 
 	@Override
+	public AbstractParameter getArray(String internalName) {
+		return Type.ARRAY;
+	}
+	
+	@Override
 	public AbstractParameter getField(String name, String desc) {
 		return Type.FIELD;
 	}

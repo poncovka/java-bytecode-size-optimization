@@ -52,6 +52,11 @@ public class FullParameterFactory implements AbstractParameterFactory {
 	}
 
 	@Override
+	public AbstractParameter getArray(String internalName) {
+		return createParameter(Type.ARRAY, internalName);
+	}
+	
+	@Override
 	public AbstractParameter getField(String name, String desc) {
 		return createParameter(Type.FIELD, name, desc);
 	}
@@ -70,5 +75,5 @@ public class FullParameterFactory implements AbstractParameterFactory {
 	public AbstractParameter getThis() {
 		return Value.THIS;
 	}
-	
+
 }

@@ -107,6 +107,21 @@ public class Abstractor extends MethodVisitor {
 		}
 	}
 	
+	public AbstractParameter getClassOrArray(String internalName) {
+		
+		int sort = Type.getObjectType(internalName).getSort();
+		
+		if (sort == Type.ARRAY) {
+			return parameters.getArray(internalName);
+		}
+		else if (sort == Type.OBJECT) {
+			return parameters.getClass(internalName);
+		}
+		else {
+			throw new IllegalArgumentException(internalName);
+		}
+	}
+	
 	public Collection<AbstractParameter> processConstantValue(Object cst) {
 		
 		Collection<AbstractParameter> list = new ArrayList<>();
@@ -129,21 +144,12 @@ public class Abstractor extends MethodVisitor {
 		} else if (cst instanceof Type) {
 
 			Type type = (Type) cst;
-			int sort = type.getSort();
-
-			if (sort == Type.OBJECT) {
-				list.add(parameters.getClass(type.getInternalName()));
-				
-			} else if (sort == Type.ARRAY) {
-				list.add(parameters.getClass(type.getInternalName()));
-				
-			} else if (sort == Type.METHOD) {
-				list.add(parameters.getClass(type.getInternalName()));
+			list.add(getClassOrArray(type.getInternalName()));
+			
+			if (type.getSort() == Type.METHOD) {
 				list.add(parameters.getMethod("-", type.getDescriptor()));
-				
-			} else { // primitive type
-				list.add(parameters.getClass(type.getInternalName()));
-			}
+			} 
+			
 		} else if (cst instanceof Handle) {
 			
 			Handle handle = (Handle)cst;
@@ -152,7 +158,7 @@ public class Abstractor extends MethodVisitor {
 			list.add(operations.getHandleOperation(handle.getTag()));
 			
 			// owner
-			list.add(parameters.getClass(handle.getOwner()));
+			list.add(getClassOrArray(handle.getOwner()));
 			
 			// field or method
 			if (handle.getTag() <= Opcodes.H_PUTSTATIC) {
@@ -163,7 +169,7 @@ public class Abstractor extends MethodVisitor {
 			}
 
 		} else {
-			throw new IllegalArgumentException("Illegal constant value " + cst + ".");
+			throw new IllegalArgumentException(cst.toString());
 		}
 		
 		return list;
@@ -228,7 +234,7 @@ public class Abstractor extends MethodVisitor {
 				default: 				throw new IllegalArgumentException("Unknown type of the array.");
 			}
 			
-			param = parameters.getClass(type);
+			param = parameters.getArray(type);
 		}
 		// SIPUSH, BIPUSH
 		else {
@@ -248,27 +254,27 @@ public class Abstractor extends MethodVisitor {
 
 	@Override
 	public void visitTypeInsn(int opcode, String type) {
-
+			
 		// add instruction
-		add(operations.getOperation(opcode), parameters.getClass(type));
+		add(operations.getOperation(opcode), getClassOrArray(type));
 	}
 
 	@Override
 	public void visitFieldInsn(int opcode, String owner, String name, String desc) {
 		
 		// get parameters
-		AbstractParameter p1 = parameters.getClass(owner);
-		AbstractParameter p2 = parameters.getField(name, desc);
+		AbstractParameter param1 = getClassOrArray(owner);
+		AbstractParameter param2 = parameters.getField(name, desc);
 				
 		// add instruction
-		add(operations.getOperation(opcode), p1, p2);
+		add(operations.getOperation(opcode), param1, param2);
 	}
 
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
 		
 		// get parameters
-		AbstractParameter param1 = parameters.getClass(owner);
+		AbstractParameter param1 = getClassOrArray(owner);
 		AbstractParameter param2 = parameters.getMethod(name, desc);
 								
 		// add instruction
@@ -367,8 +373,8 @@ public class Abstractor extends MethodVisitor {
 		
 		// get parameter 
 		AbstractParameter param1 = parameters.getInt(dims);
-		AbstractParameter param2 = parameters.getClass(desc);
-				
+		AbstractParameter param2 = parameters.getArray(desc);
+		
 		// add instruction
 		add(operations.getOperation(Opcodes.MULTIANEWARRAY), param1, param2);
 	}
