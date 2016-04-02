@@ -1,0 +1,50 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Nástroje pro manipulaci s~bajtkódem}\label{Tools}
+
+Tato kapitola je věnovaná existujícím nástrojům pro manipulaci s~bajtkódem. Vybrala jsem tři populární knihovny BCEL, ASM a Javassist implementované v~jazyce Java. Knihovny se navzájem liší mírou abstrakce a způsobem manipulace s~bajtkódem.
+
+
+\section{BCEL}\label{ToolsBCEL}
+
+% Z jakých nejdůležitějších tříd se knihovna skládá?
+% Jakým způsobem lze manipulovat s bajtkódem?
+% Jaké další nástroje BCEL nabízí?
+
+
+BCEL nebo-li Byte Code Engineering Library \cite{BCEL} je knihovna, která je součástí projektu Apache Commons. Je poskytovaná pod licencí Apache License 2.0. Poslední verze BCEL 5.2 nepodporuje Javu 8, ale z~repozitáře je dostupná verze 6.0, kde je podpora z~větší části implementovaná. Vývoj knihovny však v~posledních letech není příliš aktivní. 
+
+Programové rozhraní knihovny je dostupné v~balíčku \texttt{org.apache.bcel}. Knihovna obsahuje třídy pro statický popis \texttt{class} souborů, třídy pro dynamické úpravy a vytváření bajtkódu a třídy s~užitečnými nástroji. Syntaktickou analýzu \texttt{class} souboru a vytvoření reprezentace jeho obsahu v~podobě instance třídy \texttt{JavaClass} umožňuje třída \texttt{ClassParser} z~balíčku \texttt{org.apache.bcel.classfile}. Součástí balíčku jsou současně všechny třídy podílející se na popisu obsahu souboru. Pro každou položku souboru je tedy vytvořen nový objekt. Takový přístup může být velmi neefektivní, pokud je třeba zpracovat velké množství souborů. Na druhou stranu třída \texttt{JavaClass} velmi přesně kopíruje formát \texttt{class} souboru tak, jak byl popsán v~kapitole \ref{Format}, včetně tabulky konstant.
+Pro dynamické vytváření a úpravu bajtkódu je třeba vyšší míra abstrakce. Tu poskytují třídy z~balíčku \texttt{org.apache.bcel.generic}. Pomocí těchto tříd je třeba sestavit celý obsah \texttt{class} souboru včetně tabulky konstant. Korektnost výsledného bajtkódu lze zkontrolovat třídou \texttt{Verifier}.
+
+% zmínit visitora, BCELLifier, instruction finder
+
+Knihovna BCEL poskytuje pro bajtkód velmi nízkou úroveň abstrakce. Je třeba být seznámen s~formátem \texttt{class} souborů a pracovat s~tabulkou konstant. Bajtkód je navíc reprezentovaný velkým množstvím objektů a neexistuje efektivní způsob, jak zpracovat jen ty informace, které jsou pro danou aplikaci potřeba. Vhodnou alternativou je proto knihovna ASM.
+
+
+% příklad načtení kódu a výpis 
+% příklad vytvoření kódu ?
+
+% FIndBugs
+
+\section{ASM}\label{ToolsASM}
+
+ASM \cite{ASM} je knihovna od OW2 Consortium poskytovaná pod licencí BSD. Na rozdíl od BCEL se jedná o~aktivní projekt a Java 8 je oficiálně plně podporovaná. ASM si zakládá na snadné použitelnosti, výkonnosti a malé velikosti. 
+Knihovna je založena na návrhovém vzoru Návštěvník (Visitor). Místo reprezentace \texttt{class} souboru pomocí objektů jsou při syntaktické analýze volány pro jednotlivé položky metody návštěvníka. Návštěvník může položky zpracovat a předat je dalšímu návštěvníkovi. Pomocí takového zřetězení lze jedním až dvěma průchody \texttt{class} souboru dosáhnout požadovaného zpracování bajtkódu. Pokud je třeba provést větší počet průchodů, může být vhodnější použít objektovou reprezentaci pomocí stromu. ASM umožňuje oba přístupy libovolně kombinovat.
+
+Základní rozhraní je dostupné v~balíčku \texttt{org.objectweb.asm}. Třída \texttt{ClassReader} analyzuje daný \texttt{class} soubor a volá metody návštěvníka, instance třídy rozšiřující abstraktní třídu \texttt{ClassVisitor}. Třída \texttt{ClassVisitor} umožňuje vytvořit sekvenci návštěvníků. Jedním z~těchto návštěvníků může být i instance třídy \texttt{ClassWriter}, která z~parametrů volaných metod vytvoří opět binární reprezentaci bajtkódu. Tato třída může být použita i samostatně pro dynamické generování bajtkódu. Při průchodu souborem i při jeho vytváření je třeba pamatovat na pořadí, ve kterém jsou jednotlivé položky navštíveny.
+Programové rozhraní pro objektovou reprezentaci pomocí stromu je v~balíčku \texttt{org.objectweb.asm.tree}. Obsah \texttt{class} souboru je reprezentovaný třídou \texttt{ClassNode}, která tvoří kořen stromu. Jednotlivé položky tvoří uzly. S~takto vytvořeným stromem lze libovolně manipulovat i vytvořit zcela nový. Jednotlivé uzly jsou současně návštěvníky daných položek. Díky tomu je možné libovolně přecházet mezi oběma přístupy k~bajtkódu.
+Balíčky \texttt{org.objectweb.asm.util}, \texttt{org.objectweb.asm.commons} a \texttt{org.objectweb.asm.tree.analysis} obsahují některé zajímavé nástroje pro zpracování a analýzu bajtkódu.
+
+ASM zaujme svým návrhem a možností výběru mezi dvěma způsoby práce s~bajtkódem. Nabízí vyšší úroveň abstrakce než BCEL, neboť přístup k~tabulce konstant je uživateli zcela odepřen. Na druhou stranu je práce s~bajtkódem stále na úrovni blízké formátu \texttt{class} souboru. Z~popisovaných nástrojů je ASM považován za nejrychlejší.
+
+% ASMFiier plugin
+
+\section{Javassist}\label{ToolsJavassist}
+
+Javassist nebo-li Java Programming Assistant \cite{Javassist} je knihovna poskytovaná pod trojitou licencí MPL, LGPL a Apache License. Je vhodná zejména pro úpravu bajtkódu za běhu programu. Knihovna umožňuje pracovat s~\texttt{class} soubory na dvou úrovních. Úroveň zdrojového kódu nevyžaduje znalost bajtkódu, ale umožňuje s~bajtkódem manipulovat pomocí slovníku programovacího jazyka Java. Úroveň bajtkódu umožňuje přístup k~reprezentaci blízké formátu \texttt{class} souboru. Java 8 je podporovaná.
+
+V~balíčku \texttt{javassist} je dostupné základní rozhraní knihovny. Třída \texttt{CtClass} je reprezentací \texttt{class} souboru. Instanci této třídy je třeba získat z~úložiště reprezentovaného třídou \texttt{ClassPool}. V~tomto úložišti jsou k~dispozici všechny takto načtené třídy. Získanou reprezentaci třídy lze modifikovat a uložit do souboru či pole bajtů, nebo lze vytvořit reprezentovanou třídu. Těla metod lze modifikovat pomocí tříd z~balíčku \texttt{javassist.expr}. Manipulace na úrovni zdrojového kódu má však jistá omezení a nejsou podporovány všechny jazykové konstrukce. Proto balíček \texttt{javassist.bytecode} poskytuje rozhraní pro přímou editaci bajtkódu. Instrukční soubor je zde reprezentovaný třídou \texttt{ClassFile}. K~dispozici je i tabulka konstant reprezentovaná třídou \texttt{ConstPool}.
+
+S~\texttt{class} souborem se v~Javassist opět manipuluje prostřednictvím objektové reprezentace. Zajímavá je však možnost pracovat s~bajtkódem jako s~konstrukcemi programovacího jazyka Java. Javassist tak nabízí mnohem vyšší úroveň abstrakce než BCEL a ASM. Navíc má propracovanější podporu editace bajtkódu za běhu.
+
+%=========================================================================

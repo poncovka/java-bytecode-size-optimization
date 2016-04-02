@@ -14,8 +14,8 @@
 \let\pdfoutput\undefined
 
 %\documentclass[cover,english]{fitthesis} % odevzdani do wisu - odkazy, na ktere se da klikat
-\documentclass[english, cover]{fitthesis} % odevzdani do wisu - odkazy, na ktere se da klikat
-%\documentclass[cover,print]{fitthesis} % pro tisk - na odkazy se neda klikat
+%\documentclass[english, cover]{fitthesis} % odevzdani do wisu - odkazy, na ktere se da klikat
+\documentclass[cover,print]{fitthesis} % pro tisk - na odkazy se neda klikat
 %\documentclass[english,print]{fitthesis} % pro tisk - na odkazy se neda klikat
 %      \documentclass[english]{fitthesis}
 % * Je-li prace psana v anglickem jazyce, je zapotrebi u tridy pouzit 
@@ -38,13 +38,22 @@
 \usepackage{amsmath}
 \usepackage{mdwlist}
 
-\usepackage[bf]{caption2}
+\usepackage[bf]{caption}
+
+%\usepackage{qtree}
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+\usetikzlibrary{trees}
 
 %\theoremstyle{definition}
 %\newtheorem{Def}{Definice}[section]
 %\newtheorem{Alg}{Algoritmus}
 %\newtheorem{Example}{Příklad}[section]
 %\newtheorem{Veta}{Věta}
+
+%\newcommand{\nt}[1]{$<$\textit{#1}$>$}
+\newcommand{\N}[1]{\textit{#1}}
+\newcommand{\T}[1]{\texttt{#1}}
 
 % =======================================================================
 % balíček "hyperref" vytváří klikací odkazy v pdf, pokud tedy použijeme pdflatex
@@ -72,7 +81,7 @@
   year=2016,             %rok
   date=\today,           %datum odevzdani
   %Nazev prace
-  title.cs={Optimalizace bajtkódu Javy s~ohledem na~jeho velikost},  %nazev prace v cestine
+  title.cs={Optimalizace velikosti bajtkódu Javy},  %nazev prace v cestine
   title.en={Java Bytecode Size Optimization}, %nazev prace v anglictine
   %Autor
   author={Vendula Poncová},   %jmeno prijmeni autora
@@ -80,7 +89,7 @@
   %author.title.a=PhD, %titul za jmenem (nepovinne)
   %Ustav
   department=UITS, % doplnte prislusnou zkratku: UPSY/UIFS/UITS/UPGM
-  %Skolitel
+  %Skolite
   supervisor=Radek Kočí, %jmeno prijmeni skolitele
   supervisor.title.p=Ing.,   %titul pred jmenem (nepovinne)
   supervisor.title.a={Ph.D.},    %titul za jmenem (nepovinne)
@@ -88,15 +97,15 @@
   %bud pomoci nasledujicich parametru nebo pomoci vyhrazenych maker (viz dale)
   %===========================================================================
   %Klicova slova
-  keywords.cs={Klíčová slova v českém jazyce.}, %klicova slova v ceskem jazyce
-  keywords.en={Klíčová slova v anglickém jazyce.}, %klicova slova v anglickem jazyce
+  keywords.cs={Java, JVM, bajtkód, optimalizace velikosti, ASM, BCEL, Javassist}, %klicova slova v ceskem jazyce
+  keywords.en={Java, JVM, bytecode, size optimization, ASM, BCEL, Javassist}, %klicova slova v anglickem jazyce
   %Abstract
-  abstract.cs={Výtah (abstrakt) práce v českém jazyce.}, % abstrakt v ceskem jazyce
-  abstract.en={Výtah (abstrakt) práce v anglickém jazyce.}, % abstrakt v anglickem jazyce
+  abstract.cs={Tato práce je zaměřená na studium bajtkódu Javy z~hlediska jeho velikosti. Popisuje virtuální stroj Javy a formát instrukčního souboru a uvádí přehled některých nástrojů pro manipulaci s~bajtkódem. Pomocí těchto nástrojů jsem implementovala nástroj pro analýzu bajtkódu. Ze získaných dat se mi podařilo diagnostikovat místa, která jsou vhodná pro optimalizaci velikosti bajtkódu.}, % abstrakt v ceskem jazyce
+  abstract.en={This paper deals with the Java bytecode in terms of  its size. It describes the Java Virtual Machine and the Java class file format. It also presents some tools for bytecode manipulation. Using these tools, I~have designed and implemented a tool for bytecode analysis. From collected data, I~have diagnosed locations suitable for size optimization.}, % abstrakt v anglickem jazyce
   %Prohlaseni
-  declaration={Prohlašuji, že jsem tuto bakalářskou práci vypracoval samostatně pod vedením pana ...},
+  declaration={Prohlašuji, že jsem tuto semestrální práci vypracovala samostatně pod vedením pana Ing. Radka Kočího, Ph.D. a pana Ing. Pavla Tišnovského, Ph.D. Uvedla jsem všechny literární prameny a publikace, ze kterých jsem čerpala.},
   %Podekovani (nepovinne)
-  acknowledgment={Zde je možné uvést poděkování vedoucímu práce a těm, kteří poskytli odbornou pomoc.} % nepovinne
+  %acknowledgment={Zde je možné uvést poděkování vedoucímu práce a těm, kteří poskytli odbornou pomoc.} % nepovinne
 }
 
 %Abstrakt (cesky, anglicky)

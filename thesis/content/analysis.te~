@@ -1,0 +1,20 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Analýza bajtkódu}\label{Analysis}
+
+% Popis způsobu analýzy rozsáhlého vzorku testovacích dat, prezentace výsledků a zhodnocení.
+
+V~této kapitole se věnuji analýze souborů v~class formátu. Pro shromáždění potřebných dat jsem navrhla a implementovala vlastní nástroj jbyco, který popisuji v~kapitole (REF). Pro vybraný vhodný vzorek class souborů jsem tato data analyzovala a vyhodnotila v~kapitole REF.
+
+\section{Testovací data}\label{AnalysisData}
+
+% Jaká data jsem použila k analýze? Odkud jsem je získala? Jakých kritérií jsem se držela?
+
+\section{Výsledky analýzy}\label{AnalysisResults}
+
+% Zde budou uvedeny tabulky a grafy s výsledky analýzy.
+
+\section{Vyhodnocení}\label{AnalysisSummary}
+
+% Shrnutí výsledků a komentář. Jak mohu výsledky analýzy použít pro další postup práce?
+
+%=========================================================================
