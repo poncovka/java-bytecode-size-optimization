@@ -1,25 +1,49 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Nástroj pro analýzu bajtkódu}\label{Tool}
 
-V~této kapitole popisuji návrh a implementaci nástroje \texttt{jbyco}. Nástroj je určen pro zpracování velkého množství souborů a získání dat, která jsou vhodná pro analýzu bajtkódu.
+% TODO 
+% * sumarizující? je to korektní?
+% * dostatečně
+% * obrázek s instrukcemi a stromem
+% * příklady zobecnění instrukcí 
+% * základní blok
+% * kombinatoriky
+% * 
 
-\section{Analýza problému a návrh řešení}\label{ToolDesign}
+V~této kapitole popisuji návrh a implementaci nástroje \texttt{jbyco}. Nástroj je určen pro zpracování \texttt{class} souborů a získání dat sumarizujících obsahy těchto souborů. Následná analýza dat poslouží k návrhu optimalizace velikosti.
 
-Pro analýzu bajtkódu jsem potřebovala získat data, která by vhodným způsobem reprezentovala analyzovaný bajtkód. Zajímaly mne celkové součty položek v~\texttt{class} souboru, využití lokálních proměnných a parametrů a typické sekvence instrukcí. Dále jsem potřebovala vyřešit načítání velkého množství vstupních dat.
+\section{Návrh programu}\label{ToolDesign}
 
-U~hledání typických sekvencí jsem zvažovala jednotlivé sekvence a jejich četnosti zaznamenávat jednoduše pomocí tabulky klíč-hodnota. Takový přístup mi nepřipadal vhodný z~hlediska paměťové složitosti, neboť by to znamenalo udržovat v~paměti všechny podsekvence sekvencí instrukcí. Rozhodla jsem se proto pro reprezentaci sekvencí pomocí orientovaného acyklického grafu, tzv. grafu sufixů. Na instrukce se lze dívat jako na prvky abecedy a na sekvence instrukcí jako na řetězce. Pak definované cesty v~grafu sufixů tvoří sufixy reprezentovaných řetězců. Prefixy těchto sufixů tvoří všechny podřetězce reprezentovaných řetězců. 
+Při návrhu programu jsem zohlednila následující požadavky. 
+Výstupy programu by měly umět zodpovědět následující otázky. Jak vypadá obsah konkrétního \texttt{class} souboru? Kolik bajtů, tříd, metod a členských proměnných se zpracovalo? Jaké jsou velikosti jednotlivých položek v souborech? Jaké je využití lokálních proměnných? Jaké jsou typické sekvence instrukcí v souborech? K zodpovězení většiny otázek je vždy třeba zpracovat dostatečně velké množství souborů, aby získané odpovědi byly dostatečně obecné. 
 
-Graf sufixů se skládá z~kořene a uzlů. Všechny uzly kromě kořene reprezentují prvky abecedy a pro každou hranu je definovaná množina cest, které danou hranou prochází. Každá taková cesta v~grafu má vlastní čítač, který určuje, kolik stejných cest daná cesta reprezentuje. Když se do grafu přidává další sufix, postupuje se grafem směrem od kořenu. Pokud je aktuální prvek sufixu stejný jako prvek některého ze sousedů aktuálního uzlu, pak se daný uzel stane aktuálním a začne se zpracovávat následující prvek sufixu. Pokud takový soused neexistuje, vybere se uzel se stejným prvkem, který je nedosažitelný z~aktuálního uzlu. K~tomuto uzlu se vytvoří z~aktuálního uzlu hrana, vytvoří se nová cesta a uzel se označí za aktuální. Jestliže takový uzel neexistuje, pak se vytvoří nový uzel, hrana i cesta a nový uzel se stane aktuálním. Po vložení posledního prvku sufixu se inkrementuje čítač cesty, kterou sufix duplikuje, nebo se vytvoří cesta nová, pokud už vytvořena nebyla. Cílem je v~podstatě minimalizovat duplicitu podřetězců v~grafu.
+Program jsem vzhledem k požadavkům rozdělila na několik podprogramů, přičemž každý z nich zodpovídá jednu otázku. 
+Většinu požadovaných dat lze získat snadno pomocí knihoven ASM a BCEL. Největší problém tak představovalo nalezení typických sekvencí instrukcí.
 
-V~takto vytvořeném grafu sufixů lze následně zjednodušit každou hranu, kde je součet čítačů všech cest menší než daná hodnota. Prvek uzlu, do kterého vede taková hrana, lze nahradit tzv. divokou kartou a sekvenčně i paralelně sousedící uzly s~divokou kartou lze sloučit do jednoho uzlu. V~takto zjednodušeném grafu lze nalézt typické vzory sekvencí instrukcí.
+\subsubsection{Reprezentace sekvencí instrukcí}
+
+Získání typických sekvencí instrukcí vyžaduje uchovávat v paměti všechny různé sekvence různých délek ze všech zpracovaných metod a jejich četnosti výskytu. Každou novou sekvenci je pak třeba porovnat s ostatními, a buď upravit četnost shodné sekvence, nebo vložit novou sekvenci mezi ostatní. To představuje velkou časovou a paměťovou zátěž a nelze zaručit, že program skončí dřív než dojde k nedostatku paměti. Z těchto důvodů bylo třeba vymyslet úspornou datovou strukturu reprezentující sekvence a způsob zotavení se z nedostatku paměti.
+
+Jako vhodná datová struktura se pro sekvence instrukcí nabízí strom. Kořenem stromu by byl prázdný uzel, uzly jednotlivé instrukce a žádný uzel by nesměl mít dva bezprostřední následníky se stejnou instrukcí. Každá cesta z kořene do nějakého uzlu stromu by představovala jednu sekvenci a poslední uzel této cesty by pak obsahoval hodnotu četnosti výskytu sekvence. Do stromu pak stačí vkládat postfixy seznamu instrukcí každé metody, neboť sufixy těchto postfixů tvoří všechny sekvence seznamu instrukcí a každý z těchto sufixů je tvořen cestou z kořene stromu. Stromová reprezentace umožňuje snadné porovnávání a přidávání sekvencí a šetří pamětí, neboť sekvence mohou sdílet společné prefixy.
+
+Nedostatku paměti je třeba předcházet v každém případě. Možným řešením je pravidelně kontrolovat, kolik procent z dostupné paměti se již využilo, a při překročení určité hodnoty zmenšit velikost vytvořeného stromu. Zmenšení stromu je možné dosáhnout jedním průchodem, při kterém se odstraní všechny hrany do uzlů z nižší hodnotou četnosti výskytu než je stanovený práh. Tento práh se následně zvedne. V krajním případě bude strom po ukončení výpočtu obsahovat pouze svůj kořen, ale výpočet neskončí nedostatkem paměti.
+
+\subsubsection{Zobecnění instrukcí a jejich sekvencí}
+
+Každá instrukce je daná svým operačním kódem a parametry. Zkoumat typické sekvence instrukcí s konkrétními hodnotami parametrů může přinést zajímavé výsledky, ale nenalezne obecné typické konstrukce. Instrukce lze tak nahradit jejich zobecněnými protějšky. Zobecnění instrukce se skládá ze svou částí: zobecnění operace a zobecnění parametrů. Zobecnění operačního kódu lze dosáhnout odstraněním typové informace z názvu operace. Zobecnění parametrů může mít dvě úrovně. Na nejnižší úrovni je parametr zastoupený jen svým typem. Na vyšší úrovni je každé hodnotě parametru přiřazen typ a číselný identifikátor. Pokud se taková hodnota vyskytuje v jedné sekvenci vícekrát, přiřazený identifikátor se nemění. Lze tak obecně zkoumat práci s opakujícími se hodnotami parametrů.
+
+V některých případech může být užitečné naopak rozšířit informace o instrukcích. Pracuje-li instrukce s lokální proměnnou a proměnná je jedním z parametrů metody, pak je vhodné nahradit označení proměnné klíčkovým slovem \texttt{this}, nebo identifikátorem parametru metody. Díky tomu je možné pozorovat, jak se v metodě pracuje s jejími parametry a jak třída pracuje se svými metodami a členskými proměnnými.
+
+Seznam instrukcí je vhodné doplnit o návěští, která budou označovat místa skoků. Budou-li tato návěští součástí zkoumaných sekvencí, lze rozlišit jednotlivé základní bloky instrukcí.
+
+Jako možné rozšíření se nabízí práce s divokými kartami.
+Divoká karta označuje v sekvenci instrukcí místo, ze kterého byla odebrána alespoň jedna instrukce. Sekvence s divokými kartami tak umožňují zkoumat i typické sekvence instrukcí, které nenásledují bezprostředně za sebou. K vytvoření všech sekvencí s divokými kartami pro danou sekvenci je třeba určit všechny možné intervaly indexů, ve kterých budou odebrány instrukce. Takové intervaly lze určit pomocí kombinatoriky.
+
+
 
 \section{Popis implementace}\label{ToolImplementation}
 
-Nástroj jsem implementovala v~jazyce Java s~pomocí knihovny BCEL. Hlavní metoda \texttt{main} je součástí třídy \texttt{App} v~balíčku \texttt{jbyco}. V~této metodě se zpracují parametry, vytvoří se iterátor vstupních souborů a spustí daná analýza. Iterátor vstupních souborů je reprezentovaný třídou \texttt{BytecodeFiles} z~balíčku \texttt{jbyco.io}. Balíček obsahuje třídy pro různé vstupně-výstupní operace. Třída  \texttt{BytecodeFiles} rekurzivně prochází všechny soubory, složky a \texttt{jar} soubory a vrací instance třídy \texttt{BytecodeFile} reprezentující \texttt{class} soubory. Rozhraní \texttt{Analyzer} z~balíčku \texttt{jbyco.analyze} popisuje rozhraní tříd, které provádí analýzu. V~balíčku \texttt{jbyco.analyze.size} jsou třídy potřebné k~analýze velikosti, v~balíčku \texttt{jbyco.analyze.locals} třídy určené k~analýze využití lokálních proměnných a parametrů a v~balíčku
-\texttt{jbyco.analyze.patterns} třídy pro nalezení typických sekvencí instrukcí. Výstupem každé analýzy je vytištěná tabulka se zjištěnými daty. Třídy pro práci s~grafem sufixů jsou obsaženy v~balíčku \texttt{jbyco.analyze.patterns.graph}.
-Překlad nástroje lze provést příkazem \texttt{gradle build}. Aplikaci lze spustit příkazem \texttt{gradle run -Dmyargs="$args$"}. Argument \texttt{help} vypíše nápovědu k~programu.
 
-Analýza velikosti a analýza využití proměnných běží i pro velké množství souborů velmi rychle, zatímco vyhledávání typických vzorů je velmi pomalé. Při bližším zkoumání jsem odhalila, že nejvíce času program stráví zajišťováním acykličnosti grafu. To, že graf není strom, je zajímavé z~hlediska úspory paměti i zjednodušování hran. Cenou je však čas běhu programu. Budu muset zvážit volbu jiné reprezentace. Algoritmus pro zjednodušování hran jsem implementovala, ale není zcela odladěný, proto jsem jej pro analýzu nepoužila.
-
+\section{Překlad a spuštění}\label{ToolRun}
 
 %=========================================================================
