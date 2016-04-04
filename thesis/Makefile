@@ -2,56 +2,47 @@
 # (c) 2008 Michal Bidlo
 # E-mail: bidlom AT fit vutbr cz
 #===========================================
-PROJECT=project
-PRESENTATION=presentation
-CONTENT=content
-REF=literature
+# asi budete chtit prejmenovat:
+PROJ=project
+PRES=presentation
+CONT=content
+BIB=literature
 
-all: clean $(PROJECT).ps
+all: clean pdf counting
 
-final: clean $(PROJECT).pdf counting
+final: wave all
 
-$(PROJECT).pdf: $(PROJECT).ps
-	dvipdf $(PROJECT)
+pdf: $(PROJ).pdf
 
-$(PROJECT).ps: $(PROJECT).dvi
-	dvips $(PROJECT)
+#$(PROJ).pdf: $(PROJ).ps
+#	dvipdf $(PROJ)
 
-$(PROJECT).dvi: $(PROJECT).tex $(REF).bib
-	latex $(PROJECT)
-	bibtex $(PROJECT)
-	latex $(PROJECT)
-	latex $(PROJECT)
+$(PROJ).ps: $(PROJ).dvi
+	dvips $(PROJ)
 
-pdflatex: clean
-	pdflatex $(PROJECT)
-	bibtex $(PROJECT)
-	pdflatex $(PROJECT)
-	pdflatex $(PROJECT)
+$(PROJ).dvi: $(PROJ).tex $(BIB).bib
+	latex $(PROJ)
+	bibtex $(PROJ)
+	latex $(PROJ)
+	latex $(PROJ)
 
-cover:
-#	latex desky
-#	dvips desky
-#	dvipdf desky
-	pdflatex desky
+$(PROJ).pdf: clean
+	pdflatex $(PROJ)
+	bibtex $(PROJ)
+	pdflatex $(PROJ)
+	pdflatex $(PROJ)
 
-presentation:
-	latex $(PRESENTATION)
-	dvipdf $(PRESENTATION)
-#	dvips -t a4 $(PRESENTATION).dvi
-#	ps2pdf -sPAPERSIZE=a4 $(PRESENTATION).ps
-
-counting: $(PROJECT).pdf
+counting: $(PROJ).pdf
 	bash counter.sh
 
 wave: clean
-	vlna -l -m -n *.tex $(REF).bib $(CONTENT)/*.tex
+	vlna -l -m -n *.tex $(BIB).bib $(CONT)/*.tex
 
 clean:
-	rm -f *.dvi *.log $(PROJECT).blg $(PROJECT).bbl $(PROJECT).toc *.aux $(PROJECT).out $(PROJECT).lof dp-xponco00.tar.gz
-	rm -f $(PROJECT).pdf $(PROJECT).ps
-	rm -f *~ obsah/*~
+	rm -f *.dvi *.log $(PROJ).blg $(PROJ).bbl $(PROJ).toc *.aux $(PROJ).out $(PROJ).lof $(PROJ).ptc dp-xponco00.tar.gz
+	rm -f $(PROJ).pdf $(PROJ).ps
+	rm -f *~ ./$(CONT)/*~
 
 pack:
-	tar czvf dp-xponco00.tar.gz *.tex *.bib *.bst ./fig/* ./cls/* Makefile Changelog
+	tar czvf dp-xponco00.tar.gz *.tex *.bib *.bst ./$(CONT)/*.tex ./fig/* ./cls/* zadani.pdf $(PROJ).pdf Makefile Changelog
 

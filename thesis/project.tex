@@ -3,47 +3,42 @@
 % (c) 2008 Michal Bidlo
 % E-mail: bidlom AT fit vutbr cz
 %============================================================================
-% kodovaní: utf-8 (zmena prikazem iconv, recode nebo cstocs)
+% kodovaní: UTF-8 (zmena prikazem iconv, recode nebo cstocs)
 %----------------------------------------------------------------------------
 % zpracování: make, make pdf, make desky, make clean
-% připomínky posílejte na e-mail: bidlom AT fit.vutbr.cz
-% vim: set syntax=tex encoding=utf8:
+%============================================================================
+% Šablonu upravil: Ing. Jaroslav Dytrych, idytrych@fit.vutbr.cz
 %============================================================================
 
 %nezpracovava se pomoci pdflatex
-\let\pdfoutput\undefined
+%\let\pdfoutput\undefined
 
-%\documentclass[cover,english]{fitthesis} % odevzdani do wisu - odkazy, na ktere se da klikat
-%\documentclass[english, cover]{fitthesis} % odevzdani do wisu - odkazy, na ktere se da klikat
-\documentclass[cover,print]{fitthesis} % pro tisk - na odkazy se neda klikat
-%\documentclass[english,print]{fitthesis} % pro tisk - na odkazy se neda klikat
-%      \documentclass[english]{fitthesis}
+\documentclass[zadani,print]{fitthesis} % bez zadání - pro začátek práce, aby nebyl problém s překladem
+%\documentclass[zadani]{fitthesis} % odevzdani do wisu - odkazy jsou barevné
+%\documentclass[zadani,print]{fitthesis} % pro tisk - odkazy jsou černé
+%\documentclass[english,print]{fitthesis} % pro tisk - odkazy jsou černé
 % * Je-li prace psana v anglickem jazyce, je zapotrebi u tridy pouzit 
 %   parametr english nasledovne:
 %      \documentclass[english]{fitthesis}
-% * Neprejete-li si vysazet na prvni strane dokumentu desky, zruste 
-%   parametr cover
 
-% zde zvolime kodovani, ve kterem je napsan text prace
-% "latin2" pro iso8859-2 nebo "cp1250" pro windows-1250, "utf8" pro "utf-8"
-%\usepackage{ucs}
-\usepackage[utf8]{inputenc}
+\usepackage[czech,english]{babel}
+\usepackage[utf8]{inputenc} %kodovani
 \usepackage[T1, IL2]{fontenc}
+\usepackage{cmap}
 \usepackage{url}
 \DeclareUrlCommand\url{\def\UrlLeft{<}\def\UrlRight{>} \urlstyle{tt}}
 
 %zde muzeme vlozit vlastni balicky
 
+%--------------------------
 \usepackage{amsthm}
 \usepackage{amsmath}
 \usepackage{mdwlist}
-
 \usepackage[bf]{caption}
-
-%\usepackage{qtree}
 \usepackage{tikz}
 \usepackage{tikz-qtree}
 \usetikzlibrary{trees}
+\usepackage{epstopdf}
 
 %\theoremstyle{definition}
 %\newtheorem{Def}{Definice}[section]
@@ -54,6 +49,25 @@
 %\newcommand{\nt}[1]{$<$\textit{#1}$>$}
 \newcommand{\N}[1]{\textit{#1}}
 \newcommand{\T}[1]{\texttt{#1}}
+%--------------------------
+
+\usepackage{listings}
+\usepackage[toc,page,header]{appendix}
+\RequirePackage{titletoc}
+\ifczech
+  \usepackage{ae}
+\fi
+
+%---rm---------------
+%\renewcommand{\rmdefault}{lmr}%zavede Latin Modern Roman jako rm
+%---sf---------------
+%\renewcommand{\sfdefault}{qhv}%zavede TeX Gyre Heros jako sf
+%---tt------------
+%\renewcommand{\ttdefault}{lmtt}% zavede Latin Modern tt jako tt
+
+% vypne funkci nové šablony, která automaticky nahrazuje uvozovky,
+% aby nebyly prováděny nevhodné náhrady v popisech API apod.
+\csdoublequotesoff
 
 % =======================================================================
 % balíček "hyperref" vytváří klikací odkazy v pdf, pokud tedy použijeme pdflatex
@@ -69,6 +83,18 @@
   \def\AnchorColor{anchors}
   \def\LinkColor{links}
   \def\pdfBorderAttrs{/Border [0 0 0] }  % bez okrajů kolem odkazů
+  \pdfcompresslevel=9
+\fi
+\else % pro tisk budou odkazy, na které se dá klikat, černé
+\ifx\pdfoutput\undefined % nejedeme pod pdflatexem
+\else
+  \usepackage{color}
+  \usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
+  \definecolor{links}{rgb}{0,0,0}
+  \definecolor{anchors}{rgb}{0,0,0}
+  \def\AnchorColor{anchors}
+  \def\LinkColor{links}
+  \def\pdfBorderAttrs{/Border [0 0 0] } % bez okrajů kolem odkazů
   \pdfcompresslevel=9
 \fi
 \fi
@@ -89,7 +115,7 @@
   %author.title.a=PhD, %titul za jmenem (nepovinne)
   %Ustav
   department=UITS, % doplnte prislusnou zkratku: UPSY/UIFS/UITS/UPGM
-  %Skolite
+  %Skolitel
   supervisor=Radek Kočí, %jmeno prijmeni skolitele
   supervisor.title.p=Ing.,   %titul pred jmenem (nepovinne)
   supervisor.title.a={Ph.D.},    %titul za jmenem (nepovinne)
@@ -97,33 +123,32 @@
   %bud pomoci nasledujicich parametru nebo pomoci vyhrazenych maker (viz dale)
   %===========================================================================
   %Klicova slova
-  keywords.cs={Java, JVM, bajtkód, optimalizace velikosti, ASM, BCEL, Javassist}, %klicova slova v ceskem jazyce
-  keywords.en={Java, JVM, bytecode, size optimization, ASM, BCEL, Javassist}, %klicova slova v anglickem jazyce
+  %keywords.cs={Klíčová slova v českém jazyce.}, %klicova slova v ceskem jazyce
+  %keywords.en={Klíčová slova v anglickém jazyce.}, %klicova slova v anglickem jazyce
   %Abstract
-  abstract.cs={Tato práce je zaměřená na studium bajtkódu Javy z~hlediska jeho velikosti. Popisuje virtuální stroj Javy a formát instrukčního souboru a uvádí přehled některých nástrojů pro manipulaci s~bajtkódem. Pomocí těchto nástrojů jsem implementovala nástroj pro analýzu bajtkódu. Ze získaných dat se mi podařilo diagnostikovat místa, která jsou vhodná pro optimalizaci velikosti bajtkódu.}, % abstrakt v ceskem jazyce
-  abstract.en={This paper deals with the Java bytecode in terms of  its size. It describes the Java Virtual Machine and the Java class file format. It also presents some tools for bytecode manipulation. Using these tools, I~have designed and implemented a tool for bytecode analysis. From collected data, I~have diagnosed locations suitable for size optimization.}, % abstrakt v anglickem jazyce
+  %abstract.cs={Výtah (abstrakt) práce v českém jazyce.}, % abstrakt v ceskem jazyce
+  %abstract.en={Výtah (abstrakt) práce v anglickém jazyce.}, % abstrakt v anglickem jazyce
   %Prohlaseni
-  declaration={Prohlašuji, že jsem tuto semestrální práci vypracovala samostatně pod vedením pana Ing. Radka Kočího, Ph.D. a pana Ing. Pavla Tišnovského, Ph.D. Uvedla jsem všechny literární prameny a publikace, ze kterých jsem čerpala.},
+  %declaration={Prohlašuji, že jsem tuto bakalářskou práci vypracoval samostatně pod vedením pana ...},
   %Podekovani (nepovinne)
   %acknowledgment={Zde je možné uvést poděkování vedoucímu práce a těm, kteří poskytli odbornou pomoc.} % nepovinne
 }
 
 %Abstrakt (cesky, anglicky)
-%\abstract[cs]{Do tohoto odstavce bude zapsán výtah (abstrakt) práce v českém jazyce.}
-%\abstract[en]{Do tohoto odstavce bude zapsán výtah (abstrakt) práce v anglickém jazyce.}
+%\abstract[cs]{Tato práce je zaměřená na studium bajtkódu Javy z~hlediska jeho velikosti. Popisuje virtuální stroj Javy a formát instrukčního souboru a uvádí přehled některých nástrojů pro manipulaci s~bajtkódem. Pomocí těchto nástrojů jsem implementovala nástroj pro analýzu bajtkódu. Ze získaných dat se mi podařilo diagnostikovat místa, která jsou vhodná pro optimalizaci velikosti bajtkódu.}
+\abstract[cs]{TODO}
+%\abstract[en]{This paper deals with the Java bytecode in terms of  its size. It describes the Java Virtual Machine and the Java class file format. It also presents some tools for bytecode manipulation. Using these tools, I~have designed and implemented a tool for bytecode analysis. From collected data, I~have diagnosed locations suitable for size optimization.}
+\abstract[en]{TODO}
 
 %Klicova slova (cesky, anglicky)
-%\keywords[cs]{Sem budou zapsána jednotlivá klíčová slova v českém jazyce, oddělená čárkami.}
-%\keywords[en]{Sem budou zapsána jednotlivá klíčová slova v anglickém jazyce, oddělená čárkami.}
+\keywords[cs]{Java, JVM, bajtkód, optimalizace velikosti, ASM, BCEL, Javassist}
+\keywords[en]{Java, JVM, bytecode, size optimization, ASM, BCEL, Javassist}
 
 %Prohlaseni
-%\declaration{Prohlašuji, že jsem tuto bakalářskou práci vypracoval samostatně pod vedením pana X...
-%Další informace mi poskytli...
-%Uvedl jsem všechny literární prameny a publikace, ze kterých jsem čerpal.}
+\declaration{Prohlašuji, že jsem tuto semestrální práci vypracovala samostatně pod vedením pana Ing. Radka Kočího, Ph.D. a pana Ing. Pavla Tišnovského, Ph.D. Uvedla jsem všechny literární prameny a publikace, ze kterých jsem čerpala.}
 
 %Podekovani (nepovinne)
-%\acknowledgment{V této sekci je možno uvést poděkování vedoucímu práce a těm, kteří poskytli odbornou pomoc
-%(externí zadavatel, konzultant, apod.).}
+%\acknowledgment{V této sekci je možno uvést poděkování vedoucímu práce a těm, kteří poskytli odbornou pomoc (externí zadavatel, konzultant, apod.).}
 
 \begin{document}
   % Vysazeni titulnich stran
@@ -134,25 +159,54 @@
   \tableofcontents
   
   % Seznam obrazku a tabulek (pokud prace obsahuje velke mnozstvi obrazku, tak se to hodi)
+\ifczech
+  \renewcommand\listfigurename{Seznam obrázků}
+\fi
   % \listoffigures
+\ifczech
+  \renewcommand\listtablename{Seznam tabulek}
+\fi
   % \listoftables 
 
   % Text prace
   % ----------------------------------------------
-  \input{content} % viz. content.tex
+ \input{content} % viz. content.tex
 
   % Pouzita literatura
   % ----------------------------------------------
 \ifczech
+  \makeatletter
+  \def\@openbib@code{\addcontentsline{toc}{chapter}{Literatura}}
+  \makeatother
   \bibliographystyle{czechiso}
 \else 
+  \makeatletter
+  \def\@openbib@code{\addcontentsline{toc}{chapter}{Literature}}
+  \makeatother
   \bibliographystyle{plain}
 %  \bibliographystyle{alpha}
 \fi
   \begin{flushleft}
   \bibliography{literature} % viz. literature.bib
   \end{flushleft}
+
+  % Prilohy
+  % ---------------------------------------------
   \appendix
-  
+\ifczech
+  \renewcommand{\appendixpagename}{Přílohy}
+  \renewcommand{\appendixtocname}{Přílohy}
+  \renewcommand{\appendixname}{Příloha}
+\fi
+  \appendixpage
+\ifczech
+  \section*{Seznam příloh}
+  \addcontentsline{toc}{section}{Seznam příloh}
+\else
+  \section*{List of Appendices}
+  \addcontentsline{toc}{section}{List of Appendices}
+\fi
+  \startcontents[chapters]
+  \printcontents[chapters]{l}{0}{\setcounter{tocdepth}{2}}
   \input{appendix} % viz. appendix.tex
 \end{document}

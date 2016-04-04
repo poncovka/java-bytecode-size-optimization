@@ -2,7 +2,8 @@
 % FIT thesis
 % ----------------------------------------------------------------------------
 % (C) 2007 Zdenek Vasicek, 2008 Michal Bidlo
-% vim: set syntax=tex encoding=latin2:
+% ----------------------------------------------------------------------------
+% Šablonu upravil: Ing. Jaroslav Dytrych, idytrych@fit.vutbr.cz
 % ----------------------------------------------------------------------------
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{fitthesis}[2007/04/13 Sablona pro BP/DP]
@@ -12,6 +13,7 @@
 \newif\ifcover \let\ifcover\iffalse
 \newif\ifPrint \let\ifPrint\iffalse
 \newif\ifWis   \let\ifWis\iftrue
+\newif\ifzadani   \let\ifzadani\iffalse
 
 
 %-----------------------------------------------------------------------------
@@ -20,6 +22,7 @@
 \DeclareOption{english}{\let\ifczech\iffalse}
 \DeclareOption{cover}{\let\ifcover\iftrue}
 \DeclareOption{print}{\let\ifWis\iffalse \let\ifPrint\iftrue}
+\DeclareOption{zadani}{\let\ifzadani\iftrue}
 
 \DeclareOption*{}
 \ProcessOptions\relax
@@ -37,6 +40,9 @@
 \usepackage{amssymb}
 \usepackage[czech,english]{babel}
 \usepackage[utf8]{inputenc} %kodovani
+%\usepackage[T1]{fontenc}
+\usepackage{cmap}
+\usepackage{url}
 \ifczech
   \main@language{czech}
 \else
@@ -46,7 +52,11 @@
   \usepackage{graphics}
   \usepackage{epsfig}
 \else % je to pdftex !
-  \usepackage[pdftex]{graphicx}
+  \ifzadani
+    \usepackage{pdfpages}
+  \else % neni potreba pdfpages
+    \usepackage[pdftex]{graphicx}
+  \fi
 \fi
 
 %-----------------------------------------------------------------------------
@@ -66,8 +76,6 @@
 \def\@fit@EN{Faculty of Information Technology}
 \def\@author@CS{Autor práce}
 \def\@author@EN{Author}
-\def\@supervisor@CS{Vedoucí práce}
-\def\@supervisor@EN{Supervisor}
 \def\@dep@CS{Ústav}
 \def\@dep@EN{Department of}
 \def\@abstract@CS{Abstrakt}
@@ -90,12 +98,20 @@ Práce je chráněna autorským zákonem a její užití bez udělení oprávně
  \naselfalse
  \ifEqString{#1}{BP}{Bakalářská práce}{\@projecttype@CS}%
  \ifEqString{#1}{BP}{Bachelor's thesis}{\@projecttype@EN}%
+ \ifEqString{#1}{BP}{Vedoucí práce}{\@supervisor@CS}%
+ \ifEqString{#1}{BP}{Supervisor}{\@supervisor@EN}%
  \ifEqString{#1}{SP}{Semestrální projekt}{\@projecttype@CS}%
  \ifEqString{#1}{SP}{Term project}{\@projecttype@EN}%
+ \ifEqString{#1}{SP}{Vedoucí práce}{\@supervisor@CS}%
+ \ifEqString{#1}{SP}{Supervisor}{\@supervisor@EN}%
  \ifEqString{#1}{DP}{Diplomová práce}{\@projecttype@CS}%
  \ifEqString{#1}{DP}{Master's thesis}{\@projecttype@EN}%
+ \ifEqString{#1}{DP}{Vedoucí práce}{\@supervisor@CS}%
+ \ifEqString{#1}{DP}{Supervisor}{\@supervisor@EN}%
  \ifEqString{#1}{DR}{Disertační práce}{\@projecttype@CS}%
  \ifEqString{#1}{DR}{PhD thesis}{\@projecttype@EN}%
+ \ifEqString{#1}{DR}{Školitel}{\@supervisor@CS}%
+ \ifEqString{#1}{DR}{Supervisor}{\@supervisor@EN}%
  \ifnasel
  \else
    \typeout{Spatny typ projektu! Moznosti: BP, SP, DP, DR}\set@project{BP}
@@ -193,46 +209,6 @@ Práce je chráněna autorským zákonem a její užití bez udělení oprávně
 %bold
 \newcommand{\mktxt@b}[2]{\vbox{\setfontsize{#1}\noindent\bf#2}\vspace\mkspc}
 \newcommand{\mkuctxt}[2]{\vbox{\setfontsize{#1}\noindent\MakeUppercase{#2}}\vspace\mkspc}
-%-----------------------------------------------------------------------------
-%Desky \makecover
-%-----------------------------------------------------------------------------
-\newcommand\makecover{\thispagestyle{empty}\null%
-%===================================================
-\fontfamily{phv}\selectfont%
-%  
-\mkuctxt{24}{\@vut@CS}
-\mkuctxt{11}{\@vut@EN}
-
-\vspace{12mm}
-
-\mkuctxt{14}{\@fit@CS}
-\mkuctxt{14}{\@departmentname@CS}
-
-\vspace{4mm}
-
-\mkuctxt{11}{\@fit@EN}
-\mkuctxt{11}{\@departmentname@EN}
-
-\vfill
-
-\mkuctxt{18}{\@title} %Nazev prace v jazyce v jakem je napsana
-
-\vfill
-
-\mkuctxt{14}{\@projecttype@CS}
-\mkuctxt{10}{\@projecttype@EN}
-\vspace{5mm}
-
-\mktxt{14}{\MakeUppercase{\@author@CS} \hfill \get@author}
-\mkuctxt{10}{\@author@EN}
-
-\vspace{10mm}
-
-\mktxt{11}{BRNO \@year}
-
-%===================================================
-\newpage\fontfamily{\familydefault}\selectfont%
-}
 
 %-----------------------------------------------------------------------------
 %Abstrakt, klicovaslova \makeabstract
@@ -298,7 +274,6 @@ Práce je chráněna autorským zákonem a její užití bez udělení oprávně
 %Uvodni stranky \maketitle
 %-----------------------------------------------------------------------------
 \renewcommand\maketitle{%
-\ifcover\makecover\fi%
 \thispagestyle{empty}\null%
 %=====================================================
 \fontfamily{phv}\selectfont%
@@ -346,6 +321,9 @@ Práce je chráněna autorským zákonem a její užití bez udělení oprávně
 \vspace{10mm}
 
 \mktxt{11}{BRNO \@year}
+
+%zadani
+\ifzadani\includepdf[pages=-,offset=0.6cm -1.7cm]{assignment.pdf}\fi
 
 \newpage\fontfamily{\familydefault}\selectfont%
 %=================================================================================
