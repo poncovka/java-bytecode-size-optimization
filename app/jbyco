@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# get arguments
+args=$@
+
+# run gradle with arguments
+java -jar build/libs/jbyco-all.jar $args

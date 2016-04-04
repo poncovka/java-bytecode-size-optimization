@@ -11,20 +11,40 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 mainClassName = "jbyco.App"
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 
 repositories {
     jcenter()
 }
 
-sourceCompatibility = '8'
-version = '1.0'
-
 jar {
-    manifest {
-        attributes 'Implementation-Title': 'jbyco',
-                   'Implementation-Version': 1.0
+	
+	baseName = 'jbyco'
+	manifest {
+        attributes 'Implementation-Title': baseName,
+                   'Main-Class': mainClassName
     }
+    
 }
+
+task fullJar(type: Jar) {
+	
+	// create jar
+	baseName = 'jbyco-all'
+	manifest {
+        attributes 'Implementation-Title': baseName,
+                   'Main-Class': mainClassName
+    }
+    
+    // with dependencies
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+// create jar and fullJar in one run
+jar.dependsOn fullJar
 
 dependencies {
 
