@@ -1,7 +1,8 @@
-package jbyco.analyze.locals;
+package jbyco.analyze.variables;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 
 import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
@@ -17,9 +18,9 @@ import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
 import jbyco.io.BytecodeFiles;
-import jbyco.io.file.BytecodeFile;
+import jbyco.io.files.BytecodeFile;
 
-public class LocalsAnalyzer implements Analyzer {
+public class VariablesAnalyzer implements Analyzer {
 	
 	// bytecode file to print
 	BytecodeFile file;
@@ -28,10 +29,10 @@ public class LocalsAnalyzer implements Analyzer {
 	JavaClass klass;
 	
 	// map
-	LocalsMap map;
+	VariablesMap map;
 	
-	public LocalsAnalyzer() {
-		this.map = new LocalsMap();
+	public VariablesAnalyzer() {
+		this.map = new VariablesMap();
 	}
 	
 	public void processFile(BytecodeFile file) {
@@ -119,14 +120,14 @@ public class LocalsAnalyzer implements Analyzer {
 		}
 	}
 	
-	public void print() {
-		map.print();
+	public void writeResults(PrintWriter out) {
+		map.write(out);
 	}
 	
 	public static void main(String[] args) {
 		
 		// init analyzer
-		Analyzer analyzer = new LocalsAnalyzer();
+		Analyzer analyzer = new VariablesAnalyzer();
 		
 		// process files
 		for (String path : args) {
@@ -139,6 +140,6 @@ public class LocalsAnalyzer implements Analyzer {
 		}
 		
 		// print results
-		analyzer.print();
+		analyzer.writeResults(new PrintWriter(System.out));
 	}
 }

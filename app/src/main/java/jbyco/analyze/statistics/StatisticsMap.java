@@ -1,5 +1,6 @@
 package jbyco.analyze.statistics;
 
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -35,7 +36,7 @@ public class StatisticsMap {
 		map.put(key, item);
 	}
 	
-	public void print() {
+	public void write(PrintWriter out) {
 		
 		// ordering
 		Map<String, Item> map = new TreeMap<>(this.map);
@@ -44,11 +45,11 @@ public class StatisticsMap {
 		String format = "%-50s %-20s %-20s\n";
 				
 		// header
-		System.out.printf(format, "KEY", "TOTAL", "AVERAGE");
+		out.printf(format, "KEY", "TOTAL", "AVERAGE");
 				
 		for (String key : map.keySet()) {
 			Item item = map.get(key);
-			System.out.printf(format, 
+			out.printf(format, 
 				key, 
 				item.total,
 				Utils.intDivToString(item.total, item.count)

@@ -1,4 +1,4 @@
-package jbyco.analyze.patterns.graph;
+package jbyco.analyze.patterns.tree;
 
 public class Root {
 

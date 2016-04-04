@@ -1,12 +1,12 @@
-package jbyco.io;
+package jbyco.analyze.patterns.tree;
 
 import java.io.PrintWriter;
 
-public class GmlExporter {
+public class TreeExporter {
 	
 	PrintWriter out;
 	
-	public GmlExporter(PrintWriter out) {
+	public TreeExporter(PrintWriter out) {
 		this.out = out;
 	}
 	

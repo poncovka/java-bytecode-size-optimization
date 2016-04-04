@@ -2,6 +2,7 @@ package jbyco.analyze.size;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.BitSet;
 
@@ -25,7 +26,7 @@ import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
 import jbyco.io.BytecodeFiles;
-import jbyco.io.file.BytecodeFile;
+import jbyco.io.files.BytecodeFile;
 
 public class SizeAnalyzer implements Analyzer {
 
@@ -321,8 +322,8 @@ public class SizeAnalyzer implements Analyzer {
 	}
 
 	@Override
-	public void print() {
-		this.map.print();
+	public void writeResults(PrintWriter out) {
+		this.map.write(out);
 	}
 	
 	public static void main(String[] args) {
@@ -341,7 +342,7 @@ public class SizeAnalyzer implements Analyzer {
 		}
 		
 		// print results
-		analyzer.print();
+		analyzer.writeResults(new PrintWriter(System.out));
 	}
 	
 }

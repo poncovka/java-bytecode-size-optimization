@@ -1,17 +1,14 @@
-package jbyco.analyze.patterns.graph;
+package jbyco.analyze.patterns.tree;
 
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Stack;
 
-import jbyco.io.GmlExporter;
-
-public class SuffixTree {
+public class Tree {
 
 	// root node of the graph with no item
 	Node root;
 	
-	public SuffixTree() {
+	public Tree() {
 		root = new Node(new Root());
 	}
 	
@@ -19,7 +16,7 @@ public class SuffixTree {
 		return root;
 	}	
 	
-	public void print(PrintStream out) {
+	public void write(PrintWriter out) {
 		
 		out.printf("%-15s%-30s%-30s\n", "[node]", "[output]", "[count]");
 		
@@ -42,9 +39,9 @@ public class SuffixTree {
 		
 	}
 	
-	public void printGml(PrintWriter out) {
+	public void export(PrintWriter out) {
 		
-		GmlExporter exporter = new GmlExporter(out);
+		TreeExporter exporter = new TreeExporter(out);
 		
 		exporter.printDocumentHead();
 		exporter.printGraphStart();

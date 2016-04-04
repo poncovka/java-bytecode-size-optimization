@@ -1,4 +1,4 @@
-package jbyco.io.file;
+package jbyco.io.files;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;

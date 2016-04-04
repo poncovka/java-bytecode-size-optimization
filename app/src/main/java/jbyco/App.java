@@ -2,10 +2,10 @@ package jbyco;
 
 import java.util.Arrays;
 
-import jbyco.analyze.locals.LocalsAnalyzer;
 import jbyco.analyze.patterns.PatternsAnalyzer;
 import jbyco.analyze.size.SizeAnalyzer;
 import jbyco.analyze.statistics.StatisticsCollector;
+import jbyco.analyze.variables.VariablesAnalyzer;
 import jbyco.io.BytecodePrinter;
 import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
@@ -76,7 +76,7 @@ public class App {
 											break;
 				case STATISTICS:			StatisticsCollector.main(arguments);
 											break;
-				case ANALYZE_LOCALS:		LocalsAnalyzer.main(arguments);
+				case ANALYZE_LOCALS:		VariablesAnalyzer.main(arguments);
 											break;
 				case ANALYZE_PATTERNS:		PatternsAnalyzer.main(arguments);
 											break;

@@ -1,5 +1,6 @@
 package jbyco.analyze.size;
 
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -37,7 +38,7 @@ public class SizeMap  {
 		item.size += size;
 	}
 		
-	public void print() {
+	public void write(PrintWriter out) {
 		
 		// ordering
 		Map<String, Item> map = new TreeMap<>(this.map);
@@ -46,14 +47,14 @@ public class SizeMap  {
 		String format = "%-50s %-20s %-20s %-20s\n";
 		
 		// header
-		System.out.printf(format, "KEY", "SIZE", "AVG", "SIZE/FILE");
+		out.printf(format, "KEY", "SIZE", "SIZE/COUNT", "SIZE/TOTAL");
 		
 		// get file item
 		Item file = this.map.get("FILE");
 		
 		for (String key : map.keySet()) {
 			Item item = map.get(key);
-			System.out.printf(format, 
+			out.printf(format, 
 				key, 
 				item.size, 
 				Utils.intDivToString(item.size, item.count),

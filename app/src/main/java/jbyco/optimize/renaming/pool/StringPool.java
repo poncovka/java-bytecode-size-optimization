@@ -4,12 +4,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ConstantPool {
+public class StringPool {
 
 	Set<Entity> pool = new HashSet<Entity>();
 	
-	public void addKlass(String name) {
-		pool.add(new Entity(EntityType.KLASS, new String[]{name}));
+	public Set<Entity> getPool() {
+		return pool;
+	}
+
+	public void addType(String desc) {
+		pool.add(new Entity(EntityType.TYPE, new String[]{desc}));
 	}
 	
 	public void addField(String klass, String name, String desc) {
@@ -19,24 +23,19 @@ public class ConstantPool {
 	public void addMethod(String klass, String name, String desc) {
 		pool.add(new Entity(EntityType.METHOD, new String[]{klass, name, desc}));
 	}
-
-	public void addType(String desc) {
-		pool.add(new Entity(EntityType.TYPE, new String[]{desc}));
-	}
 	
 	///////////////////////////////////////////////////////////////// Entities
 	
 	public enum EntityType {
-		KLASS,
+		TYPE,
 		FIELD,
-		METHOD,
-		TYPE;
+		METHOD;
 	};
 	
 	public class Entity {
 		
-		EntityType type;
-		String[]   items;
+		public final EntityType type;
+		public final String[]   items;
 		
 		public Entity(EntityType type, String[] items) {
 			this.type = type;
@@ -77,10 +76,9 @@ public class ConstantPool {
 			return true;
 		}
 
-		private ConstantPool getOuterType() {
-			return ConstantPool.this;
+		private StringPool getOuterType() {
+			return StringPool.this;
 		}
-		
 		
 	}
 	

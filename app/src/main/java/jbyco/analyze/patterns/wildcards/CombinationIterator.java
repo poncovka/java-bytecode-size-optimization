@@ -1,16 +1,16 @@
-package jbyco.lib;
+package jbyco.analyze.patterns.wildcards;
 
 import java.util.Arrays;
 import java.util.Iterator;
 
-public class Combination implements Iterator<int[]> {
+public class CombinationIterator implements Iterator<int[]> {
 	
 	int min;
 	int max;
 	int index;
 	int[] array;
 	
-	public Combination(int n, int min, int max) {
+	public CombinationIterator(int n, int min, int max) {
 	
 		// check arguments
 		if (!check(n, min, max)) {
@@ -73,7 +73,7 @@ public class Combination implements Iterator<int[]> {
 	
 	public static void main(String[] args) {
 		
-		Combination i = new Combination(3, 1, 6);
+		CombinationIterator i = new CombinationIterator(3, 1, 6);
 		
 		while(i.hasNext()) {
 			System.out.println(Arrays.toString(i.next()));

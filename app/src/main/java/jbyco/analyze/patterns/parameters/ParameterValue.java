@@ -1,13 +1,13 @@
 package jbyco.analyze.patterns.parameters;
 
-public enum Value implements AbstractParameter {
+public enum ParameterValue implements AbstractParameter {
 	
 	NULL		("null"),
 	THIS		("this");
 	
 	private final String abbr;
 	
-	Value(String abbr) {
+	ParameterValue(String abbr) {
 		this.abbr = abbr;
 	}
 	

@@ -10,7 +10,7 @@ public class NumberedParameterFactory extends FullParameterFactory {
 	Map<AbstractParameter, AbstractParameter> map;
 	
 	// dictionary of max numbers used in numbered parameters
-	Map<Type, Integer> numbers;
+	Map<ParameterType, Integer> numbers;
 	
 	public NumberedParameterFactory() {
 		init();
@@ -19,11 +19,11 @@ public class NumberedParameterFactory extends FullParameterFactory {
 	@Override
 	public void init() {
 		map = new HashMap<>();
-		numbers = new EnumMap<>(Type.class);
+		numbers = new EnumMap<>(ParameterType.class);
 	}
 	
 	@Override
-	public AbstractParameter createParameter(Type type, Object... components) {
+	public AbstractParameter createParameter(ParameterType type, Object... components) {
 		
 		// get full parameter
 		AbstractParameter p1 = super.createParameter(type, components);

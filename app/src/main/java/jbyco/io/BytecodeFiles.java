@@ -4,8 +4,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 
-import jbyco.io.file.BytecodeFile;
-import jbyco.io.file.FilesIterator;
+import jbyco.io.files.BytecodeFile;
+import jbyco.io.files.FilesIterator;
 
 public class BytecodeFiles implements Iterable<BytecodeFile>{
 

@@ -1,4 +1,4 @@
-package jbyco.io.file;
+package jbyco.io.files;
 
 public interface AbstractFile {
 	

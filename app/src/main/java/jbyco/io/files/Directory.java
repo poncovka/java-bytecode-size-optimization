@@ -1,4 +1,4 @@
-package jbyco.io.file;
+package jbyco.io.files;
 
 import java.io.File;
 import java.io.IOException;

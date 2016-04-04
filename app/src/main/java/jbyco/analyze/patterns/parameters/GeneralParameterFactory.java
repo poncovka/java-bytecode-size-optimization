@@ -7,67 +7,67 @@ public class GeneralParameterFactory implements AbstractParameterFactory {
 	
 	@Override
 	public AbstractParameter getVariable(int index) {
-		return Type.VARIABLE;
+		return ParameterType.VARIABLE;
 	}
 	
 	@Override
 	public AbstractParameter getMethodParameter(int index) {
-		return Type.PARAMETER;
+		return ParameterType.PARAMETER;
 	}
 
 	@Override
 	public AbstractParameter getInt(int i) {
-		return Type.INT;
+		return ParameterType.INT;
 	}
 
 	@Override
 	public AbstractParameter getFloat(float f) {
-		return Type.FLOAT;
+		return ParameterType.FLOAT;
 	}
 
 	@Override
 	public AbstractParameter getLong(long l) {
-		return Type.LONG;
+		return ParameterType.LONG;
 	}
 
 	@Override
 	public AbstractParameter getDouble(double d) {
-		return Type.DOUBLE;
+		return ParameterType.DOUBLE;
 	}
 
 	@Override
 	public AbstractParameter getString(String s) {
-		return Type.STRING;
+		return ParameterType.STRING;
 	}
 
 	@Override
 	public AbstractParameter getClass(String internalName) {
-		return Type.CLASS;
+		return ParameterType.CLASS;
 	}
 
 	@Override
 	public AbstractParameter getArray(String internalName) {
-		return Type.ARRAY;
+		return ParameterType.ARRAY;
 	}
 	
 	@Override
 	public AbstractParameter getField(String name, String desc) {
-		return Type.FIELD;
+		return ParameterType.FIELD;
 	}
 
 	@Override
 	public AbstractParameter getMethod(String name, String desc) {
-		return Type.METHOD;
+		return ParameterType.METHOD;
 	}
 
 	@Override
 	public AbstractParameter getNull() {
-		return Value.NULL;
+		return ParameterValue.NULL;
 	}
 
 	@Override
 	public AbstractParameter getThis() {
-		return Value.THIS;
+		return ParameterValue.THIS;
 	}
 	
 }

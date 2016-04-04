@@ -1,11 +1,12 @@
 package jbyco.analyze;
 
-import jbyco.io.file.BytecodeFile;
+import java.io.PrintWriter;
+
+import jbyco.io.files.BytecodeFile;
 
 public interface Analyzer {
 	
 	public void processFile(BytecodeFile file);
-	default public void finish() {};
-	public void print();
+	public void writeResults(PrintWriter out);
 
 }

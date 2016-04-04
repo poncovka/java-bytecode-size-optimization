@@ -1,6 +1,6 @@
 package jbyco.analyze.patterns.parameters;
 
-public enum Type implements AbstractParameter {
+public enum ParameterType implements AbstractParameter {
 	
 	LABEL 		("LABEL"),
 	VARIABLE 	("VAR"),
@@ -17,7 +17,7 @@ public enum Type implements AbstractParameter {
 	
 	private final String abbr;
 	
-	Type(String abbr) {
+	ParameterType(String abbr) {
 		this.abbr = abbr;
 	}
 	

@@ -1,4 +1,4 @@
-package jbyco.lib;
+package jbyco.io.files;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

@@ -1,5 +1,6 @@
-package jbyco.analyze.locals;
+package jbyco.analyze.variables;
 
+import java.io.PrintWriter;
 import java.util.HashMap;
 
 import jbyco.lib.Utils;
@@ -9,7 +10,7 @@ import jbyco.lib.Utils;
  * 
  */
 
-public class LocalsMap {
+public class VariablesMap {
 	
 	// item of the map
 	private class Item {
@@ -71,24 +72,24 @@ public class LocalsMap {
 		return item;
 	}
 		
-	public void print() {
+	public void write(PrintWriter out) {
 		
-		System.out.println("Parameters:");
-		print(parameters);
+		out.println("Parameters:");
+		writeMap(out, parameters);
 		
-		System.out.println();
+		out.println();
 		
-		System.out.println("Variables:");
-		print(variables);
+		out.println("Variables:");
+		writeMap(out, variables);
 	}
 	
-	public void print(HashMap<Integer, Item> map) {
+	public void writeMap(PrintWriter out, HashMap<Integer, Item> map) {
 		
 		// set format
 		String format = "%-15s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n";
 		
 		// print header
-		System.out.printf(format, 
+		out.printf(format, 
 				"INDEX",
 				"COUNT",
 				"LOAD", 
@@ -114,7 +115,7 @@ public class LocalsMap {
 			int total = item.counter;
 			
 			// print item
-			System.out.printf(format, 
+			out.printf(format, 
 				key, 
 				item.counter,
 				item.load, 

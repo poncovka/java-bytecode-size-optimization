@@ -1,16 +1,16 @@
-package jbyco.lib;
+package jbyco.analyze.patterns.wildcards;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class WildListsCreator<T> implements Iterator<Collection<T>> {
+public class WildSequenceGenerator<T> implements Iterator<Collection<T>> {
 
 	// number of wild cards in a list
 	int wildcards;
 	
 	// iterator over all allowed indexes of wild cards in a list
-	Combination iterator;
+	CombinationIterator iterator;
 	
 	// list of values
 	T[] list;
@@ -19,12 +19,12 @@ public class WildListsCreator<T> implements Iterator<Collection<T>> {
 	T wildcard;
 	
 	@SuppressWarnings("unchecked")
-	public WildListsCreator(Collection<T> list, T wildcard, int wildcards) {
+	public WildSequenceGenerator(Collection<T> list, T wildcard, int wildcards) {
 		
 		this.list = (T[]) list.toArray();
 		this.wildcard = wildcard;
 		this.wildcards = wildcards;
-		this.iterator = new Combination(2 * wildcards, 1, list.size() - 1);
+		this.iterator = new CombinationIterator(2 * wildcards, 1, list.size() - 1);
 		
 	}
 
@@ -45,7 +45,7 @@ public class WildListsCreator<T> implements Iterator<Collection<T>> {
 	
 	public static <T> boolean check(Collection<T> list, int wildcards) {
 		//return list.size() <= 2 || list.size() < 2 * wildcards + 1;
-		return Combination.check(2 * wildcards, 1, list.size() - 1);
+		return CombinationIterator.check(2 * wildcards, 1, list.size() - 1);
 	}
 	
 	public static int getOrDefault(int[] combination, int index, int value) {

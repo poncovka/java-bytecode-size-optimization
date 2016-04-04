@@ -1,24 +1,45 @@
 package jbyco.analyze.patterns;
 
+import java.io.PrintWriter;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 
-import jbyco.analyze.patterns.graph.Node;
-import jbyco.analyze.patterns.graph.SuffixTree;
+import jbyco.analyze.patterns.tree.Node;
+import jbyco.analyze.patterns.tree.Tree;
 
-public class PatternsPrinter {
+public class PatternsWriter {
 
 	static final String NULL_TO_STRING = "*";
 	
-	SuffixTree graph;
+	Tree graph;
 	String delimiter;
 	int min;
 	int wildcards;
 	
 	Deque<StackItem> stack;
+	PrintWriter out;
 	
-	public void print(SuffixTree graph, String delimiter, int min, int wildcards) {
+	
+	public PatternsWriter(PrintWriter out) {
+		this.out = out;
+	}
+	
+	private void init(Tree graph, String delimiter, int min, int wildcards) {
+		
+		this.graph = graph;
+		this.delimiter = delimiter;
+		this.min = min;
+		this.wildcards = wildcards;
+		
+		Node root = this.graph.getRoot();
+		
+		this.stack = new ArrayDeque<>();
+		this.stack.push(new StackItem(root, 0));
+		
+	}
+	
+	public void write(Tree graph, String delimiter, int min, int wildcards) {
 		
 		// init
 		init(graph, delimiter, min, wildcards);
@@ -40,7 +61,7 @@ public class PatternsPrinter {
 				
 				// if printable, print stack
 				if (isPrintable(next)) {
-					printPattern();
+					writePath();
 				}
 
 			}
@@ -51,25 +72,11 @@ public class PatternsPrinter {
 			}
 		}
 	}
-	
-	private void init(SuffixTree graph, String delimiter, int min, int wildcards) {
 		
-		this.graph = graph;
-		this.delimiter = delimiter;
-		this.min = min;
-		this.wildcards = wildcards;
-		
-		Node root = this.graph.getRoot();
-		
-		this.stack = new ArrayDeque<>();
-		this.stack.push(new StackItem(root, 0));
-		
-	}
-		
-	private void printPattern() {
+	private void writePath() {
 		
 		// print frequency
-		System.out.printf("%-15s", stack.getFirst().node.getCount());
+		out.printf("%-15s", stack.getFirst().node.getCount());
 		
 		// for all nodes in a stack
 		Iterator<StackItem> iterator = stack.descendingIterator();
@@ -80,12 +87,12 @@ public class PatternsPrinter {
 			Node node = item.node; 
 			
 			if (node != graph.getRoot()) {	
-				System.out.printf("%s%s", getString(node), delimiter);
+				out.printf("%s%s", getString(node), delimiter);
 			}
 		}
 		
 		// new line
-		System.out.println();
+		out.println();
 	}
 	
 	private String getString(Node node) {

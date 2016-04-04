@@ -6,17 +6,18 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 import jbyco.optimize.renaming.graph.Graph;
 
-public class ConstantPoolBuilder extends ClassVisitor {
+public class StringPoolBuilder extends ClassVisitor {
 
-	ConstantPool pool;
+	StringPool pool;
 	String klass;
 	
-	public ConstantPoolBuilder() {
+	public StringPoolBuilder() {
 		super(Opcodes.ASM5);
-		this.pool = new ConstantPool();
+		this.pool = new StringPool();
 	}
 
 	@Override
@@ -26,12 +27,12 @@ public class ConstantPoolBuilder extends ClassVisitor {
 		this.klass = name;
 		
 		// klasses
-		pool.addKlass(name);
-		pool.addKlass(superName);
+		pool.addType(name);
+		pool.addType(superName);
 		
 		// get interfaces
 		for (String interfaceName : interfaces) {
-			pool.addKlass(interfaceName);
+			pool.addType(interfaceName);
 		}
 	}
 
@@ -39,7 +40,7 @@ public class ConstantPoolBuilder extends ClassVisitor {
 	public void visitOuterClass(String owner, String name, String desc) {
 		
 		// klass
-		pool.addKlass(owner);
+		pool.addType(owner);
 		
 		// method
 		if (name != null) {
@@ -52,25 +53,31 @@ public class ConstantPoolBuilder extends ClassVisitor {
 	public void visitInnerClass(String name, String outerName, String innerName, int access) {
 		
 		// internal name of the inner class
-		pool.addKlass(name);
+		pool.addType(name);
 		
 		// internal name of the outer class
 		if (outerName != null) {
-			pool.addKlass(outerName);
+			pool.addType(outerName);
 		}
 		
 	}
 
 	@Override
-	public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {		
+	public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {	
+		
+		// field
 		pool.addField(this.klass, name, desc);
+		// type
 		pool.addType(desc);
 		return null;
 	}
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+		
+		// method
 		pool.addMethod(this.klass, name, desc);
+		// type
 		pool.addType(desc);
 		return null;
 	}
@@ -81,11 +88,33 @@ public class ConstantPoolBuilder extends ClassVisitor {
 			super(Opcodes.ASM5);
 		}
 
-		@Override
-		public void visitFrame(int type, int nLocal, Object[] local, int nStack, Object[] stack) {
-			// nothing ?
+		public void processConstantValue(Object cst) {
+			
+			if (cst instanceof Type) {
+				
+				// type
+				Type type = (Type) cst;
+				pool.addType(type.getInternalName()); 
+				
+			} else if (cst instanceof Handle) {
+				
+				// klass and type
+				Handle handle = (Handle)cst;
+				pool.addType(handle.getOwner());
+				pool.addType(handle.getDesc());
+								
+				// field
+				if (handle.getTag() <= Opcodes.H_PUTSTATIC) {
+					pool.addField(handle.getOwner(), handle.getName(), handle.getDesc());
+				}
+				// method
+				else {
+					pool.addMethod(handle.getOwner(), handle.getName(), handle.getDesc());
+				}
+			} 
 		}
 
+		
 		@Override
 		public void visitTypeInsn(int opcode, String type) {
 			// type
@@ -96,7 +125,7 @@ public class ConstantPoolBuilder extends ClassVisitor {
 		public void visitFieldInsn(int opcode, String owner, String name, String desc) {
 			
 			// klass
-			pool.addKlass(owner);
+			pool.addType(owner);
 			// field
 			pool.addField(owner, name, desc);
 			// type of field
@@ -107,7 +136,7 @@ public class ConstantPoolBuilder extends ClassVisitor {
 		public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
 			
 			// klass
-			pool.addKlass(owner);
+			pool.addType(owner);
 			// method
 			pool.addMethod(owner, name, desc);
 			// type
@@ -116,12 +145,22 @@ public class ConstantPoolBuilder extends ClassVisitor {
 
 		@Override
 		public void visitInvokeDynamicInsn(String name, String desc, Handle bsm, Object... bsmArgs) {
-			// nothing ?
+			
+			// method - nothing?
+			pool.addType(desc);
+			
+			// handle
+			processConstantValue(bsm);
+			
+			// arguments
+			for (Object arg : bsmArgs) {
+				processConstantValue(arg);
+			}
 		}
 
 		@Override
 		public void visitLdcInsn(Object cst) {
-			// TODO
+			processConstantValue(cst);
 		}
 
 		@Override

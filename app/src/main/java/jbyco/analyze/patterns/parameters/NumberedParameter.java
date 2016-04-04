@@ -2,10 +2,10 @@ package jbyco.analyze.patterns.parameters;
 
 public class NumberedParameter implements AbstractParameter {
 
-	final Type type;
+	final ParameterType type;
 	final int number;
 	
-	public NumberedParameter(Type type, int number) {
+	public NumberedParameter(ParameterType type, int number) {
 		this.type = type;
 		this.number = number;
 	}

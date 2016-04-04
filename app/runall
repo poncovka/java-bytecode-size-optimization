@@ -1,50 +1,58 @@
 #!/bin/sh
 
+# get input directory
+input=$1
+
 # create directory for outputs
 name=$(date '+%Y_%m_%d_%H_%M_%S')
 path="../output/$name"
 mkdir -p $path
-
-# get input directory
-input=$1
-
 echo $path
 
+# set lenght
+length=25
+
+# define function
+analyzePatterns() {
+
+  oi=$1
+  pi=$2
+  wi=$3
+
+  # prepare args
+  args="--analyze-patterns --max-length $length -w $wi -$oi -$pi $input"
+
+  # prepare output
+  filename="${path}/patterns_${length}_${wi}_${oi}_${pi}"
+  echo $filename
+
+  # run analysis
+  { ./run $args 2>&3 | sort -k1,1nr -k2,2 >$filename.out ;} 3>&1 | tee -a ${filename}.err
+
+};
+
 # run analysis
-./run --analyze-size $input >$path/size.out
-./run --analyze-locals $input >$path/locals.out
-./run --stats $input >$path/stats.out
+#./run --analyze-size $input >$path/size.out 2>/dev/null
+#./run --analyze-locals $input >$path/locals.out 2>/dev/null
+#./run --stats $input >$path/stats.out 2>/dev/null
 
-#./run --analyze-patterns -o1 -p1 --min-frequency 1 -w 2  "../simplein" | sort -k1,1nr -k2,2
+#analyzePatterns "o1" "p1" 0
+#analyzePatterns "o2" "p3" 0
+#analyzePatterns "o1" "p2" 0
+#analyzePatterns "o1" "p2" 1
+#analyzePatterns "o1" "p2" 2
+#analyzePatterns "o2" "p3" 1
 
-# max length
-for length in 10 25 50
-do
-  # wildcards
-  for wi in 0 1 2 3 4 5
-  do
-    # operations
-    for oi in "o1" "o2"
-    do
-      # parameters
-      for pi in "p1" "p2" "p3"
-      do
+#analyzePatterns "o2" "p2" 0
+#analyzePatterns "o2" "p2" 1
+#analyzePatterns "o2" "p2" 2
 
-      # prepare output
-      output="${path}/patterns_${length}_${wi}_${oi}_${pi}.out"
-      echo $output
+analyzePatterns "o1" "p1" 1
+analyzePatterns "o2" "p3" 2
+analyzePatterns "o1" "p1" 2
 
-      # run analysis
-      ./run --analyze-patterns --max-length $length -w $wi -$oi -$pi $input | sort -k1,1nr -k2,2 >$output
 
-      # merge with other files
-      output2="${path}/patterns_${oi}_${pi}.out"
-      sort -k1,1nr -k2,2 --merge $output $output2 >$output2
 
-      output3="${path}/patterns.out"
-      sort -k1,1nr -k2,2 --merge $output $output3 >$output3
 
-      done
-    done
-  done
-done
+
+

@@ -11,7 +11,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.util.TraceClassVisitor;
 
-import jbyco.io.file.BytecodeFile;
+import jbyco.io.files.BytecodeFile;
 import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
 
@@ -22,6 +22,8 @@ public class BytecodePrinter {
 	static boolean FRAMES 	= false;
 	static boolean EXPANDED = false;
 	static boolean POOL 	= false;
+	
+	PrintWriter out = new PrintWriter(System.out);
 	
 	static public int getFlags() {
 		
@@ -35,12 +37,16 @@ public class BytecodePrinter {
 		return flags;
 	}
 	
+	public void setOutput(PrintWriter out) {
+		this.out = out;
+	}
+	
 	public void print(BytecodeFile file) {
 		
 		printFile(file);
 		
 		if (POOL) {
-			System.out.println();
+			out.println();
 			printConstanPool(file);
 		}
 		
@@ -57,7 +63,7 @@ public class BytecodePrinter {
 			ClassReader reader = new ClassReader(in);
 			
 			// print bytecode
-			ClassVisitor visitor = new TraceClassVisitor(new PrintWriter(System.out));  
+			ClassVisitor visitor = new TraceClassVisitor(out);  
 			
 			// start the visit
 			reader.accept(visitor, getFlags());
@@ -78,11 +84,11 @@ public class BytecodePrinter {
 			ClassParser parser = new ClassParser(stream, file.getName());
 			JavaClass klass = parser.parse();
 			
-			// init printer
-			ConstantPoolPrinter printer = new ConstantPoolPrinter();
+			// init writer
+			ConstantPoolWriter writer = new ConstantPoolWriter(out);
 			
 			// print
-			printer.print(klass);
+			writer.write(klass);
 			
 		} catch (ClassFormatException e) {
 			e.printStackTrace();

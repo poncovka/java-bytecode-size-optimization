@@ -2,14 +2,26 @@ package jbyco.analyze.patterns.parameters;
 
 import java.util.Arrays;
 
-public class MulticomponentParameter implements AbstractParameter {
+import jbyco.lib.Utils;
+
+public class FullParameter implements AbstractParameter {
 	
-	final Type type;
+	final ParameterType type;
 	final Object[] components;
 		
-	public MulticomponentParameter(Type type, Object ...components) {
+	public FullParameter(ParameterType type, Object ...components) {
 		this.type = type;
 		this.components = components;
+	}
+	
+	public String componentToString(Object component) {
+		
+		if (type == ParameterType.STRING) {
+			return Utils.getEscapedString(component.toString(), "\"");
+		}
+		else {
+			return component.toString();
+		}
 	}
 
 	@Override
@@ -29,8 +41,8 @@ public class MulticomponentParameter implements AbstractParameter {
 			else {
 				first = false;
 			}
-			
-			buffer.append(component.toString());
+					
+			buffer.append(componentToString(component));
 		}
 		
 		buffer.append(')');
@@ -55,11 +67,11 @@ public class MulticomponentParameter implements AbstractParameter {
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof MulticomponentParameter)) {
+		if (!(obj instanceof FullParameter)) {
 			return false;
 		}
 		
-		MulticomponentParameter other = (MulticomponentParameter) obj;
+		FullParameter other = (FullParameter) obj;
 		
 		if (type != other.type) {
 			return false;

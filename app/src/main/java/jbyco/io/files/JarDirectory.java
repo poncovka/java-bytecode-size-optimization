@@ -1,4 +1,4 @@
-package jbyco.io.file;
+package jbyco.io.files;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -18,7 +18,6 @@ public class JarDirectory implements AbstractDirectory {
 	
 	public JarDirectory(Path path) {		
 		this.path = path;
-		System.err.println(path);
 	}
 
 	@Override
@@ -79,6 +78,7 @@ public class JarDirectory implements AbstractDirectory {
 				return new JarClassFile(jar, entry);
 			}
 			else if (name.endsWith(".jar")) {
+				//return new JarDirectory(path?);
 				System.err.println("File " + entry.getName() + " was skipped.");
 			}				
 		}	

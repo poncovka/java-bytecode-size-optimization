@@ -1,8 +1,9 @@
-package jbyco.analyze.patterns.graph;
+package jbyco.analyze.patterns.tree;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class Node {
@@ -61,7 +62,7 @@ public class Node {
 		this.item = item;
 	}
 
-	private void addInputNode(Node node) {
+	public void addInputNode(Node node) {
 		in = node;
 	}
 	
@@ -69,11 +70,11 @@ public class Node {
 		return in;
 	}
 
-	private void removeInputNode(Node node) {
+	public void removeInputNode(Node node) {
 		in = null;
 	}
 
-	private void addOutputNode(Node node) {
+	public void addOutputNode(Node node) {
 		
 		// init the output nodes map
 		if (out == null) {
@@ -93,13 +94,24 @@ public class Node {
 		else				return out.get(item);
 	}
 	
-	private void removeOutputNode(Node node) {
+	public void removeOutputNode(Node node) {
 		
 		if (out == null) {
 			return;
 		}
 		
 		out.remove(node.getItem());
+		
+		// remove the output nodes map
+		if (out.isEmpty()) {
+			out = null;
+		}
+	}
+	
+	public void removeOutputNode(Iterator<Node> i) {
+		
+		// remove the current node
+		i.remove();
 		
 		// remove the output nodes map
 		if (out.isEmpty()) {

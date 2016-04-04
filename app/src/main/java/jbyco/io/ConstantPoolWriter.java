@@ -1,5 +1,7 @@
 package jbyco.io;
 
+import java.io.PrintWriter;
+
 import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Constant;
 import org.apache.bcel.classfile.ConstantClass;
@@ -19,19 +21,24 @@ import org.apache.bcel.classfile.JavaClass;
 
 import jbyco.lib.Utils;
 
-public class ConstantPoolPrinter extends EmptyVisitor {
+public class ConstantPoolWriter extends EmptyVisitor {
 
+	PrintWriter out;
 	StringBuffer buffer = new StringBuffer();
 	
-	public void print(JavaClass klass) {
+	public ConstantPoolWriter(PrintWriter out) {
+		this.out = out;
+	}
+	
+	public void write(JavaClass klass) {
 		
 		ConstantPool cp = klass.getConstantPool();
 		Constant[] pool = cp.getConstantPool();
 		
 		// print header
 		String klassname = getClassName(cp, klass.getClassNameIndex());
-		System.out.println("// constant pool of " + klassname);
-		System.out.println("[");
+		out.println("// constant pool of " + klassname);
+		out.println("[");
 
 		// print constants
 		for (int i = 1; i < pool.length; i++) {
@@ -42,11 +49,11 @@ public class ConstantPoolPrinter extends EmptyVisitor {
 			String items = getConstantItems(c);
 			
 			// print constant
-			System.out.printf("   %-5s %-20s (%s)\n", i + ":", name, items);	
+			out.printf("   %-5s %-20s (%s)\n", i + ":", name, items);	
 		}
 		
 		// print end
-		System.out.println("]\n");
+		out.println("]\n");
 	}
 	
 	private String getClassName(ConstantPool cp, int index) {

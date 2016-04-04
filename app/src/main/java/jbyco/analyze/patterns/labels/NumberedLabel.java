@@ -1,6 +1,6 @@
 package jbyco.analyze.patterns.labels;
 
-import jbyco.analyze.patterns.parameters.Type;
+import jbyco.analyze.patterns.parameters.ParameterType;
 
 public class NumberedLabel implements AbstractLabel {
 
@@ -12,7 +12,7 @@ public class NumberedLabel implements AbstractLabel {
 	
 	@Override
 	public String toString() {
-		return Type.LABEL.toString() + "(" + number + ")";
+		return ParameterType.LABEL.toString() + "(" + number + ")";
 	}
 
 	@Override
