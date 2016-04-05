@@ -3,44 +3,38 @@
 
 % Popis způsobu analýzy rozsáhlého vzorku testovacích dat, prezentace výsledků a zhodnocení.
 
-V~této kapitole popisuji analýzu bajtkódu a její výsledky. Pomocí nástroje \texttt{jbyco} jsem získala data reprezentující velký vzorek testovacích souborů a tato data následně analyzovala a vyhodnotila. Zkoumala jsem velikosti položek v~\texttt{class} souborech, využití lokálních proměnných a parametrů a typické sekvence bajtkódu.
+V~této kapitole popisuji výsledky analýzy bajtkódu. Pomocí nástroje \texttt{jbyco} jsem získala data reprezentující vybraný vzorek testovacích souborů a tato data následně zpracovala a vyhodnotila. Zkoumala jsem velikosti položek v~\texttt{class} souborech, využití lokálních proměnných a parametrů metod a typické sekvence instrukcí.
 
-Testovací vzorek jsem vytvořila z~\texttt{jar} souborů stažených z~\texttt{http://mvnrepository.com}. Z~populárních kategorií jsem vybrala nejčastěji používané \texttt{jar} soubory. Po smazání příliš velkých souborů jsem získala testovací vzorek o~velikosti 92 souborů a 102,4 MB. Pro analýzu typických sekvencí jsem musela zvolit menší vzorek o~velikosti 6 souborů a 1,1 MB, neboť pro více dat mi nestačila paměť.
+Testovací vzorek jsem vytvořila z~\texttt{jar} souborů stažených z~\texttt{http://mvnrepository.com}. Z~populárních kategorií jsem vybrala nejčastěji stahované soubory. Pracovala jsem se dvěmi testovacími vzorky. Velký vzorek se skládal z 95 souborů o celkové velikosti 102,4 MB a obsahoval 59 229 \texttt{class} souborů. Menší vzorek se skládal z 80 souborů o velikosti 46,6 MB a obsahoval 27 981
+\texttt{class} souborů. Menší vzorek jsem použila pro vyhledání typických sekvencí instrukcí.
 
 \section{Výsledky analýzy}\label{AnalysisResults}
 
-Využití parametrů a lokálních proměnných je znázorněné na grafech \ref{params} a \ref{vars}. Zajímalo mne, kolikrát se z~daného parametru či lokální proměnné načítá hodnota a vkládá hodnota. Počet operací je zprůměrován celkovým počtem výskytů daného parametru či lokální proměnné. Z~grafu \ref{params} lze vyčíst, že z~parametrů se především načítají hodnoty ale už se do nich nic neukládá. Jejich celkové využití je velmi malé. S~lokálními proměnnými se pracuje častěji, ale jejich využití mohlo být pořád lepší.
+Typický \texttt{class} soubor z velkého vzorku obsahuje v průměru 117 konstant v tabulce konstant, 2 členské proměnné, 8 metod, 163 instrukcí a 29 atributů. Ze zkoumání celkové velikosti těchto položek vyplynulo, že 64\% z celkové velikosti všech souborů tvoří konstanty, 0,7\% členské proměnné bez konstant, 2,1\% metody bez konstant a atributů a 10\% instrukce.
+
+Při bližším pohledu na velikosti konstant se ukázalo, že 57\% z celkové velikosti souborů tvoří pouze konstanty typu \textit{constant\_utf8}. Tedy konstanty popisující řetězce. Velikosti ostatních konstant jsou zanedbatelné. Řetězce popisující názvy a typy tříd, metod a členských proměnných tvoří 61\% z celkové velikosti konstant typu \textit{constant\_utf8}.
+
+Součet velikostí všech atributů ku celkové velikosti souborů tvoří 47\%, ale tato hodnota je nepřesná, neboť atributy mohou být součástí jiných atributů a jejich velikost je tedy započítána vícekrát. Nejvýznamnější z hlediska velikosti jsou atribut \texttt{Code} s velikostí 30\% z celkové velikosti souborů a součet velikostí informativních atributů s velikostí 14\%.
+
+Zkoumání instrukcí z hlediska jejich velikosti ukázalo, že prvních pět nejobjemnějších instrukcí tvoří 40\% z celkové velikosti instrukcí. Jsou to instrukce pro volání metod, načtení hodnoty z členské proměnné a načtení reference na objekt z lokální proměnné s indexem 0. Na této pozici se často vyskytuje reference na aktuální objekt. Z instrukcí s proměnnou délkou má instrukce \texttt{tableswitch} v průměru velikost 107 B a instrukce \texttt{lookupswitch} velikost 43 B.
+
+% TODO tabulka celkových velikostí
+% TODO tabulka řetězců
+% TODO tabulka informativních atributů
+% TODO tabulka nejčastějších instrukcí
+
+Data popisující využití parametrů a lokálních proměnných jsou znázorněna v grafech \ref{params} a \ref{vars}. Z dat vyplývá, že z lokálních proměnných obsahujících argumenty metody se tyto hodnoty načtou průměrně jedenkrát a dále se s nimi nepracuje. S nižším indexem proměnné počet načítání roste až k hodnotě 2,544 pro index 0. V tomto indexu se u nestatických metod předává reference na aktuální objekt (\texttt{this}). S lokálními proměnnými, které neslouží k předávání parametrů, se průměrně provádí 4,18 operací načítání, 1,76 operací vkládání a 0,25 operací inkrementace.
 
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.9]{fig/params}
-\caption{Průměrné počty operací s~danými parametry.}\label{params}
+\caption{Průměrné počty operací s parametry metod.}\label{params}
 \end{figure}
 
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.9]{fig/locals} 
-\caption{Průměrné počty operací s~danými lokálními proměnnými.}\label{vars}
+\caption{Průměrné počty operací s lokálními proměnnými.}\label{vars}
 \end{figure}
 
-
-Při analýze velikosti jsem zkoumala konstanty, atributy a instrukce z~hlediska celkového počtu a celkové velikosti. Z~tabulek \ref{constf} a \ref{consts} je zřejmé, že konstanta \texttt{CONSTANT\_Utf8} je nejfrekventovanější a zároveň zabírá ze všech konstant největší procento z~celkové velikosti souboru. Následují konstanty pro popis metod, tříd, rozhraní a členských proměnných. A~poslední v~pořadí jsou číselné konstanty.
-Nejfrekventovanějším a nejobjemnějším atributem je podle tabulek \ref{attrf} a \ref{attrs} pochopitelně \texttt{Code}. Zajímavé však je, že velké procento atributů i celkové velikosti tvoří atributy sloužící výhradně pro ladící účely.
-V~tabulkách \ref{instf} a \ref{insts} jsou zjištěné hodnoty pro instrukce. Prvenství v~četnosti instrukce \texttt{aload\_0} lze vysvětlit častým používáním reference \texttt{this}. Následují instrukce pro volání metody a načtení hodnoty z~proměnné instance. Podle dalších konstant v~tabulce je zřejmé, že se nejčastěji pracuje s~referencí na objekt.
-Z~hlediska celkové velikosti jsou nejobjemnější instrukce pro volání metod a získávání hodnoty členské proměnné.
-
-Přehled typických sekvencí operačních kódů je dostupný v~tabulce \ref{seq}. Nejčastější sekvence \texttt{aload\_0;getfield;} poukazuje na častý přístup k~proměnným aktuální instance. Sekvence \texttt{new;dup;} reprezentuje optimalizaci. Dále se často pracuje s~prvními dvěma lokálními proměnnými. Nejčastěji se spolu v~jedné sekvenci objevuje načítání reference z~lokální proměnné a volání speciálních metod.
-
 \section{Vyhodnocení}\label{AnalysisSummary}
-
-Studium využití parametrů a lokálních proměnných poukazuje na plýtvání s~tímto paměťovým prostorem. Pole lokálních proměnných by zřejmě mohlo být menší, kdyby se proměnné více recyklovaly. Použití parametrů jako lokálních proměnných zase umožní používat instrukce s~kratšími kódy.
-
-Z~analýzy velikosti konstant plyne, že řetězce tvoří podstatnou část instrukčního souboru. Řetězcové konstanty a řetězce s~typy nijak nahradit nelze, ale názvy tříd, rozhraní, metod a proměnných by bylo možné nahradit kratšími řetězci. 
-Analýza velikosti atributů poukázala na to, že atributy, které nemají vliv na interpretaci souboru, mají poměrně velkou velikost. Tyto atributy by za jistých předpokladů šlo odstranit.
-Z~analýzy velikosti instrukcí vyplynulo, že se nejčastěji používají objemné instrukce. To stejné se potvrdilo analýzou typických sekvencí. Bylo by vhodné se zamyslet nad tím, jak zamezit zbytečnému volání metod a načítání hodnot z~členských proměnných. 
-
-
-
-% Shrnutí výsledků a komentář. Jak mohu výsledky analýzy použít pro další postup práce?
-
-%=========================================================================
