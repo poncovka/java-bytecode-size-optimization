@@ -23,7 +23,11 @@ public class BytecodePrinter {
 	static boolean EXPANDED = false;
 	static boolean POOL 	= false;
 	
-	PrintWriter out = new PrintWriter(System.out);
+	PrintWriter out;
+	
+	public BytecodePrinter(PrintWriter out) {
+		this.out = out;
+	}
 	
 	static public int getFlags() {
 		
@@ -184,7 +188,8 @@ public class BytecodePrinter {
 		}
 		
 		// init printer
-		BytecodePrinter printer = new BytecodePrinter();
+		PrintWriter out = new PrintWriter(System.out);
+		BytecodePrinter printer = new BytecodePrinter(out);
 		
 		// print files
 		for(; i < args.length; i++) {
@@ -201,5 +206,6 @@ public class BytecodePrinter {
 			
 		}
 		
+		out.close();
 	}
 }

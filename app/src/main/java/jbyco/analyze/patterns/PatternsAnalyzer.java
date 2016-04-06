@@ -536,7 +536,9 @@ public class PatternsAnalyzer implements Analyzer {
 		analyzer.finishProcessing();
 		
 		// print results
-		analyzer.writeResults(new PrintWriter(System.out));
+		PrintWriter writer = new PrintWriter(System.out, true);
+		analyzer.writeResults(writer);
+		writer.close();
 		
 		// show progress
 		System.err.printf("Processed 100%%, pruned %d times.\n", analyzer.pruningThreshold);

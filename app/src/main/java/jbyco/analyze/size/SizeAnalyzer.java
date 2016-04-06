@@ -342,7 +342,9 @@ public class SizeAnalyzer implements Analyzer {
 		}
 		
 		// print results
-		analyzer.writeResults(new PrintWriter(System.out));
+		PrintWriter writer = new PrintWriter(System.out, true);
+		analyzer.writeResults(writer);
+		writer.close();
 	}
 	
 }
