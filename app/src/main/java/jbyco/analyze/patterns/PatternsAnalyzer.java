@@ -3,6 +3,8 @@ package jbyco.analyze.patterns;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -31,8 +33,8 @@ import jbyco.analyze.patterns.parameters.NumberedParameterFactory;
 import jbyco.analyze.patterns.tree.Tree;
 import jbyco.analyze.patterns.tree.TreeBuilder;
 import jbyco.analyze.patterns.wildcards.WildSequenceGenerator;
-import jbyco.io.BytecodeFiles;
-import jbyco.io.files.BytecodeFile;
+import jbyco.io.BytecodeFilesIterator;
+import jbyco.io.FileAbstraction;
 import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
 import jbyco.lib.Utils;
@@ -97,7 +99,7 @@ public class PatternsAnalyzer implements Analyzer {
 	}
 	
 	@Override
-	public void processFile(BytecodeFile file) {
+	public void processFile(FileAbstraction file) {
 		
 		try {
 			
@@ -120,6 +122,9 @@ public class PatternsAnalyzer implements Analyzer {
 			
 			// check memory
 			checkMemory();
+
+			// close stream
+			in.close();
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -495,12 +500,15 @@ public class PatternsAnalyzer implements Analyzer {
 		if (showProgress) {
 			
 			for (int i = index; i < args.length; i++) {
-							
+
+				// get path
+				Path path = Paths.get(args[i]);
+				
 				// get files on the path
-				BytecodeFiles files = new BytecodeFiles(args[i]);
+				BytecodeFilesIterator files = new BytecodeFilesIterator(path);
 							
 				// process files on the path
-				for (BytecodeFile file : files) {
+				for (FileAbstraction file : files) {
 					total++;
 				}
 			}
@@ -512,11 +520,14 @@ public class PatternsAnalyzer implements Analyzer {
 		// analyze files
 		for (int i = index; i < args.length; i++) {
 			
+			// get path
+			Path path = Paths.get(args[i]);
+			
 			// get files on the path
-			BytecodeFiles files = new BytecodeFiles(args[i]);
+			BytecodeFilesIterator files = new BytecodeFilesIterator(path);
 			
 			// process files on the path
-			for (BytecodeFile file : files) {
+			for (FileAbstraction file : files) {
 								
 				// analyze file
 				analyzer.processFile(file);

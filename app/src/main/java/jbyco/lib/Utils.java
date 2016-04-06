@@ -44,5 +44,5 @@ public class Utils {
 	
 	public static String getEscapedString(String string, String quoted) {
 		return quoted + StringEscapeUtils.escapeJava(string) + quoted;
-	} 
+	}
 }

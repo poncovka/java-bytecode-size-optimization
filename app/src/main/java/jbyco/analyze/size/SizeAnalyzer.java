@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.BitSet;
 
 import org.apache.bcel.Constants;
@@ -25,16 +27,10 @@ import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
-import jbyco.io.BytecodeFiles;
-import jbyco.io.files.BytecodeFile;
+import jbyco.io.BytecodeFilesIterator;
+import jbyco.io.FileAbstraction;
 
 public class SizeAnalyzer implements Analyzer {
-
-	// bytecode file to print
-	BytecodeFile file;
-	
-	// structure of class file
-	JavaClass klass;
 	
 	// dictionary of sizes
 	SizeMap map;
@@ -43,7 +39,7 @@ public class SizeAnalyzer implements Analyzer {
 		map = new SizeMap();
 	}
 	
-	public void processFile(BytecodeFile file) {
+	public void processFile(FileAbstraction file) {
 		
 		try {		
 			// get input stream
@@ -52,14 +48,16 @@ public class SizeAnalyzer implements Analyzer {
 			
 			// parse class file
 			ClassParser parser = new ClassParser(stream, filename);
-			this.klass = parser.parse();
-			this.file = file;
+			JavaClass klass = parser.parse();
 						
 			// process file
-			processClassFile(this.klass);
+			processClassFile(klass);
 			
 			// process strings in a file
-			processStrings(this.klass);
+			processStrings(klass);
+			
+			// close stream
+			stream.close();
 						
 		} catch (ClassFormatException e) {
 			e.printStackTrace();
@@ -332,11 +330,14 @@ public class SizeAnalyzer implements Analyzer {
 		Analyzer analyzer = new SizeAnalyzer();
 		
 		// process files
-		for (String path : args) {
+		for (String str : args) {
 			
-			BytecodeFiles files = new BytecodeFiles(path);
+			// get path
+			Path path = Paths.get(str);
 			
-			for (BytecodeFile file : files) {
+			BytecodeFilesIterator files = new BytecodeFilesIterator(path);
+			
+			for (FileAbstraction file : files) {
 				analyzer.processFile(file);
 			}
 		}

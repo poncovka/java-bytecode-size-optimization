@@ -2,11 +2,11 @@ package jbyco.analyze;
 
 import java.io.PrintWriter;
 
-import jbyco.io.files.BytecodeFile;
+import jbyco.io.FileAbstraction;
 
 public interface Analyzer {
 	
-	public void processFile(BytecodeFile file);
+	public void processFile(FileAbstraction file);
 	public void writeResults(PrintWriter out);
 
 }

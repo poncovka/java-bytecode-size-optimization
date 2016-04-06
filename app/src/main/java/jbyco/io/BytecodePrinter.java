@@ -3,6 +3,8 @@ package jbyco.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
@@ -11,7 +13,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.util.TraceClassVisitor;
 
-import jbyco.io.files.BytecodeFile;
 import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
 
@@ -45,7 +46,7 @@ public class BytecodePrinter {
 		this.out = out;
 	}
 	
-	public void print(BytecodeFile file) {
+	public void print(FileAbstraction file) {
 		
 		printFile(file);
 		
@@ -56,7 +57,7 @@ public class BytecodePrinter {
 		
 	}
 	
-	public void printFile(BytecodeFile file) {
+	public void printFile(FileAbstraction file) {
 		
 		try {
 			
@@ -78,7 +79,7 @@ public class BytecodePrinter {
 		
 	}
 	
-	public void printConstanPool(BytecodeFile file) {
+	public void printConstanPool(FileAbstraction file) {
 				
 		try {		
 			// get input stream
@@ -194,14 +195,18 @@ public class BytecodePrinter {
 		// print files
 		for(; i < args.length; i++) {
 			
+			// get path
+			Path path = Paths.get(args[i]);
+			
 			// get files
-			BytecodeFiles files = new BytecodeFiles(args[i]);
+			BytecodeFilesIterator files = new BytecodeFilesIterator(path);
 			
 			// process files
-			for (BytecodeFile file : files) {
+			for (FileAbstraction file : files) {
 				
 				// print
-				printer.print(file);
+				//printer.print(file);
+				//System.out.printf("%s   %s   %s\n", file.realPath, file.abstractPath, file.getName());
 			}
 			
 		}

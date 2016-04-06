@@ -3,6 +3,8 @@ package jbyco.analyze.statistics;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
@@ -15,16 +17,10 @@ import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
-import jbyco.io.BytecodeFiles;
-import jbyco.io.files.BytecodeFile;
+import jbyco.io.BytecodeFilesIterator;
+import jbyco.io.FileAbstraction;
 
 public class StatisticsCollector implements Analyzer {
-
-	// bytecode file to print
-	BytecodeFile file;
-	
-	// structure of class file
-	JavaClass klass;
 	
 	// collected data
 	StatisticsMap map;
@@ -34,7 +30,7 @@ public class StatisticsCollector implements Analyzer {
 	}
 	
 	@Override
-	public void processFile(BytecodeFile file) {
+	public void processFile(FileAbstraction file) {
 		try {		
 			// get input stream
 			String filename = file.getName();
@@ -42,11 +38,13 @@ public class StatisticsCollector implements Analyzer {
 			
 			// parse class file
 			ClassParser parser = new ClassParser(stream, filename);
-			this.klass = parser.parse();
-			this.file = file;
+			JavaClass klass = parser.parse();
 						
 			// process file
-			processClassFile(this.klass);
+			processClassFile(klass);
+
+			// close stream
+			stream.close();
 						
 		} catch (ClassFormatException e) {
 			e.printStackTrace();
@@ -136,11 +134,14 @@ public class StatisticsCollector implements Analyzer {
 		Analyzer analyzer = new StatisticsCollector();
 		
 		// process files
-		for (String path : args) {
+		for (String str : args) {
 			
-			BytecodeFiles files = new BytecodeFiles(path);
+			// get path
+			Path path = Paths.get(str);
 			
-			for (BytecodeFile file : files) {
+			BytecodeFilesIterator files = new BytecodeFilesIterator(path);
+			
+			for (FileAbstraction file : files) {
 				analyzer.processFile(file);
 			}
 		}

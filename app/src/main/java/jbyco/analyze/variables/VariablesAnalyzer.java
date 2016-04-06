@@ -3,6 +3,8 @@ package jbyco.analyze.variables;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
@@ -17,17 +19,11 @@ import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
-import jbyco.io.BytecodeFiles;
-import jbyco.io.files.BytecodeFile;
+import jbyco.io.BytecodeFilesIterator;
+import jbyco.io.FileAbstraction;
 
 public class VariablesAnalyzer implements Analyzer {
-	
-	// bytecode file to print
-	BytecodeFile file;
-	
-	// structure of class file
-	JavaClass klass;
-	
+
 	// map
 	VariablesMap map;
 	
@@ -35,7 +31,7 @@ public class VariablesAnalyzer implements Analyzer {
 		this.map = new VariablesMap();
 	}
 	
-	public void processFile(BytecodeFile file) {
+	public void processFile(FileAbstraction file) {
 		
 		try {		
 			// get input stream
@@ -44,59 +40,50 @@ public class VariablesAnalyzer implements Analyzer {
 			
 			// parse class file
 			ClassParser parser = new ClassParser(stream, filename);
-			this.klass = parser.parse();
-
-			// init
-			this.file = file;
+			JavaClass klass = parser.parse();
 			
 			// process code
-			processMethods();
+			processMethods(klass.getMethods());
 						
+			// close stream
+			stream.close();
+			
 		} catch (ClassFormatException e) {
 			e.printStackTrace();
-			
+		} catch (ClassGenException e) {
+			e.printStackTrace();	
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	protected void processMethods() {
+	protected void processMethods(Method[] methods) throws IOException {
 		
 		// for all methods
-		for(Method m : klass.getMethods()) {
+		for(Method m : methods) {
 			
 			// get code
 			Code code = m.getCode();
 			if (code != null) {
-				
-				try {				
-					// get number of parameters
-					int nparams = m.getArgumentTypes().length + (m.isStatic() ? 0 : 1);
+							
+				// get number of parameters
+				int nparams = m.getArgumentTypes().length + (m.isStatic() ? 0 : 1);
 					
-					// get number of local variables
-					int nvars = code.getMaxLocals();
+				// get number of local variables
+				int nvars = code.getMaxLocals();
 					
-					// add method
-					map.addMethod(nparams, nvars);
+				// add method
+				map.addMethod(nparams, nvars);
 					
-					// read bytecode
-					ByteSequence seq = new ByteSequence(code.getCode());
-					while (seq.available() > 0) {
+				// read bytecode
+				ByteSequence seq = new ByteSequence(code.getCode());
+				while (seq.available() > 0) {
 
-						// get an instruction
-						Instruction i = Instruction.readInstruction(seq);
+					// get an instruction
+					Instruction i = Instruction.readInstruction(seq);
 						
-						// process instruction
-						processInstruction(i);
-					}
-				}
-				catch (ClassGenException e) {
-					System.err.println("Could read instructions from " + file.getName());
-					e.printStackTrace();
-				}
-				catch (IOException e) {
-					System.err.println("Could read instructions from " + file.getName());
-					e.printStackTrace();
+					// process instruction
+					processInstruction(i);
 				}
 			}	
 		}
@@ -130,11 +117,14 @@ public class VariablesAnalyzer implements Analyzer {
 		Analyzer analyzer = new VariablesAnalyzer();
 		
 		// process files
-		for (String path : args) {
+		for (String str : args) {
+
+			// get path
+			Path path = Paths.get(str);
 			
-			BytecodeFiles files = new BytecodeFiles(path);
+			BytecodeFilesIterator files = new BytecodeFilesIterator(path);
 			
-			for (BytecodeFile file : files) {
+			for (FileAbstraction file : files) {
 				analyzer.processFile(file);
 			}
 		}
