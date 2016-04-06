@@ -9,10 +9,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 
-public class FileAbstraction {
+import jbyco.lib.Utils;
+
+public class CommonFile {
 	
-	// path to the existing file
-	Path realPath;
+	// real path to the existing file
+	Path pathToFile;
 	
 	// abstract path to the file  
 	Path abstractPath;
@@ -20,26 +22,22 @@ public class FileAbstraction {
 	// file
 	java.io.File file;
 	
-	public FileAbstraction(Path realPath, Path abstractPath) {
+	public CommonFile(Path path, Path abstractPath) {
+		this.file = path.toFile();
+		this.pathToFile = path;
 		this.abstractPath = abstractPath;
-		this.realPath = realPath;
-		this.file = realPath.toFile();
 	}
 	
 	public String getName() {
 		return abstractPath.getFileName().toString();
 	}
 	
-	public Path getRealPath() {
-		return realPath;
+	public Path getPath() {
+		return pathToFile;
 	}
 	
 	public Path getAbstractPath() {
 		return abstractPath;
-	}
-	
-	public void copyToPath(Path newRealPath) {
-		// TODO
 	}
 	
 	public InputStream getInputStream() throws IOException {
@@ -51,11 +49,11 @@ public class FileAbstraction {
 	}
 	
 	public boolean isClassFile() {
-		return getName().endsWith(".class");
+		return Utils.endsWithClass(getName());
 	}
 	
 	public boolean isJar() {
-		return getName().endsWith(".jar");
+		return Utils.endsWithJar(getName());
 	}
 	
 	public boolean isDirectory() {

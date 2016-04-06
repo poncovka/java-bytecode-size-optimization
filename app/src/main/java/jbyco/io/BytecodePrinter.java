@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
@@ -46,7 +48,7 @@ public class BytecodePrinter {
 		this.out = out;
 	}
 	
-	public void print(FileAbstraction file) {
+	public void print(CommonFile file) {
 		
 		printFile(file);
 		
@@ -57,7 +59,7 @@ public class BytecodePrinter {
 		
 	}
 	
-	public void printFile(FileAbstraction file) {
+	public void printFile(CommonFile file) {
 		
 		try {
 			
@@ -79,7 +81,7 @@ public class BytecodePrinter {
 		
 	}
 	
-	public void printConstanPool(FileAbstraction file) {
+	public void printConstanPool(CommonFile file) {
 				
 		try {		
 			// get input stream
@@ -154,17 +156,23 @@ public class BytecodePrinter {
 	public static void main(String[] args) {
 		
 		Options options = new Options();
+		Collection<Path> paths = new ArrayList<>();
 		
 		// process options
-		int i = 0;
-		for (; i < args.length; i++) {
+		int index = 0;
+		for (; index < args.length; index++) {
 			
-			String arg = args[i];
+			String arg = args[index];
 			Option option = (Option)options.getOption(arg);
 			
 			// files
 			if (option == null) {
-				break;
+				
+				while (index < args.length) {
+					paths.add(Paths.get(args[index++]));
+				}
+				
+				continue;
 			}
 			
 			// process option
@@ -193,24 +201,18 @@ public class BytecodePrinter {
 		BytecodePrinter printer = new BytecodePrinter(out);
 		
 		// print files
-		for(; i < args.length; i++) {
-			
-			// get path
-			Path path = Paths.get(args[i]);
-			
-			// get files
-			BytecodeFilesIterator files = new BytecodeFilesIterator(path);
+		for(Path path : paths) {
 			
 			// process files
-			for (FileAbstraction file : files) {
+			for (CommonFile file : (new BytecodeFilesIterator(path))) {
 				
 				// print
-				//printer.print(file);
-				//System.out.printf("%s   %s   %s\n", file.realPath, file.abstractPath, file.getName());
+				printer.print(file);
+				
 			}
-			
 		}
 		
+		// close output
 		out.close();
 	}
 }

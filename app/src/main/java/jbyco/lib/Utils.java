@@ -45,4 +45,12 @@ public class Utils {
 	public static String getEscapedString(String string, String quoted) {
 		return quoted + StringEscapeUtils.escapeJava(string) + quoted;
 	}
+	
+	public static boolean endsWithClass(String s) {
+		return s.endsWith(".class");
+	}
+	
+	public static boolean endsWithJar(String s) {
+		return s.endsWith(".jar");
+	}
 }

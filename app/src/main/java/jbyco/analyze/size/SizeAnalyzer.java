@@ -28,7 +28,7 @@ import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
 import jbyco.io.BytecodeFilesIterator;
-import jbyco.io.FileAbstraction;
+import jbyco.io.CommonFile;
 
 public class SizeAnalyzer implements Analyzer {
 	
@@ -39,7 +39,7 @@ public class SizeAnalyzer implements Analyzer {
 		map = new SizeMap();
 	}
 	
-	public void processFile(FileAbstraction file) {
+	public void processFile(CommonFile file) {
 		
 		try {		
 			// get input stream
@@ -119,8 +119,6 @@ public class SizeAnalyzer implements Analyzer {
 
 	protected void processConstantPool(ConstantPool pool) {
 		
-		int total = 0;
-		
 		for (Constant c : pool.getConstantPool()) {
 			
 			// skip zero index
@@ -135,13 +133,7 @@ public class SizeAnalyzer implements Analyzer {
 			// size of constants in all files
 			map.add(key, size);
 			
-			// add to total
-			total += size;
-			
 		}
-		
-		// size of constants in a class file
-		map.add("FILE_CONSTANTS", 2 + total);
 	}
 	
 	protected void processFields(Field[] fields) {
@@ -151,15 +143,9 @@ public class SizeAnalyzer implements Analyzer {
 			processAttributes(f.getAttributes());
 		}
 		
-		// size of fields in a class file - attributes
-		map.add("FILE_FIELDS", 8 * fields.length);
 	}
 
 	protected void processMethods(Method[] methods) {
-		
-		// total lenght of code
-		int codeLenghs = 0;
-		int exceptionTableLengths = 0;
 
 		for (Method m : methods) {
 			
@@ -169,28 +155,13 @@ public class SizeAnalyzer implements Analyzer {
 			Code code = m.getCode();
 			if (code != null) {
 				
-				// add code length
-				codeLenghs += code.getLength();
-				
 				// process attributes
 				processAttributes(code.getAttributes());
-				
-				// process exception table
-				exceptionTableLengths += code.getExceptionTable().length;
 				
 				// process instructions
 				processInstructions(code.getCode());
 			}
 		}
-		
-		// size of methods in a class file - attributes
-		map.add("FILE_METHODS", 8 * methods.length);
-		
-		// size of methods in a class file - attributes
-		map.add("FILE_CODES", 6 + codeLenghs);
-		
-		// size of exception tables in a class file
-		map.add("FILE_EXCEPTION_TABLES", 2 + 8 * exceptionTableLengths);
 	}
 
 	protected void processInstructions(byte[] instructions) {
@@ -296,15 +267,10 @@ public class SizeAnalyzer implements Analyzer {
 	
 	protected void processStringIndexes(ConstantPool cp, BitSet set, String description) {
 		
-		int total = 0;
-		
 		for (int i = set.nextSetBit(0); i >= 0; i = set.nextSetBit(i+1)) {
 			
 			// get size
 			int size = getConstantSize(cp.getConstant(i)) - 3;
-			
-			// add to total size
-			total += size;
 			
 			// add size to map
 			map.add("STRING_" + description, size);
@@ -314,9 +280,6 @@ public class SizeAnalyzer implements Analyzer {
 		         break;
 		     }
 		 }
-		
-		// add total to map
-		map.add("FILE_STRINGS_" + description, total);
 	}
 
 	@Override
@@ -335,9 +298,8 @@ public class SizeAnalyzer implements Analyzer {
 			// get path
 			Path path = Paths.get(str);
 			
-			BytecodeFilesIterator files = new BytecodeFilesIterator(path);
-			
-			for (FileAbstraction file : files) {
+			// process files on the path
+			for (CommonFile file : (new BytecodeFilesIterator(path))) {
 				analyzer.processFile(file);
 			}
 		}

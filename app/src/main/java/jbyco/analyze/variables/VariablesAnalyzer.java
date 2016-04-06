@@ -20,7 +20,7 @@ import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
 import jbyco.io.BytecodeFilesIterator;
-import jbyco.io.FileAbstraction;
+import jbyco.io.CommonFile;
 
 public class VariablesAnalyzer implements Analyzer {
 
@@ -31,7 +31,7 @@ public class VariablesAnalyzer implements Analyzer {
 		this.map = new VariablesMap();
 	}
 	
-	public void processFile(FileAbstraction file) {
+	public void processFile(CommonFile file) {
 		
 		try {		
 			// get input stream
@@ -122,9 +122,8 @@ public class VariablesAnalyzer implements Analyzer {
 			// get path
 			Path path = Paths.get(str);
 			
-			BytecodeFilesIterator files = new BytecodeFilesIterator(path);
-			
-			for (FileAbstraction file : files) {
+			// process files on the path
+			for (CommonFile file : (new BytecodeFilesIterator(path))) {
 				analyzer.processFile(file);
 			}
 		}

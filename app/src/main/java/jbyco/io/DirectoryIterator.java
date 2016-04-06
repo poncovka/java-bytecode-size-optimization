@@ -8,21 +8,21 @@ import java.util.Iterator;
 
 public class DirectoryIterator implements Iterator<Path> {
 	
-	FileAbstraction file;
+	CommonFile file;
 	Iterator<Path> iterator;
 	DirectoryStream<Path> stream;
 	
-	public DirectoryIterator(FileAbstraction file) throws IOException {
+	public DirectoryIterator(CommonFile file) throws IOException {
 		
 		// init
 		this.file = file;
 		
 		// create iterator over files
-		this.stream = Files.newDirectoryStream(file.getRealPath());
+		this.stream = Files.newDirectoryStream(file.getPath());
 		this.iterator = stream.iterator();
 	}
 	
-	public FileAbstraction getFile() {
+	public CommonFile getFile() {
 		return file;
 	}
 

@@ -6,9 +6,9 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Stack;
 
-public class FilesIterator implements Iterator<FileAbstraction>, Iterable<FileAbstraction> {
+public class FilesIterator implements Iterator<CommonFile>, Iterable<CommonFile> {
 
-	FileAbstraction next;
+	CommonFile next;
 	Stack<DirectoryIterator> stack;
 	
 	public FilesIterator(Path path) {
@@ -27,9 +27,9 @@ public class FilesIterator implements Iterator<FileAbstraction>, Iterable<FileAb
 	}
 
 	@Override
-	public FileAbstraction next() {
+	public CommonFile next() {
 				
-		FileAbstraction file = next;
+		CommonFile file = next;
 		next = findNextFile();
 		
 		return file;
@@ -39,22 +39,29 @@ public class FilesIterator implements Iterator<FileAbstraction>, Iterable<FileAb
 		return Paths.get("root");
 	}
 	
-	protected FileAbstraction processFile(Path path, Path parentAbstractPath) {
+	protected Path getAbstractPath(String name, Path path) {
+		
+		if (path == null) {
+			path = getAbstractRoot();
+		}
+		
+		return path.resolve(name);
+	}
+	
+	protected CommonFile processFile(Path path, Path parentAbstractPath) {
 		
 		// create file
 		java.io.File file = path.toFile();
 		String name = file.getName();
 		
-		// create real and abstract paths
-		Path realPath = path;
-		Path abstractPath = (parentAbstractPath != null) ? parentAbstractPath : getAbstractRoot();
-		abstractPath = abstractPath.resolve(name);
+		// get abstract path
+		Path abstractPath = getAbstractPath(name, parentAbstractPath);
 		
 		// return new file
-		return new FileAbstraction(realPath, abstractPath);
+		return new CommonFile(path, abstractPath);
 	}
 	
-	protected void updateStack(FileAbstraction file) {
+	protected void updateStack(CommonFile file) {
 		
 		try {
 			if (file != null && file.isDirectory()) {
@@ -68,9 +75,9 @@ public class FilesIterator implements Iterator<FileAbstraction>, Iterable<FileAb
 		}
 	}
 	
-	protected FileAbstraction findNextFile() {
+	protected CommonFile findNextFile() {
 				
-		FileAbstraction file = null;
+		CommonFile file = null;
 
 		// get file in directories
 		while (file == null && !stack.isEmpty()) {
@@ -104,7 +111,7 @@ public class FilesIterator implements Iterator<FileAbstraction>, Iterable<FileAb
 	}
 
 	@Override
-	public Iterator<FileAbstraction> iterator() {
+	public Iterator<CommonFile> iterator() {
 		return this;
 	}
 }

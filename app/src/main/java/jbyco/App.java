@@ -17,12 +17,12 @@ public class App {
 		
 		ANALYZE_SIZE 		("Print sizes of items in classfiles.",
 							 "--analyze-size"),
-		ANALYZE_LOCALS 		("Print usage of local variables and parameters.", 
-							 "--analyze-locals"),
+		ANALYZE_VARIABLES 	("Print usage of local variables and parameters.", 
+							 "--analyze-variables"),
 		ANALYZE_PATTERNS 	("Print frequent instruction sequencies.",
 							 "--analyze-patterns" ),
 		STATISTICS 			("Print statistics.", 
-							 "--stats"),
+							 "--statistics"),
 		PRINT 				("Print the content of class files.", 
 							 "--print"),
 		HELP 				("Show this message.", 
@@ -76,7 +76,7 @@ public class App {
 											break;
 				case STATISTICS:			StatisticsCollector.main(arguments);
 											break;
-				case ANALYZE_LOCALS:		VariablesAnalyzer.main(arguments);
+				case ANALYZE_VARIABLES:		VariablesAnalyzer.main(arguments);
 											break;
 				case ANALYZE_PATTERNS:		PatternsAnalyzer.main(arguments);
 											break;

@@ -33,28 +33,26 @@ import jbyco.analyze.patterns.parameters.NumberedParameterFactory;
 import jbyco.analyze.patterns.tree.Tree;
 import jbyco.analyze.patterns.tree.TreeBuilder;
 import jbyco.analyze.patterns.wildcards.WildSequenceGenerator;
+import jbyco.io.BytecodeFilesCounter;
 import jbyco.io.BytecodeFilesIterator;
-import jbyco.io.FileAbstraction;
+import jbyco.io.CommonFile;
 import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
 import jbyco.lib.Utils;
 
 public class PatternsAnalyzer implements Analyzer {
-		
-	// max length of patterns
-	static int MAX_LENGTH = 10;
-	
-	// minimal frequency of printed patterns
-	static int MIN_FREQUENCY = 100;
-	
-	// delimiter used to separate the instructions in patterns
-	static String DELIMITER = ";";
 	
 	// number of wild cards in a pattern
-	static int WILDCARDS = 0;
+	final int WILDCARDS;
 	
+	// max length of patterns
+	final int MAX_LENGTH;
+	
+	// minimal frequency of printed patterns
+	final int MIN_FREQUENCY;
+		
 	// max memory usage in percents
-	static int MEMORY_USAGE = 70;
+	final int MEMORY_USAGE;
 	
 	// graph
 	Tree graph;
@@ -78,19 +76,33 @@ public class PatternsAnalyzer implements Analyzer {
 	
 	// active labels of the current method
 	ActiveLabelsFinder activeLabels;
-		
+			
 	public PatternsAnalyzer (
 			AbstractOperationFactory operations, 
 			AbstractParameterFactory parameters, 
-			AbstractLabelFactory labels
-			) {
+			AbstractLabelFactory labels,
+			int wildcards,
+			int maxLength,
+			int minFrequency,
+			int memoryUsage
+		) {
 		
+		// init parameters
+		this.WILDCARDS = wildcards;
+		this.MAX_LENGTH = maxLength;
+		this.MIN_FREQUENCY = minFrequency;
+		this.MEMORY_USAGE = memoryUsage;
+		
+		// init factories
 		this.operations = operations;
 		this.parameters = parameters;
 		this.labels = labels;
 		
+		// create tree and the builder
 		this.graph = new Tree();
 		this.builder = new TreeBuilder(graph);
+		
+		// create instruction cache
 		this.cache = new Cache();
 	}
 	
@@ -99,7 +111,7 @@ public class PatternsAnalyzer implements Analyzer {
 	}
 	
 	@Override
-	public void processFile(FileAbstraction file) {
+	public void processFile(CommonFile file) {
 		
 		try {
 			
@@ -325,10 +337,13 @@ public class PatternsAnalyzer implements Analyzer {
 
 	@Override
 	public void writeResults(PrintWriter out) {
-		PatternsWriter writer = new PatternsWriter(out);
-		writer.write(graph, DELIMITER, MIN_FREQUENCY, WILDCARDS);		
+		writeResults(out, ";");		
 	}
 		
+	public void writeResults(PrintWriter out, String delimiter) {
+		PatternsWriter writer = new PatternsWriter(out);
+		writer.write(graph, delimiter, MIN_FREQUENCY, WILDCARDS);		
+	}
 	
 	///////////////////////////////////////////////////////////////// MAIN
 	
@@ -391,17 +406,20 @@ public class PatternsAnalyzer implements Analyzer {
 		// get options and map of options
 		Options options = new Options();
 		
-		// show progress?
-		boolean showProgress = true;
-		
 		// set default values
-		MAX_LENGTH = 10;
-		MIN_FREQUENCY = 100;
-		DELIMITER = ";";
+		int wildcards = 0;
+		int maxLength = 10;
+		int minFrequency = 100;
+		int memoryUsage = 70;
+		
+		String delimiter = ";";
+		boolean progress = true;
 		
 		AbstractOperationFactory operations = new TypedOperationFactory();
 		AbstractParameterFactory parameters = new FullParameterFactory();
 		AbstractLabelFactory labels = new NumberedLabelFactory();
+		
+		Collection<Path> paths = new ArrayList<>();
 		
 		// process parameters
 		
@@ -412,132 +430,73 @@ public class PatternsAnalyzer implements Analyzer {
 			String arg = args[index];
 			Option option = (Option)options.getOption(arg);
 			
-			// help
-			if (option == Option.HELP) {
-				options.help();
-				return;
-			}
-			
-			// no progress
-			else if (option == Option.NO_PROGRESS) {
-				showProgress = false;
-			}
-			
-			// set max length
-			else if (option == Option.MAX_LENGTH) {
+			// get paths to input files
+			if (option == null) {
 				
-				if (++index < args.length) {
-					MAX_LENGTH = Integer.parseUnsignedInt(args[index]);
+				while (index < args.length) {
+					paths.add(Paths.get(args[index++]));
 				}
-				else {
-					throw new IllegalArgumentException("Missing argument for " + arg);
-				}
-			}
-			
-			// set min frequency
-			else if (option == Option.MIN_FREQUENCY) {
 				
-				if (++index < args.length) {
-					MIN_FREQUENCY = Integer.parseUnsignedInt(args[index]);
-				}
-				else {
-					throw new IllegalArgumentException("Missing argument for " + arg);
-				}
+				continue;
 			}
 			
-			// set delimiter
-			else if (option == Option.DELIMITER) {
-				
-				if (++index < args.length) {
-					DELIMITER = args[index];
-				}
-				else {
-					throw new IllegalArgumentException("Missing argument for " + arg);
-				}
-			}
-			
-			// set wildcards
-			else if (option == Option.WILDCARDS) {
-				
-				if (++index < args.length) {
-					WILDCARDS = Integer.parseUnsignedInt(args[index]);
-				}
-				else {
-					throw new IllegalArgumentException("Missing argument for " + arg);
-				}
-			}
-			
-			// set type of operations
-			else if (option == Option.GENERAL_OPERATIONS) {
-				operations = new GeneralOperationFactory();
-			}
-			else if (option == Option.TYPED_OPERATIONS) {
-				operations = new TypedOperationFactory();
-			}
-			
-			// set type of parameters
-			else if (option == Option.GENERAL_PARAMETERS) {
-				parameters = new GeneralParameterFactory();
-			}
-			else if (option == Option.NUMBERED_PARAMETERS) {
-				parameters = new NumberedParameterFactory();
-			}
-			else if (option == Option.FULL_PARAMETERS) {
-				parameters = new FullParameterFactory();
-			}
-			
-			// files
-			else {
-				break;
+			// process parameters
+			switch(option) {	
+				case HELP:				options.help();
+										return;
+				case NO_PROGRESS:		progress = false;
+										break;
+				case DELIMITER:			delimiter = args[++index];
+										break;
+				case MAX_LENGTH:		maxLength = Integer.parseUnsignedInt(args[++index]);
+										break;
+				case MIN_FREQUENCY:		minFrequency = Integer.parseUnsignedInt(args[++index]);
+										break;
+				case WILDCARDS:			wildcards = Integer.parseUnsignedInt(args[++index]);
+										break;
+				case GENERAL_OPERATIONS:operations = new GeneralOperationFactory();
+										break;
+				case TYPED_OPERATIONS:	operations = new TypedOperationFactory();
+										break;
+				case GENERAL_PARAMETERS:parameters = new GeneralParameterFactory();
+										break;
+				case NUMBERED_PARAMETERS:parameters = new NumberedParameterFactory();
+										break;
+				case FULL_PARAMETERS:	parameters = new FullParameterFactory();
+										break;
 			}
 		}
-		
 		
 		// count files 
 		int counter = 0;
-		int total = 0;
-		
-		if (showProgress) {
-			
-			for (int i = index; i < args.length; i++) {
-
-				// get path
-				Path path = Paths.get(args[i]);
-				
-				// get files on the path
-				BytecodeFilesIterator files = new BytecodeFilesIterator(path);
-							
-				// process files on the path
-				for (FileAbstraction file : files) {
-					total++;
-				}
-			}
-		}
+		int total = (new BytecodeFilesCounter()).countAll(paths);;
 		
 		// init analyzer
-		PatternsAnalyzer analyzer = new PatternsAnalyzer(operations, parameters, labels);
+		PatternsAnalyzer analyzer = 
+				new PatternsAnalyzer(
+						operations, 
+						parameters, 
+						labels, 
+						wildcards, 
+						maxLength, 
+						minFrequency, 
+						memoryUsage
+		);
 		
 		// analyze files
-		for (int i = index; i < args.length; i++) {
-			
-			// get path
-			Path path = Paths.get(args[i]);
-			
-			// get files on the path
-			BytecodeFilesIterator files = new BytecodeFilesIterator(path);
+		for (Path path : paths) {
 			
 			// process files on the path
-			for (FileAbstraction file : files) {
+			for (CommonFile file : (new BytecodeFilesIterator(path))) {
 								
 				// analyze file
 				analyzer.processFile(file);
 				
 				// show progress
-				if (showProgress) {
-					counter++;
-					
-					System.err.printf("Processed %s%%, pruned %d times.\r",
-							Utils.intDivToString(counter * 100, total),
+				if (progress) {
+					System.err.printf(
+							"Processed %s%%, pruned %d times.\r",
+							Utils.intDivToString(++counter * 100, total),
 							analyzer.pruningThreshold);
 				}
 			}
@@ -546,13 +505,15 @@ public class PatternsAnalyzer implements Analyzer {
 		// last prune
 		analyzer.finishProcessing();
 		
+		// print info
+		if (progress) {
+			System.err.printf("Done, pruned %d times.\n", analyzer.pruningThreshold);
+		}
+		
 		// print results
 		PrintWriter writer = new PrintWriter(System.out, true);
-		analyzer.writeResults(writer);
+		analyzer.writeResults(writer, delimiter);
 		writer.close();
-		
-		// show progress
-		System.err.printf("Processed 100%%, pruned %d times.\n", analyzer.pruningThreshold);
 		
 	}
 

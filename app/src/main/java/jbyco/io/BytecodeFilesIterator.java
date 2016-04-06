@@ -14,14 +14,14 @@ public class BytecodeFilesIterator extends FilesIterator {
 		}
 	}
 	
-	public boolean checkFile(FileAbstraction file) {
+	public boolean checkFile(CommonFile file) {
 		return file.isClassFile();
 	}
 	
 	@Override
-	protected FileAbstraction findNextFile() {
+	protected CommonFile findNextFile() {
 		
-		FileAbstraction file;
+		CommonFile file;
 		
 		while ((file = super.findNextFile()) != null) {
 			if (checkFile(file)) {
@@ -33,10 +33,10 @@ public class BytecodeFilesIterator extends FilesIterator {
 	}
 	
 	@Override
-	protected FileAbstraction processFile(Path path, Path parentAbstractPath) {
+	protected CommonFile processFile(Path path, Path parentAbstractPath) {
 		
 		// get general file
-		FileAbstraction file = super.processFile(path, parentAbstractPath);
+		CommonFile file = super.processFile(path, parentAbstractPath);
 		String name = file.getName();
 		
 		// is jar file?
@@ -50,7 +50,7 @@ public class BytecodeFilesIterator extends FilesIterator {
 				JarExtractor.extract(path, tmp);
 				
 				// return recreated file
-				return new FileAbstraction(tmp, file.getAbstractPath());
+				return new CommonFile(tmp, file.getAbstractPath());
 						
 			} catch (IOException e) {
 						e.printStackTrace();
