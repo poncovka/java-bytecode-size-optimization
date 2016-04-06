@@ -213,7 +213,7 @@ public class PatternsAnalyzer implements Analyzer {
 		for (int i = index; i < list.size() && (i - index + 1) <= length; i++) {
 			
 			// get the node, list uses cache -> constant time operation
-			AbstractInsnNode node = list.get(index);
+			AbstractInsnNode node = list.get(i);
 			
 			// add the node if it is active
 			if (isActive(node)) {

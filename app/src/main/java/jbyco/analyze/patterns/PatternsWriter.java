@@ -76,7 +76,7 @@ public class PatternsWriter {
 	private void writePath() {
 		
 		// print frequency
-		out.printf("%-15s", stack.getFirst().node.getCount());
+		out.printf("%-15s\t", stack.getFirst().node.getCount());
 		
 		// for all nodes in a stack
 		Iterator<StackItem> iterator = stack.descendingIterator();
