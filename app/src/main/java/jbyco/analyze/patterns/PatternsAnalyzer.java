@@ -69,6 +69,9 @@ public class PatternsAnalyzer implements Analyzer {
 	// instruction cache
 	Cache cache;
 	
+	// number of processed sequenced
+	long numseq = 0;
+	
 	// factories
 	AbstractOperationFactory operations;
 	AbstractParameterFactory parameters;
@@ -259,6 +262,9 @@ public class PatternsAnalyzer implements Analyzer {
 		
 		// add cached suffix to the graph
 		builder.addPath(suffix);
+		
+		// update counter
+		numseq += nodes.size();
 	}
 	
 	public Collection<AbstractInstruction> getAbstractedSuffix(Collection<AbstractInsnNode> suffix) {
@@ -341,6 +347,11 @@ public class PatternsAnalyzer implements Analyzer {
 	}
 		
 	public void writeResults(PrintWriter out, String delimiter) {
+		
+		// print total number of sequences
+		out.printf("%-15s\t%s\n", numseq, "TOTAL");
+		
+		// print patterns
 		PatternsWriter writer = new PatternsWriter(out);
 		writer.write(graph, delimiter, MIN_FREQUENCY, WILDCARDS);		
 	}
@@ -507,7 +518,7 @@ public class PatternsAnalyzer implements Analyzer {
 		
 		// print info
 		if (progress) {
-			System.err.printf("Done, pruned %d times.\n", analyzer.pruningThreshold);
+			System.err.printf("Processed 100%%, pruned %d times.\n", analyzer.pruningThreshold);
 		}
 		
 		// print results
