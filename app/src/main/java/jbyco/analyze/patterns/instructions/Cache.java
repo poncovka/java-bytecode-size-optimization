@@ -13,7 +13,12 @@ public class Cache {
 	}
 	
 	public AbstractInstruction getCachedInstruction(AbstractInstruction i) {
-				
+			
+		// check null
+		if (i == null) {
+			return null;
+		}
+		
 		// get a reference to cached item
 		WeakReference<CachedInstruction> ref = map.get(i);
 		

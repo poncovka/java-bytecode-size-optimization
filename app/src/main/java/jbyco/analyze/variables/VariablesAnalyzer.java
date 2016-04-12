@@ -111,7 +111,7 @@ public class VariablesAnalyzer implements Analyzer {
 		map.write(out);
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		
 		// init analyzer
 		Analyzer analyzer = new VariablesAnalyzer();

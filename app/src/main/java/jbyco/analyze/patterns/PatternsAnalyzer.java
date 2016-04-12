@@ -163,7 +163,7 @@ public class PatternsAnalyzer implements Analyzer {
 		// find all active labels
 		activeLabels = new ActiveLabelsFinder();
 		method.accept(activeLabels);
-		
+				
 		// process instructions
 		processInstructions(method.instructions);	
 	}
@@ -186,10 +186,14 @@ public class PatternsAnalyzer implements Analyzer {
 			// get the suffix from the list
 			Collection<AbstractInsnNode> suffix = getSuffix(list, i, MAX_LENGTH);
 			
+			// check suffix
+			if (suffix == null) {
+				continue;
+			}	
+			
 			// add the suffix to the graph
-			addSuffix(suffix);			
+			addSuffix(suffix);
 		}
-		
 	}
 	
 	public void processSuffixesWithWildCards(InsnList list) {
@@ -199,9 +203,9 @@ public class PatternsAnalyzer implements Analyzer {
 			
 			// get the basic suffix from the list
 			Collection<AbstractInsnNode> nodes = getSuffix(list, i, MAX_LENGTH);
-						
+			
 			// check the length of the suffix
-			if (!WildSequenceGenerator.check(nodes, WILDCARDS)) {
+			if (nodes == null || !WildSequenceGenerator.check(nodes, WILDCARDS)) {
 				continue;
 			}
 			
@@ -225,26 +229,41 @@ public class PatternsAnalyzer implements Analyzer {
 	}
 	
 	public Collection<AbstractInsnNode> getSuffix(InsnList list, int index, int length) {
-
+		
 		// init
 		Collection<AbstractInsnNode> suffix = new ArrayList<>();
 		
 		// create a list of active nodes of the given length starting from the index 
-		for (int i = index; i < list.size() && (i - index + 1) <= length; i++) {
+		for (int i = index, l = 0; i < list.size() && l < length; i++) {
 			
 			// get the node, list uses cache -> constant time operation
 			AbstractInsnNode node = list.get(i);
 			
-			// add the node if it is active
-			if (isActive(node)) {
-				suffix.add(node);
+			// check first node
+			if (i == index && !isFirstNode(node)) {
+				return null;
 			}
+			
+			// ignore non active node
+			else if (!isActiveNode(node)) {
+				continue;
+			}
+			
+			// add node to the suffix
+			suffix.add(node);
+			l++;
 		}
-				
+		
+		// return new suffix
 		return suffix;
 	}
-		
-	protected boolean isActive(AbstractInsnNode node) {
+	
+	
+	public boolean isFirstNode(AbstractInsnNode node) {
+		return !(node instanceof LabelNode) && isActiveNode(node);
+	}
+	
+	protected boolean isActiveNode(AbstractInsnNode node) {
 		return     !(node instanceof LabelNode) 
 				||  (activeLabels.isActive(((LabelNode)node).getLabel()));
 	}
@@ -300,7 +319,7 @@ public class PatternsAnalyzer implements Analyzer {
 		for (AbstractInstruction i : suffix) {
 			
 			// get cached instruction or null
-			AbstractInstruction i2 = (i != null) ? cache.getCachedInstruction(i) : null;
+			AbstractInstruction i2 = cache.getCachedInstruction(i);
 						
 			// add the instruction to the list
 			cached.add(i2);
@@ -412,7 +431,7 @@ public class PatternsAnalyzer implements Analyzer {
 		
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		
 		// get options and map of options
 		Options options = new Options();

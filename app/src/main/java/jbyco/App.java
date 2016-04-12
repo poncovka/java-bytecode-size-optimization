@@ -1,5 +1,6 @@
 package jbyco;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import jbyco.analyze.patterns.PatternsAnalyzer;
@@ -56,7 +57,7 @@ public class App {
 		
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		
 		// get options and map of options
 		Options options = new Options();
