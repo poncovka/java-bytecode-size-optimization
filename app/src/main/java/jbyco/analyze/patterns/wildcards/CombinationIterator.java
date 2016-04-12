@@ -9,13 +9,9 @@ public class CombinationIterator implements Iterator<int[]> {
 	int max;
 	int index;
 	int[] array;
+	boolean check;
 	
 	public CombinationIterator(int n, int min, int max) {
-	
-		// check arguments
-		if (!check(n, min, max)) {
-			throw new IllegalArgumentException();
-		}
 		
 		// init
 		this.min = min;
@@ -26,15 +22,18 @@ public class CombinationIterator implements Iterator<int[]> {
 		// init array
 		this.array[0] = min - 1;
 		this.index = 0;
+		
+		// check parameters
+		this.check = check(n, min, max);
 	}
 
-	public static boolean check(int n, int min, int max) {
+	public boolean check(int n, int min, int max) {
 		return n > 0 && min < max && max - min + 1 >= n;
 	}
 	
 	@Override
 	public boolean hasNext() {
-		return 0 <= index && index < array.length;
+		return 0 <= index && index < array.length && check;
 	}
 	
 	@Override

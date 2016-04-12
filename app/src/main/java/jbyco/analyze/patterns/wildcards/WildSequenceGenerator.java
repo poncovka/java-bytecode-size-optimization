@@ -3,8 +3,13 @@ package jbyco.analyze.patterns.wildcards;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
+import org.objectweb.asm.tree.LabelNode;
+import org.objectweb.asm.tree.LookupSwitchInsnNode;
+import org.objectweb.asm.tree.TableSwitchInsnNode;
 
-public class WildSequenceGenerator<T> implements Iterator<Collection<T>> {
+public class WildSequenceGenerator implements Iterator<Collection<AbstractInsnNode>> {
 
 	// number of wild cards in a list
 	int wildcards;
@@ -13,19 +18,52 @@ public class WildSequenceGenerator<T> implements Iterator<Collection<T>> {
 	CombinationIterator iterator;
 	
 	// list of values
-	T[] list;
+	ArrayList<AbstractInsnNode> list;
+	
+	// list of forbidden indexes
+	ArrayList<Integer> forbidden;
 	
 	// wild card
-	T wildcard;
+	AbstractInsnNode wildcard;
 	
-	@SuppressWarnings("unchecked")
-	public WildSequenceGenerator(Collection<T> list, T wildcard, int wildcards) {
+	public WildSequenceGenerator(Collection<AbstractInsnNode> list, AbstractInsnNode wildcard, int wildcards) {
 		
-		this.list = (T[]) list.toArray();
 		this.wildcard = wildcard;
 		this.wildcards = wildcards;
-		this.iterator = new CombinationIterator(2 * wildcards, 1, list.size() - 1);
+		this.list = new ArrayList<>(list);
+		this.forbidden = getForbiddenIndexes(this.list);
+		this.iterator = getIterator(this.list, this.forbidden);
+	}
+	
+	boolean isForbiddenNode(AbstractInsnNode node) {
+		return (node instanceof LabelNode 
+				|| node instanceof JumpInsnNode 
+				|| node instanceof LookupSwitchInsnNode 
+				|| node instanceof TableSwitchInsnNode);
+	}
+	
+	public ArrayList<Integer> getForbiddenIndexes(ArrayList<AbstractInsnNode> list) {
 		
+		ArrayList<Integer> indexes = new ArrayList<>();
+		
+		for (int i = 0; i < list.size(); i++) {
+			
+			// add indexes of the first, last and forbidden nodes
+			if (i == 0 || i + 1 == list.size() || isForbiddenNode(list.get(i))) {
+				indexes.add(i);
+			}
+		}
+		
+		return indexes;
+	}
+	
+	public CombinationIterator getIterator(ArrayList<AbstractInsnNode> list, ArrayList<Integer> forbidden) {
+		
+		int n = wildcards;
+		int min = 0;
+		int max = this.list.size() - this.forbidden.size() - 1;
+		
+		return new CombinationIterator(n, min, max);
 	}
 
 	@Override
@@ -34,62 +72,48 @@ public class WildSequenceGenerator<T> implements Iterator<Collection<T>> {
 	}
 
 	@Override
-	public Collection<T> next() {
+	public Collection<AbstractInsnNode> next() {
 		
 		// get next combination of indexes
 		int[] combination = iterator.next();
 		
 		// return list of values and wild cards
-		return applyCombination(list, wildcard, combination);
+		return applyCombination(combination);
 	}
 	
-	public static <T> boolean check(Collection<T> list, int wildcards) {
-		//return list.size() <= 2 || list.size() < 2 * wildcards + 1;
-		return CombinationIterator.check(2 * wildcards, 1, list.size() - 1);
-	}
-	
-	public static int getOrDefault(int[] combination, int index, int value) {
-		
-		if (0 <= index && index < combination.length) {
-			return combination[index];
-		}
-		else {
-			return value;
-		}
-	}
-	
-	static public <T> Collection<T> applyCombination(T[] values, T value, int[] combination) {
+	public Collection<AbstractInsnNode> applyCombination(int[] combination) {
 		
 		// get size of the array
-		int length = values.length;
+		int length = list.size();
 		
-		// create a list of
-		Collection<T> result = new ArrayList<>(length);
-
-		int i = 0;
-		int j = 0;
+		// create a list of nodes
+		ArrayList<AbstractInsnNode> result = new ArrayList<>();
+		
+		int offset = 0;
+		int ci = 0;
+		int fi = 0;
+		
+		for (int i = 0; i < list.size(); i++) {
+						
+			// copy node at forbidden indexes
+			if (fi < forbidden.size() && i == forbidden.get(fi)) {
+				result.add(list.get(i));
+				fi++;
+				offset++;
+			}
 			
-		while (0 <= i && i < length) {
-				
-			// get interval (a,b)
-			int a = getOrDefault(combination, j++, length);
-			int b = getOrDefault(combination, j++, length);
-				
-			// add instructions before a
-			while (i < a) {
-				result.add(values[i]);
-				i++;
+			// create wild card
+			else if (ci < combination.length && i == combination[ci] + offset) {
+				result.add(wildcard);
+				ci++;
 			}
-				
-			// i == a, add wild card if a is in boundaries
-			if (i < length) {
-				result.add(value);
+			
+			// copy node
+			else {
+				result.add(list.get(i));
 			}
-				
-			// skip instructions till b
-			i = b;
 		}
-			
+				
 		return result;
 	}
 	

@@ -219,22 +219,19 @@ public class PatternsAnalyzer implements Analyzer {
 			Collection<AbstractInsnNode> nodes = getSuffix(list, i, MAX_LENGTH);
 			
 			// check the length of the suffix
-			if (nodes == null || !WildSequenceGenerator.check(nodes, WILDCARDS)) {
+			if (nodes == null) {
 				continue;
 			}
 			
 			// init a creator of suffixes
-			WildSequenceGenerator<AbstractInsnNode> creator = 
-					new WildSequenceGenerator<>(
-							nodes, 
-							null, 
-							WILDCARDS);
+			WildSequenceGenerator generator = 
+					new WildSequenceGenerator(nodes, null, WILDCARDS);
 			
 			// iterate over all suffixes with wild cards
-			while(creator.hasNext()) {
+			while(generator.hasNext()) {
 				
 				// get the suffix with nulls as wild cards
-				Collection<AbstractInsnNode> suffix = creator.next();
+				Collection<AbstractInsnNode> suffix = generator.next();
 				
 				// add the suffix to the graph
 				addSuffix(suffix);
