@@ -19,7 +19,7 @@ public class BytecodeFilesCounter {
 		return counter;
 	}
 	
-	public int countAll(Collection<Path> paths) {
+	public int countAll(Collection<Path> paths) throws IOException {
 		
 		for (Path path:paths) {
 			countFiles(path);
@@ -28,7 +28,7 @@ public class BytecodeFilesCounter {
 		return counter;
 	}
 	
-	public int countFiles(Path path) {
+	public int countFiles(Path path) throws IOException {
 		
 		for (CommonFile file : new FilesIterator(path)) {
 			
@@ -43,63 +43,50 @@ public class BytecodeFilesCounter {
 		return counter;
 	}
 
-	public int countFilesInJar(Path path) {
+	public int countFilesInJar(Path path) throws IOException {
 
-		try {
+		JarFile jar = new JarFile(path.toFile());
+		Enumeration<JarEntry> entries = jar.entries();
 			
-			JarFile jar = new JarFile(path.toFile());
-			Enumeration<JarEntry> entries = jar.entries();
-			
-			while (entries.hasMoreElements()) {
+		while (entries.hasMoreElements()) {
 				
-				JarEntry entry = entries.nextElement();
-				String name = entry.getName();
+			JarEntry entry = entries.nextElement();
+			String name = entry.getName();
 				
-				if (!entry.isDirectory()) {
+			if (!entry.isDirectory()) {
 					
-					if (Utils.endsWithClass(name)) {
-						counter++;
-					}
-					else if (Utils.endsWithJar(name)) {
-						countFilesInJar(jar.getInputStream(entry));
-					}
+				if (Utils.endsWithClass(name)) {
+					counter++;
+				}
+				else if (Utils.endsWithJar(name)) {
+					countFilesInJar(jar.getInputStream(entry));
 				}
 			}
-			
-			jar.close();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-		
+			
+		jar.close();
 		return counter;
 	}
 	
-	public int countFilesInJar(InputStream in) {
-		
-		try {
+	public int countFilesInJar(InputStream in) throws IOException {
+
+		JarInputStream jar = new JarInputStream(in);
+		JarEntry entry;
 			
-			JarInputStream jar = new JarInputStream(in);
-			JarEntry entry;
-			
-			while ((entry = jar.getNextJarEntry()) != null) {
+		while ((entry = jar.getNextJarEntry()) != null) {
 				
-				if (!entry.isDirectory()) {
+			if (!entry.isDirectory()) {
 					
-					String name = entry.getName();
-					if (Utils.endsWithClass(name)) {
-						counter++;
-					}
-					else {
-						countFilesInJar(jar);
-					}
+				String name = entry.getName();
+				if (Utils.endsWithClass(name)) {
+					counter++;
+				}
+				else {
+					countFilesInJar(jar);
 				}
 			}
-			
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-		
+	
 		return counter;
 	}
 }

@@ -6,7 +6,7 @@ import java.nio.file.Path;
 
 public class BytecodeFilesIterator extends FilesIterator {
 
-	public BytecodeFilesIterator(Path path) {
+	public BytecodeFilesIterator(Path path) throws IOException {
 		super(path);
 		
 		if (!checkFile(next)) {
@@ -14,12 +14,12 @@ public class BytecodeFilesIterator extends FilesIterator {
 		}
 	}
 	
-	public boolean checkFile(CommonFile file) {
+	public boolean checkFile(CommonFile file) throws IOException {
 		return file.isClassFile();
 	}
 	
 	@Override
-	protected CommonFile findNextFile() {
+	protected CommonFile findNextFile() throws IOException {
 		
 		CommonFile file;
 		
@@ -33,7 +33,7 @@ public class BytecodeFilesIterator extends FilesIterator {
 	}
 	
 	@Override
-	protected CommonFile processFile(Path path, Path parentAbstractPath) {
+	protected CommonFile processFile(Path path, Path parentAbstractPath) throws IOException {
 		
 		// get general file
 		CommonFile file = super.processFile(path, parentAbstractPath);
@@ -42,19 +42,14 @@ public class BytecodeFilesIterator extends FilesIterator {
 		// is jar file?
 		if(file.isFile() && file.isJar()) {
 					
-			try {
-				// create temporary file
-				Path tmp = Files.createTempDirectory(name);
+			// create temporary file
+			Path tmp = Files.createTempDirectory(name);
 						
-				// extract files
-				JarExtractor.extract(path, tmp);
+			// extract files
+			JarExtractor.extract(path, tmp);
 				
-				// return recreated file
-				return new CommonFile(tmp, file.getAbstractPath());
-						
-			} catch (IOException e) {
-						e.printStackTrace();
-			}
+			// return recreated file
+			return new CommonFile(tmp, file.getAbstractPath());				
 		}
 		
 		return file;

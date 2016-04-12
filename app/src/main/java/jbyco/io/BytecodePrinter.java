@@ -153,7 +153,7 @@ public class BytecodePrinter {
 		
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		
 		Options options = new Options();
 		Collection<Path> paths = new ArrayList<>();

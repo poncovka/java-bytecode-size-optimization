@@ -1,5 +1,6 @@
 package jbyco.io;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,7 +12,12 @@ public class FilesIterator implements Iterator<CommonFile>, Iterable<CommonFile>
 	CommonFile next;
 	Stack<DirectoryIterator> stack;
 	
-	public FilesIterator(Path path) {
+	public FilesIterator(Path path) throws IOException {
+		
+		// check the path
+		if (!path.toFile().exists()) {
+			throw new FileNotFoundException(path.toString());
+		}
 		
 		// init
 		this.stack = new Stack<>();
@@ -28,18 +34,26 @@ public class FilesIterator implements Iterator<CommonFile>, Iterable<CommonFile>
 
 	@Override
 	public CommonFile next() {
-				
+		
 		CommonFile file = next;
-		next = findNextFile();
+		
+		try {
+			
+			next = findNextFile();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			next = null;
+		}
 		
 		return file;
 	}	
 	
-	protected Path getAbstractRoot() {
+	protected Path getAbstractRoot() throws IOException {
 		return Paths.get("root");
 	}
 	
-	protected Path getAbstractPath(String name, Path path) {
+	protected Path getAbstractPath(String name, Path path) throws IOException {
 		
 		if (path == null) {
 			path = getAbstractRoot();
@@ -48,7 +62,7 @@ public class FilesIterator implements Iterator<CommonFile>, Iterable<CommonFile>
 		return path.resolve(name);
 	}
 	
-	protected CommonFile processFile(Path path, Path parentAbstractPath) {
+	protected CommonFile processFile (Path path, Path parentAbstractPath) throws IOException {
 		
 		// create file
 		java.io.File file = path.toFile();
@@ -61,21 +75,15 @@ public class FilesIterator implements Iterator<CommonFile>, Iterable<CommonFile>
 		return new CommonFile(path, abstractPath);
 	}
 	
-	protected void updateStack(CommonFile file) {
+	protected void updateStack(CommonFile file) throws IOException {
 		
-		try {
-			if (file != null && file.isDirectory()) {
-				
-				// push directory on the stack
-				stack.push(new DirectoryIterator(file));
-				
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (file != null && file.isDirectory()) {
+			// push directory on the stack
+			stack.push(new DirectoryIterator(file));
 		}
 	}
 	
-	protected CommonFile findNextFile() {
+	protected CommonFile findNextFile() throws IOException {
 				
 		CommonFile file = null;
 
@@ -95,13 +103,7 @@ public class FilesIterator implements Iterator<CommonFile>, Iterable<CommonFile>
 			}
 			// close and remove directory
 			else {
-				
-				try {
-					dir.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				
+				dir.close();
 				stack.pop();
 			}
 		}
