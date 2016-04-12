@@ -19,7 +19,7 @@ public class ActiveLabelsFinder extends MethodVisitor {
 		return active.contains(label);
 	}
 	
-	protected void add(Label label) {
+	public void add(Label label) {
 		active.add(label);
 	}
 

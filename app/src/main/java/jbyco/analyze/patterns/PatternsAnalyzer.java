@@ -9,12 +9,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.util.Printer;
+import org.objectweb.asm.util.TraceClassVisitor;
+import org.objectweb.asm.util.TraceMethodVisitor;
 
 import jbyco.analyze.Analyzer;
 import jbyco.analyze.patterns.instructions.AbstractInstruction;
@@ -22,7 +26,7 @@ import jbyco.analyze.patterns.instructions.Abstractor;
 import jbyco.analyze.patterns.instructions.Cache;
 import jbyco.analyze.patterns.labels.AbstractLabelFactory;
 import jbyco.analyze.patterns.labels.ActiveLabelsFinder;
-import jbyco.analyze.patterns.labels.NumberedLabelFactory;
+import jbyco.analyze.patterns.labels.RelativeLabelFactory;
 import jbyco.analyze.patterns.operations.AbstractOperationFactory;
 import jbyco.analyze.patterns.operations.GeneralOperationFactory;
 import jbyco.analyze.patterns.operations.TypedOperationFactory;
@@ -68,6 +72,10 @@ public class PatternsAnalyzer implements Analyzer {
 	
 	// instruction cache
 	Cache cache;
+	
+	// labels for begin and end of the method
+	Label begin = null;
+	Label end = null;
 	
 	// number of processed sequenced
 	long numseq = 0;
@@ -160,12 +168,21 @@ public class PatternsAnalyzer implements Analyzer {
 						labels
 				);
 		
+		// create begin and end labels
+		begin = new Label();
+		end = new Label();
+		
 		// find all active labels
 		activeLabels = new ActiveLabelsFinder();
 		method.accept(activeLabels);
-				
+		activeLabels.add(begin);
+		activeLabels.add(end);
+		
 		// process instructions
-		processInstructions(method.instructions);	
+		InsnList list = method.instructions;
+		list.insert(new LabelNode(begin));
+		list.add(new LabelNode(end));
+		processInstructions(list);	
 	}
 	
 	public void processInstructions(InsnList list) {
@@ -245,7 +262,7 @@ public class PatternsAnalyzer implements Analyzer {
 			}
 			
 			// ignore non active node
-			else if (!isActiveNode(node)) {
+			if (!isActiveNode(node)) {
 				continue;
 			}
 			
@@ -260,12 +277,26 @@ public class PatternsAnalyzer implements Analyzer {
 	
 	
 	public boolean isFirstNode(AbstractInsnNode node) {
-		return !(node instanceof LabelNode) && isActiveNode(node);
+		
+		// only LabelNode with Label begin can be first
+		if (node instanceof LabelNode) {
+			Label label = ((LabelNode)node).getLabel(); 
+			return label.equals(begin) || label.equals(end);
+		}
+		
+		// of any other active node
+		return isActiveNode(node);
 	}
 	
 	protected boolean isActiveNode(AbstractInsnNode node) {
-		return     !(node instanceof LabelNode) 
-				||  (activeLabels.isActive(((LabelNode)node).getLabel()));
+		
+		// only LabelNode with active label is active
+		if (node instanceof LabelNode) {
+			return activeLabels.isActive(((LabelNode)node).getLabel());
+		}
+		
+		// or any other node
+		return true;
 	}
 	
 	public void addSuffix(Collection<AbstractInsnNode> nodes) {
@@ -291,7 +322,7 @@ public class PatternsAnalyzer implements Analyzer {
 		// init, operations don't need to be initialized again
 		abstractor.init();
 		parameters.init();
-		labels.init();
+		labels.init(begin, end);
 				
 		// process instructions in a suffix
 		for (AbstractInsnNode node : suffix) {
@@ -447,7 +478,7 @@ public class PatternsAnalyzer implements Analyzer {
 		
 		AbstractOperationFactory operations = new TypedOperationFactory();
 		AbstractParameterFactory parameters = new FullParameterFactory();
-		AbstractLabelFactory labels = new NumberedLabelFactory();
+		AbstractLabelFactory labels = new RelativeLabelFactory();
 		
 		Collection<Path> paths = new ArrayList<>();
 		
