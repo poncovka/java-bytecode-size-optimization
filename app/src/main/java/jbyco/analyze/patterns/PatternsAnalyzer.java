@@ -399,7 +399,7 @@ public class PatternsAnalyzer implements Analyzer {
 	public void writeResults(PrintWriter out, String delimiter) {
 		
 		// print total number of sequences
-		out.printf("%-15s\t%s\n", numseq, "TOTAL");
+		out.printf("%s\t%s\t%s\n", numseq, 0, "TOTAL");
 		
 		// print patterns
 		PatternsWriter writer = new PatternsWriter(out);
@@ -414,7 +414,7 @@ public class PatternsAnalyzer implements Analyzer {
 							 "--max-length"),
 		MIN_FREQUENCY		("Set the minimal frequency of a printed pattern. Default: 100.",
 							 "--min-frequency"),
-		DELIMITER			("Set a string used to separate instruction in patterns. Default: ';'.",
+		DELIMITER			("Set a string used to separate instruction in patterns. Default: '; '.",
 							 "--delimiter"),
 		GENERAL_OPERATIONS ("Use a general form of operations.",
 							 "-o1", "--general-operations"),
@@ -473,7 +473,7 @@ public class PatternsAnalyzer implements Analyzer {
 		int minFrequency = 100;
 		int memoryUsage = 70;
 		
-		String delimiter = ";";
+		String delimiter = "; ";
 		boolean progress = true;
 		
 		AbstractOperationFactory operations = new TypedOperationFactory();

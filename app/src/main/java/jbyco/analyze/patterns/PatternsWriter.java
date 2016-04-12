@@ -32,11 +32,8 @@ public class PatternsWriter {
 		this.min = min;
 		this.wildcards = wildcards;
 		
-		Node root = this.graph.getRoot();
-		
 		this.stack = new ArrayDeque<>();
-		this.stack.push(new StackItem(root, 0));
-		
+		this.stack.push(new StackItem(this.graph.getRoot(), 0, 0));
 	}
 	
 	public void write(Tree graph, String delimiter, int min, int wildcards) {
@@ -76,7 +73,10 @@ public class PatternsWriter {
 	private void writePath() {
 		
 		// print frequency
-		out.printf("%-15s\t", stack.getFirst().node.getCount());
+		out.printf("%s\t", stack.getFirst().node.getCount());
+		
+		// print depth
+		out.printf("%s\t", stack.getFirst().depth);
 		
 		// for all nodes in a stack
 		Iterator<StackItem> iterator = stack.descendingIterator();
@@ -122,12 +122,14 @@ public class PatternsWriter {
 	
 	private class StackItem {
 		
+		public int depth;
+		public int wildcards;
 		public final Node node;
 		public final Iterator<Node> iterator;
-		public int wildcards;
 		
-		public StackItem(Node node, int wildcards) {		
+		public StackItem(Node node, int depth, int wildcards) {		
 			this.node = node;
+			this.depth = depth;
 			this.wildcards = wildcards + (isWildCard(this) ? 1 : 0);	
 			this.iterator = node.getOutputNodes().iterator();
 		}
@@ -138,7 +140,7 @@ public class PatternsWriter {
 		
 		public StackItem next() {
 			Node next = this.iterator.next();
-			return new StackItem(next, wildcards); 
+			return new StackItem(next, depth + 1, wildcards); 
 		}
 	}
 }
