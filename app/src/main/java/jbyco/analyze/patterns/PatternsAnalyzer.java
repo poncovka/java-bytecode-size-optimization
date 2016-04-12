@@ -16,9 +16,6 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.util.Printer;
-import org.objectweb.asm.util.TraceClassVisitor;
-import org.objectweb.asm.util.TraceMethodVisitor;
 
 import jbyco.analyze.Analyzer;
 import jbyco.analyze.patterns.instructions.AbstractInstruction;
@@ -59,10 +56,10 @@ public class PatternsAnalyzer implements Analyzer {
 	final int MEMORY_USAGE;
 	
 	// graph
-	Tree graph;
+	Tree<AbstractInstruction> graph;
 			
 	// graph builder
-	TreeBuilder builder;
+	TreeBuilder<AbstractInstruction> builder;
 	
 	// threshold for tree pruning
 	int pruningThreshold = 0;
@@ -110,14 +107,14 @@ public class PatternsAnalyzer implements Analyzer {
 		this.labels = labels;
 		
 		// create tree and the builder
-		this.graph = new Tree();
-		this.builder = new TreeBuilder(graph);
+		this.graph = new Tree<>();
+		this.builder = new TreeBuilder<>(graph);
 		
 		// create instruction cache
 		this.cache = new Cache();
 	}
 	
-	public Tree getGraph() {
+	public Tree<AbstractInstruction> getGraph() {
 		return graph;
 	}
 	
@@ -277,14 +274,7 @@ public class PatternsAnalyzer implements Analyzer {
 	
 	
 	public boolean isFirstNode(AbstractInsnNode node) {
-		
-		// only LabelNode with Label begin can be first
-		if (node instanceof LabelNode) {
-			Label label = ((LabelNode)node).getLabel(); 
-			return label.equals(begin) || label.equals(end);
-		}
-		
-		// of any other active node
+		// any active node
 		return isActiveNode(node);
 	}
 	

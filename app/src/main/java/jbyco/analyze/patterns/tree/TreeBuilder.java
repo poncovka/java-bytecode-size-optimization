@@ -4,35 +4,35 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Stack;
 
-public class TreeBuilder {
+public class TreeBuilder<T> {
 	
-	Tree graph;
+	Tree<T> graph;
 		
-	public TreeBuilder(Tree graph) {
+	public TreeBuilder(Tree<T> graph) {
 		this.graph = graph;
 	}
 	
-	public void addPath(Collection<?> items) {
+	public void addPath(Collection<T> items) {
 		
 		// init
-		Node node = graph.getRoot();
+		Node<T> node = graph.getRoot();
 		node.incrementCount();
 		
 		// add all items
-		for (Object item : items) {
+		for (T item : items) {
 			node = addNextNode(node, item);
 		}
 	}
 	
-	public Node addNextNode(Node node, Object item) {
+	public Node<T> addNextNode(Node<T> node, T item) {
 		
 		// try to find node in neighbors of previous node
-		Node next = node.findNextNode(item);
+		Node<T> next = node.findNextNode(item);
 		
 		if (next == null) {
 			
 			// create node
-			next = new Node(item);
+			next = new Node<T>(item);
 						
 			// create edge
 			node.addEdge(next);
@@ -48,21 +48,21 @@ public class TreeBuilder {
 	public void pruneTree(int threshold) {
 		
 		// init stack, the root cannot be removed
-		Stack<Node> stack = new Stack<>();
+		Stack<Node<T>> stack = new Stack<>();
 		stack.push(graph.getRoot());
 		
 		// walk the tree
 		while(!stack.isEmpty()) {
 			
 			// get the node
-			Node node = stack.pop();			
+			Node<T> node = stack.pop();			
 						
-			Iterator<Node> i = node.getOutputNodes().iterator();
+			Iterator<Node<T>> i = node.getOutputNodes().iterator();
 			
 			// process next nodes
 			while (i.hasNext()) {
 				
-				Node next = i.next();
+				Node<T> next = i.next();
 				
 				// should we prune the next node?
 				if (next.getCount() <= threshold) {

@@ -13,7 +13,6 @@ import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ClassGenException;
-import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
@@ -103,13 +102,10 @@ public class StatisticsCollector implements Analyzer {
 					
 					// read instructions
 					while(seq.available() > 0) {
-						
-						// get instruction
-						Instruction i = Instruction.readInstruction(seq);
-						
-						// update total
 						total++;
 					}
+					
+					seq.close();
 					
 				} catch (ClassGenException e) {
 					e.printStackTrace();

@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 
+import jbyco.analyze.patterns.instructions.AbstractInstruction;
 import jbyco.analyze.patterns.tree.Node;
 import jbyco.analyze.patterns.tree.Tree;
 
@@ -12,7 +13,7 @@ public class PatternsWriter {
 
 	static final String NULL_TO_STRING = "*";
 	
-	Tree graph;
+	Tree<AbstractInstruction> graph;
 	String delimiter;
 	int min;
 	int wildcards;
@@ -25,7 +26,7 @@ public class PatternsWriter {
 		this.out = out;
 	}
 	
-	private void init(Tree graph, String delimiter, int min, int wildcards) {
+	private void init(Tree<AbstractInstruction> graph, String delimiter, int min, int wildcards) {
 		
 		this.graph = graph;
 		this.delimiter = delimiter;
@@ -36,7 +37,7 @@ public class PatternsWriter {
 		this.stack.push(new StackItem(this.graph.getRoot(), 0, 0));
 	}
 	
-	public void write(Tree graph, String delimiter, int min, int wildcards) {
+	public void write(Tree<AbstractInstruction> graph, String delimiter, int min, int wildcards) {
 		
 		// init
 		init(graph, delimiter, min, wildcards);
@@ -63,7 +64,6 @@ public class PatternsWriter {
 
 			}
 			else {
-				
 				// or pop head of stack
 				stack.pop();
 			}
@@ -83,10 +83,10 @@ public class PatternsWriter {
 		while(iterator.hasNext()) {
 			
 			// print items in nodes
-			StackItem item = iterator.next();
-			Node node = item.node; 
+			StackItem item = iterator.next(); 
 			
-			if (node != graph.getRoot()) {	
+			if (!isRoot(item)) {	
+				Node<AbstractInstruction> node = item.node;
 				out.printf("%s%s", getString(node), delimiter);
 			}
 		}
@@ -95,7 +95,7 @@ public class PatternsWriter {
 		out.println();
 	}
 	
-	private String getString(Node node) {
+	private String getString(Node<AbstractInstruction> node) {
 		
 		// get item of the node
 		Object obj = node.getItem();
@@ -117,17 +117,17 @@ public class PatternsWriter {
 	}
 	
 	private boolean isWildCard(StackItem item) {
-		return item.node.getItem() == null;
+		return !isRoot(item) && item.node.getItem() == null;
 	}
 	
 	private class StackItem {
 		
 		public int depth;
 		public int wildcards;
-		public final Node node;
-		public final Iterator<Node> iterator;
+		public final Node<AbstractInstruction> node;
+		public final Iterator<Node<AbstractInstruction>> iterator;
 		
-		public StackItem(Node node, int depth, int wildcards) {		
+		public StackItem(Node<AbstractInstruction> node, int depth, int wildcards) {		
 			this.node = node;
 			this.depth = depth;
 			this.wildcards = wildcards + (isWildCard(this) ? 1 : 0);	
@@ -139,7 +139,7 @@ public class PatternsWriter {
 		}
 		
 		public StackItem next() {
-			Node next = this.iterator.next();
+			Node<AbstractInstruction> next = this.iterator.next();
 			return new StackItem(next, depth + 1, wildcards); 
 		}
 	}
