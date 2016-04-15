@@ -40,7 +40,7 @@ fi
 
 #---------------------------------------------------------- main
 
-echo "Generating directories."
+echo "Generating directories." 1>&2
 ( 
   cd "$out";
   mkdir -p "basic";
@@ -49,10 +49,10 @@ echo "Generating directories."
   done
 )
 
-echo "Generating basic cls files."
+echo "Generating basic cls files." 1>&2
 generate_basic_cls $in "$out/basic"
 
-echo "Generating merged and filtered cls files."
+echo "Generating merged and filtered cls files." 1>&2
 for oi in "o1" "o2" ; do
   for pi in "p1" "p2" "p3"; do
     for w in "a" "x" "w"; do
