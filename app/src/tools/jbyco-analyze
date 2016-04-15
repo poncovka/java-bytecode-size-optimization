@@ -13,6 +13,8 @@
 #   input   A file or a directory of .class and .jar files.
 #   output  A directory for results of analysis.
 
+#---------------------------------------------------------- settings
+
 export JAVA_OPTS='-Xmx2g'
 
 # define jbyco
@@ -42,6 +44,7 @@ fi
 # print info
 echo "Created new directory ${output}."
 
+#---------------------------------------------------------- functions
 
 analyze_patterns() {
 
@@ -101,7 +104,7 @@ analyze_statistics() {
   $jbyco --statistics $input >${name}.out
 };
 
-##################################################################### main
+#---------------------------------------------------------- main
 
 analyze_size
 analyze_variables

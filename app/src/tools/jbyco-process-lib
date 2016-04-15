@@ -1,0 +1,188 @@
+#!/bin/sh
+
+# Author: Vendula Poncova
+# Date: 14.4.2016
+# Library of functions for jbyco-process.
+#
+# Usage: 
+#   source jbyco-process-lib
+
+add_relative_frequency() {
+  awk -F "\t" '
+  {
+    if(NR == 1) {
+      total=int($1); 
+    }
+    else {
+      printf("%.5f\t", $1/total*100); 
+      print $0
+    }
+  }'
+};
+
+sort_cls() {
+  sort -k 3,3n -k 1,1rg -k 2,2rn -k 4,4
+};
+
+unique_patterns() {
+  awk -F "\t" '!counter[$4]++'
+};
+
+cut_patterns() {
+  awk -F "\t" -v max="$1" 'counter[$3]++ < max'
+};
+
+skip_no_parameters() {
+
+  # Find lines with numbered or full parameters, 
+  # which are not only labels.
+  
+  grep -P ' (?!LABEL)[[:alpha:]]*\('
+};
+
+filter_same_parameters() {
+
+  # Find lines with parameters of the same index.
+  # example: STORE VAR(0); LOAD VAR(0);
+
+  grep '\( [[:alpha:]]\+([[:digit:]]\+)\).*\1'
+};
+
+filter_p1() {
+  grep '.'
+};
+
+filter_p2() {
+  skip_no_parameters | filter_same_parameters
+};
+
+filter_p3() {
+  skip_no_parameters
+};
+
+filter_end_with_if() {
+  grep -P '; IF[^\;]*; $'
+}
+
+filter_end_with_pop() {
+  grep -P '; POP[^\;]*; $'
+}
+
+
+filter_end_with_math() {
+  grep -P '; [^\;]*(ADD|SUB|MUL|DIV|REM|NEG|SHL|SHR|AND|OR|XOR); $'
+};
+
+filter_begin_end() {
+  grep -P '\tBEGIN;.*END; $'
+};
+
+filer_null() {
+  grep -P 'null.*NULL'
+};
+
+filter_string() {
+  grep -P 'CONST S.*StringBuilder'
+};
+
+remove_empty() {
+
+  if [ ! -s "$1" ]; then
+    rm -f "$1"
+  fi
+
+};
+
+generate_basic_cls() {
+
+  local in="$1"
+  local out="$2"
+
+  for input in $in/patterns*.out; do
+    
+    # check that file exists
+    if [ ! -f $input ]; then
+      continue
+    fi
+    
+    # define name of output file
+    output=$out/$(basename $input '.out')'.cls'
+    
+    # generate output
+    cat $input | \
+    add_relative_frequency | \
+    sort_cls > $output
+    
+    # remove file if empty
+    remove_empty $output
+
+  done
+  
+};
+
+merge_cls() {
+
+  local in="$1"
+  local out="$2"
+  local oi=$3
+  local pi=$4
+  local w=$5
+
+  output="${out}/patterns_${oi}_${pi}_${w}.cls"
+                
+  # define output  
+  if [ "$w" = "a" ]; then
+    wregex="*" 
+  elif [ "$w" = "x" ]; then
+    wregex="0"
+  else
+    wregex="[1-9]*"
+  fi
+
+  # define names of input files
+  name="patterns_${oi}_${pi}_${wregex}_*.cls"
+        
+  # define filter
+  filter="filter_${pi}"
+
+  # generate output                
+  find "$out" -name "${name}" -exec cat {} \; | sort_cls \
+  | unique_patterns \
+  | $filter > $output
+        
+  # remove file if empty
+  remove_empty $output
+  
+  # return name of file
+  echo $output
+
+};
+
+apply_filter() {
+
+  local f="$1"
+  local suffix="$2"
+  local filter="$3"
+  
+  # define input
+  input="$f"
+        
+  # define output
+  output=$(dirname $f)/$(basename $f '.cls')'_'${suffix}'.cls'
+        
+  # generate output
+  cat "$input" 2>/dev/null | $filter > "$output"
+        
+  # remove file if empty
+  remove_empty "$output"
+  
+  # return name of file
+  echo $output
+
+};
+
+summarize_cls() {
+  apply_filter "${1}" "summary" "cut_patterns ${2}" 
+};
+
+# end of file

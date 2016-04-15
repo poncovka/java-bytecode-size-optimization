@@ -5,18 +5,23 @@
 # Process results of analysis created by tools jbyco and analyze.
 #
 # Usage: 
-#   ./jbyco-process input output
+#   ./jbyco-process input output max
 #
 # Parameters:
 #   input   A file or a directory of .class and .jar files.
 #   output  A directory for results of analysis.
+#   max     Maximal number of summarized patterns of the same length.
 
-#---------------------------------------------------------- parameters
+#---------------------------------------------------------- settings
 
+# include files
+dir=$( cd $(dirname $0) ; pwd -P )
+. "${dir}/jbyco-process-lib"
+
+# process parameters
 in=$1
-#out=$(pwd -P)/$2
 out=$2
-max_patterns=$3
+max=$3
 
 # check input and output directory
 for dir in "$in" "$out"; do
@@ -26,172 +31,51 @@ for dir in "$in" "$out"; do
   fi
 done
 
-# set default value  
-if [ -z "$max_patterns" ]; then
-  max_patterns=10;
+# reset default value  
+if [ -z "$max" ]; then
+  MAX_GROUP=100
+else
+  MAX_GROUP=$max
 fi
-
-#---------------------------------------------------------- functions
-
-add_relative_frequency() {
-  awk -F "\t" '
-  {
-    if(NR == 1) {
-      total=int($1); 
-    }
-    else {
-      printf("%.5f\t", $1/total*100); 
-      print $0
-    }
-  }'
-};
-
-sort_cls() {
-  sort -k 3,3n -k 1,1rg -k 2,2rn -k 4,4
-}
-
-unique_patterns() {
-  awk -F "\t" '!counter[$4]++'
-};
-
-cut_patterns() {
-  awk -F "\t" -v max="$1" 'counter[$3]++ < max'
-};
-
-skip_no_parameters() {
-
-  # Find lines with numbered or full parameters, 
-  # which are not only labels.
-  
-  grep -P ' (?!LABEL)[[:alpha:]]*\('
-}
-
-filter_same_parameters() {
-
-  # Find lines with parameters of the same index.
-  # example: STORE VAR(0); LOAD VAR(0);
-
-  grep '\( [[:alpha:]]\+([[:digit:]]\+)\).*\1'
-}
-
-filter_p1() {
-  grep '.'
-}
-
-filter_p2() {
-  skip_no_parameters | filter_same_parameters
-}
-
-filter_p3() {
-  skip_no_parameters
-}
-
-remove_empty() {
-
-  if [ ! -s $1 ]; then
-    rm -f $1
-  fi
-
-};
-
-generate_basic_cls() {
-
-  for input in $in/patterns*.out; do
-    
-    # check that file exists
-    if [ ! -f $input ]; then
-      continue
-    fi
-    
-    # define name of output file
-    output=$out/$(basename $input .out).cls
-    
-    # generate output
-    cat $input | \
-    add_relative_frequency | \
-    sort_cls > $output
-    
-    # remove file if empty
-    remove_empty $output
-
-  done
-  
-};
-
-generate_merged_cls() {
-
-  for oi in "o1" "o2" ; do
-    for pi in "p1" "p2" "p3"; do
-       for w in "a" "x" "w"; do
-          
-        output="${out}/patterns_${oi}_${pi}_${w}.cls"
-                
-        # define output  
-        if [ "$w" = "a" ]; then
-          wregex="*" 
-        elif [ "$w" = "x" ]; then
-          wregex="0"
-        else
-          wregex="[1-9]*"
-        fi
-
-        # define names of input files
-        name="patterns_${oi}_${pi}_${wregex}_*.cls"
-        
-        # define filter
-        filter="filter_${pi}"
-
-        # generate output                
-        find "$out" -name "${name}" -exec cat {} \; | sort_cls \
-        | unique_patterns \
-        | $filter > $output
-        
-        # remove file if empty
-        remove_empty $output
-      
-      done
-    done
-  done
-  
-};
-
-
-generate_summary_cls() {
-
-  length=$1
-
-  for oi in "o1" "o2"; do
-    for pi in "p1" "p2" "p3"; do
-      for w in "a" "x" "w"; do
-    
-        # define input
-        input="${out}/patterns_${oi}_${pi}_${w}.cls"
-        
-        # define output
-        output="${out}/patterns_${oi}_${pi}_${w}_summary.cls"
-        
-        # generate output
-        cat $input 2>/dev/null | \
-        cut_patterns $max_patterns > $output
-        
-        # remove file if empty
-        remove_empty $output
-        
-      done
-    done
-  done
-
-};
 
 #---------------------------------------------------------- main
 
 echo "Generating basic cls files."
-generate_basic_cls
+generate_basic_cls $in $out
 
 echo "Generating merged cls files."
-generate_merged_cls
+for oi in "o1" "o2" ; do
+  for pi in "p1" "p2" "p3"; do
+    for w in "a" "x" "w"; do
+          
+      # merge
+      file=$(merge_cls $in $out $oi $pi $w)
+          
+      # summarize
+      result=$(summarize_cls $file $MAX_GROUP)
+      
+      # apply filters
+      result=$(apply_filter $file "if" filter_end_with_if )
+      result=$(summarize_cls $result $MAX_GROUP)
+      
+      result=$(apply_filter $file "pop" filter_end_with_pop )
+      result=$(summarize_cls $result $MAX_GROUP)
+      
+      result=$(apply_filter $file "math" filter_end_with_math )
+      result=$(summarize_cls $result $MAX_GROUP)
+      
+      result=$(apply_filter $file "begin" filter_begin_end )
+      result=$(summarize_cls $result $MAX_GROUP)
+      
+      result=$(apply_filter $file "null" filer_null )
+      result=$(summarize_cls $result $MAX_GROUP)
+      
+      result=$(apply_filter $file "string" filter_string )
+      result=$(summarize_cls $result $MAX_GROUP)
 
-echo "Generating summary cls files."
-generate_summary_cls
+      
+    done
+  done
+done
 
 # end of file
