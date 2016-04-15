@@ -160,15 +160,16 @@ merge_cls() {
 
 apply_filter() {
 
-  local f="$1"
-  local suffix="$2"
-  local filter="$3"
+  local in="$1"
+  local out="$2"
+  local suffix="$3"
+  local filter="$4"
   
   # define input
-  input="$f"
+  input="$in"
         
   # define output
-  output=$(dirname $f)/$(basename $f '.cls')'_'${suffix}'.cls'
+  output=$out/$(basename $input '.cls')'_'${suffix}'.cls'
         
   # generate output
   cat "$input" 2>/dev/null | $filter > "$output"
@@ -182,7 +183,23 @@ apply_filter() {
 };
 
 summarize_cls() {
-  apply_filter "${1}" "summary" "cut_patterns ${2}" 
+  apply_filter "${1}" "${2}" "summary" "cut_patterns ${3}" 
 };
+
+filter_and_summarize() {
+  
+  local in="$1"
+  local out="$2"
+  local suffix="$3"
+  local filter="$4"
+  local max="$5"
+
+  output=$(apply_filter "$in" "$out/$suffix" "$suffix" "$filter")
+  output=$(summarize_cls "$output" "$out/$suffix/summary" "$max")
+
+  echo $output
+
+}
+
 
 # end of file

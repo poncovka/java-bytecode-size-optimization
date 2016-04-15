@@ -40,9 +40,7 @@ fi
 # create new directory for output files
 #output=$output/$(date '+%Y_%m_%d_%H_%M_%S')
 #mkdir -p $output
-
-# print info
-echo "Created new directory ${output}."
+#echo "Created new directory ${output}."
 
 #---------------------------------------------------------- functions
 
@@ -61,10 +59,10 @@ analyze_patterns() {
   name="${output}/patterns_${oi}_${pi}_${wi}_${len}"
 
   # print info
-  echo "Generating file ${name}.out."
+  echo "Generating file ${name}.out." 1>&2
 
   # run analysis
-  { $jbyco $args 1>$name.out 2>&3 ;} 3>&1 | tee -a ${name}.err
+  { $jbyco $args 1>$name.out 2>&3 ;} 3>&1 | tee -a ${name}.err 1>&2
 
 };
 
@@ -74,7 +72,7 @@ analyze_size() {
   name="${output}/size"
   
   # print info
-  echo "Generating file ${name}.out."
+  echo "Generating file ${name}.out." 1>&2
   
   # run analysis
   $jbyco --analyze-size $input >${name}.out
@@ -86,7 +84,7 @@ analyze_variables() {
   name="${output}/vars"
   
   # print info
-  echo "Generating file ${name}.out."
+  echo "Generating file ${name}.out." 1>&2
 
   # run analysis
   $jbyco --analyze-variables $input >${name}.out
@@ -98,7 +96,7 @@ analyze_statistics() {
   name="${output}/stats"
   
   # print info
-  echo "Generating file ${name}.out."
+  echo "Generating file ${name}.out." 1>&2
 
   # run analysis
   $jbyco --statistics $input >${name}.out

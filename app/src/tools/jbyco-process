@@ -40,40 +40,37 @@ fi
 
 #---------------------------------------------------------- main
 
-echo "Generating basic cls files."
-generate_basic_cls $in $out
+echo "Generating directories."
+( 
+  cd "$out";
+  mkdir -p "basic";
+  for dir in "." "if" "pop" "math" "begin" "null" "string"; do
+    mkdir -p "$dir" "$dir/summary"
+  done
+)
 
-echo "Generating merged cls files."
+echo "Generating basic cls files."
+generate_basic_cls $in "$out/basic"
+
+echo "Generating merged and filtered cls files."
 for oi in "o1" "o2" ; do
   for pi in "p1" "p2" "p3"; do
     for w in "a" "x" "w"; do
           
       # merge
-      file=$(merge_cls $in $out $oi $pi $w)
+      file=$(merge_cls "$out/basic" $out $oi $pi $w)
           
       # summarize
-      result=$(summarize_cls $file $MAX_GROUP)
+      result=$(summarize_cls $file "$out/summary" $MAX_GROUP)
       
       # apply filters
-      result=$(apply_filter $file "if" filter_end_with_if )
-      result=$(summarize_cls $result $MAX_GROUP)
-      
-      result=$(apply_filter $file "pop" filter_end_with_pop )
-      result=$(summarize_cls $result $MAX_GROUP)
-      
-      result=$(apply_filter $file "math" filter_end_with_math )
-      result=$(summarize_cls $result $MAX_GROUP)
-      
-      result=$(apply_filter $file "begin" filter_begin_end )
-      result=$(summarize_cls $result $MAX_GROUP)
-      
-      result=$(apply_filter $file "null" filer_null )
-      result=$(summarize_cls $result $MAX_GROUP)
-      
-      result=$(apply_filter $file "string" filter_string )
-      result=$(summarize_cls $result $MAX_GROUP)
+      result=$(filter_and_summarize "$file" "$out" "if" "filter_end_with_if" $MAX_GROUP)
+      result=$(filter_and_summarize "$file" "$out" "pop" "filter_end_with_pop" $MAX_GROUP)
+      result=$(filter_and_summarize "$file" "$out" "math" "filter_end_with_math" $MAX_GROUP)
+      result=$(filter_and_summarize "$file" "$out" "begin" "filter_begin_end" $MAX_GROUP)
+      result=$(filter_and_summarize "$file" "$out" "null" "filer_null" $MAX_GROUP)
+      result=$(filter_and_summarize "$file" "$out" "string" "filter_string " $MAX_GROUP)
 
-      
     done
   done
 done
