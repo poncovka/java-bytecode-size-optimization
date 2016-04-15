@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Author: Vendula Poncova
+# Date: 14.4.2016
+# Run jbyco from gradle.
+#
+# Usage: 
+#   ./analyze input output
+#
+# Parameters:
+#   input   A file or a directory of .class and .jar files.
+#   output  A directory for results of analysis.
+
+# get arguments
+args=$@
+
+# run gradle with arguments
+./gradlew -q run -Dappargs="$args"

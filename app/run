@@ -1,7 +1,0 @@
-#!/bin/sh
-
-# get arguments
-args=$@
-
-# run gradle with arguments
-gradle -q run -Dmyargs="$args"

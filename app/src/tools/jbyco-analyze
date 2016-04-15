@@ -1,0 +1,140 @@
+#!/bin/sh
+
+# Author: Vendula Poncova
+# Date: 14.4.2016
+# Run analysis of class files with jbyco.
+# It is recommended to reset the JVM maximum memory size: 
+#    export JAVA_OPTS='-Xmx2g'
+#
+# Usage: 
+#   ./jbyco-analyze input output
+#
+# Parameters:
+#   input   A file or a directory of .class and .jar files.
+#   output  A directory for results of analysis.
+
+export JAVA_OPTS='-Xmx2g'
+
+# define jbyco
+dir=$( cd $(dirname $0) ; pwd -P )
+jbyco="${dir}/jbyco"
+
+# get parameters
+input=$1 
+output=$2
+
+# check input file
+if [ -z "$input" ] || [ ! -e $input ]; then
+  echo "File or directory $input does not exist." 1>&2
+  return 1
+fi
+
+# check output directory
+if [ -z "$output" ] || [ ! -d $output ]; then
+  echo "File $output is not a directory." 1>&2
+  return 1
+fi
+
+# create new directory for output files
+#output=$output/$(date '+%Y_%m_%d_%H_%M_%S')
+#mkdir -p $output
+
+# print info
+echo "Created new directory ${output}."
+
+
+analyze_patterns() {
+
+  oi=$1
+  pi=$2
+  wi=$3
+  len=$4
+  freq=1
+
+  # prepare args
+  args="--analyze-patterns --min-frequency $freq --max-length $len -w $wi -$oi -$pi $input"
+
+  # prepare output
+  name="${output}/patterns_${oi}_${pi}_${wi}_${len}"
+
+  # print info
+  echo "Generating file ${name}.out."
+
+  # run analysis
+  { $jbyco $args 1>$name.out 2>&3 ;} 3>&1 | tee -a ${name}.err
+
+};
+
+analyze_size() {
+
+  # prepare output
+  name="${output}/size"
+  
+  # print info
+  echo "Generating file ${name}.out."
+  
+  # run analysis
+  $jbyco --analyze-size $input >${name}.out
+};
+
+analyze_variables() {
+
+  # prepare output
+  name="${output}/vars"
+  
+  # print info
+  echo "Generating file ${name}.out."
+
+  # run analysis
+  $jbyco --analyze-variables $input >${name}.out
+};
+
+analyze_statistics() {
+
+  # prepare output
+  name="${output}/stats"
+  
+  # print info
+  echo "Generating file ${name}.out."
+
+  # run analysis
+  $jbyco --statistics $input >${name}.out
+};
+
+##################################################################### main
+
+analyze_size
+analyze_variables
+analyze_statistics
+
+analyze_patterns "o1" "p1" 0 1
+analyze_patterns "o1" "p2" 0 1
+analyze_patterns "o1" "p3" 0 1
+analyze_patterns "o2" "p1" 0 1
+
+analyze_patterns "o1" "p1" 0 5
+analyze_patterns "o1" "p2" 0 5
+analyze_patterns "o1" "p3" 0 5
+analyze_patterns "o2" "p1" 0 5
+
+analyze_patterns "o1" "p1" 1 5
+analyze_patterns "o1" "p2" 1 5
+analyze_patterns "o1" "p3" 1 5
+analyze_patterns "o2" "p1" 1 5
+
+analyze_patterns "o1" "p1" 2 5
+analyze_patterns "o1" "p2" 2 5
+analyze_patterns "o1" "p3" 2 5
+analyze_patterns "o2" "p1" 2 5
+
+analyze_patterns "o1" "p1" 3 5
+analyze_patterns "o1" "p2" 3 5
+analyze_patterns "o1" "p3" 3 5
+analyze_patterns "o2" "p1" 3 5
+
+analyze_patterns "o1" "p1" 0 10
+analyze_patterns "o1" "p2" 0 10
+analyze_patterns "o1" "p3" 0 10
+analyze_patterns "o2" "p1" 0 10
+
+# end of file

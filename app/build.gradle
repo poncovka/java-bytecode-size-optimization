@@ -7,13 +7,14 @@
  * user guide available at https://docs.gradle.org/2.7/userguide/tutorial_java_projects.html
  */
 
+
 apply plugin: 'java'
 apply plugin: 'application'
 
+applicationName = "jbyco"
 mainClassName = "jbyco.App"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
 
 repositories {
     jcenter()
@@ -21,30 +22,12 @@ repositories {
 
 jar {
 	
-	baseName = 'jbyco'
-	manifest {
+    baseName = 'jbyco'
+	  manifest {
         attributes 'Implementation-Title': baseName,
-                   'Main-Class': mainClassName
+        'Main-Class': mainClassName
     }
-    
 }
-
-task fullJar(type: Jar) {
-	
-	// create jar
-	baseName = 'jbyco-all'
-	manifest {
-        attributes 'Implementation-Title': baseName,
-                   'Main-Class': mainClassName
-    }
-    
-    // with dependencies
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
-
-// create jar and fullJar in one run
-jar.dependsOn fullJar
 
 dependencies {
 
@@ -60,15 +43,21 @@ dependencies {
     // string escape
     compile 'org.apache.commons:commons-lang3:3.4'
 
-	// junit
+	  // junit
     testCompile 'junit:junit:4.12'
 }
 
 run {    
-
-    // Run with arguments: gradle run -Dmyargs="arg1 arg2 arg3"
-    args System.getProperty("myargs","").split()
-    
-    // Set size of the heap
-    jvmArgs '-Xmx4g'     
+    // Run with arguments: gradle run -Dappargs="arg1 arg2 arg3"
+    args System.getProperty("appargs","").split()
 }
+
+distributions {
+    main {
+        contents {
+            into ('bin' ) { from { 'src/tools' } }
+        }
+    }
+}
+
+
