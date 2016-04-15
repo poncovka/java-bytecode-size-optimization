@@ -14,6 +14,7 @@ import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ClassGenException;
 import org.apache.bcel.util.ByteSequence;
+import org.apache.bcel.generic.Instruction;
 
 import jbyco.analyze.Analyzer;
 import jbyco.io.BytecodeFilesIterator;
@@ -102,6 +103,7 @@ public class StatisticsCollector implements Analyzer {
 					
 					// read instructions
 					while(seq.available() > 0) {
+						Instruction.readInstruction(seq);
 						total++;
 					}
 					
