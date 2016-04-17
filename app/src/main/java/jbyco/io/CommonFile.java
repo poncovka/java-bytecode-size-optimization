@@ -13,31 +13,19 @@ import jbyco.lib.Utils;
 
 public class CommonFile {
 	
-	// real path to the existing file
-	Path pathToFile;
+	// existing file
+	final java.io.File file;
 	
-	// abstract path to the file  
-	Path abstractPath;
-	
-	// file
-	java.io.File file;
-	
-	public CommonFile(Path path, Path abstractPath) {
+	public CommonFile(Path path) {
 		this.file = path.toFile();
-		this.pathToFile = path;
-		this.abstractPath = abstractPath;
 	}
-	
-	public String getName() {
-		return abstractPath.getFileName().toString();
+		
+	public String getName() { 
+		return file.getName();
 	}
 	
 	public Path getPath() {
-		return pathToFile;
-	}
-	
-	public Path getAbstractPath() {
-		return abstractPath;
+		return file.toPath();
 	}
 	
 	public InputStream getInputStream() throws IOException {
