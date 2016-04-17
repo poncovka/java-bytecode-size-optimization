@@ -50,7 +50,7 @@ analyze_patterns() {
   pi=$2
   wi=$3
   len=$4
-  freq=1
+  freq=10
 
   # prepare args
   args="--analyze-patterns --min-frequency $freq --max-length $len -w $wi -$oi -$pi $input"
@@ -112,30 +112,77 @@ analyze_patterns "o1" "p1" 0 1
 analyze_patterns "o1" "p2" 0 1
 analyze_patterns "o1" "p3" 0 1
 analyze_patterns "o2" "p1" 0 1
+analyze_patterns "o2" "p2" 0 1
+analyze_patterns "o2" "p3" 0 1
 
 analyze_patterns "o1" "p1" 0 5
 analyze_patterns "o1" "p2" 0 5
 analyze_patterns "o1" "p3" 0 5
 analyze_patterns "o2" "p1" 0 5
-
-analyze_patterns "o1" "p1" 1 5
-analyze_patterns "o1" "p2" 1 5
-analyze_patterns "o1" "p3" 1 5
-analyze_patterns "o2" "p1" 1 5
-
-analyze_patterns "o1" "p1" 2 5
-analyze_patterns "o1" "p2" 2 5
-analyze_patterns "o1" "p3" 2 5
-analyze_patterns "o2" "p1" 2 5
-
-analyze_patterns "o1" "p1" 3 5
-analyze_patterns "o1" "p2" 3 5
-analyze_patterns "o1" "p3" 3 5
-analyze_patterns "o2" "p1" 3 5
+analyze_patterns "o2" "p2" 0 5
+analyze_patterns "o2" "p3" 0 5
 
 analyze_patterns "o1" "p1" 0 10
 analyze_patterns "o1" "p2" 0 10
 analyze_patterns "o1" "p3" 0 10
 analyze_patterns "o2" "p1" 0 10
+analyze_patterns "o2" "p2" 0 10
+analyze_patterns "o2" "p3" 0 10
+
+analyze_patterns "o1" "p1" 1 5
+analyze_patterns "o1" "p2" 1 5
+analyze_patterns "o1" "p3" 1 5
+analyze_patterns "o2" "p1" 1 5
+analyze_patterns "o2" "p2" 1 5
+analyze_patterns "o2" "p3" 1 5
+
+analyze_patterns "o1" "p1" 2 5
+analyze_patterns "o1" "p2" 2 5
+analyze_patterns "o1" "p3" 2 5
+analyze_patterns "o2" "p1" 2 5
+analyze_patterns "o2" "p2" 2 5
+analyze_patterns "o2" "p3" 2 5
+
+analyze_patterns "o1" "p1" 3 5
+analyze_patterns "o1" "p2" 3 5
+analyze_patterns "o1" "p3" 3 5
+analyze_patterns "o2" "p1" 3 5
+analyze_patterns "o2" "p2" 3 5
+analyze_patterns "o2" "p3" 3 5
+
+analyze_patterns "o1" "p1" 4 8
+analyze_patterns "o1" "p2" 4 8
+analyze_patterns "o1" "p3" 4 8
+analyze_patterns "o2" "p1" 4 8
+analyze_patterns "o2" "p2" 4 8
+analyze_patterns "o2" "p3" 4 8
+
+analyze_patterns "o1" "p1" 5 8
+analyze_patterns "o1" "p2" 5 8
+analyze_patterns "o1" "p3" 5 8
+analyze_patterns "o2" "p1" 5 8
+analyze_patterns "o2" "p2" 5 8
+analyze_patterns "o2" "p3" 5 8
+
+analyze_patterns "o1" "p1" 6 8
+analyze_patterns "o1" "p2" 6 8
+analyze_patterns "o1" "p3" 6 8
+analyze_patterns "o2" "p1" 6 8
+analyze_patterns "o2" "p2" 6 8
+analyze_patterns "o2" "p3" 6 8
+
+analyze_patterns "o1" "p1" 7 10
+analyze_patterns "o1" "p2" 7 10
+analyze_patterns "o1" "p3" 7 10
+analyze_patterns "o2" "p1" 7 10
+analyze_patterns "o2" "p2" 7 10
+analyze_patterns "o2" "p3" 7 10
+
+analyze_patterns "o1" "p1" 8 10
+analyze_patterns "o1" "p2" 8 10
+analyze_patterns "o1" "p3" 8 10
+analyze_patterns "o2" "p1" 8 10
+analyze_patterns "o2" "p2" 8 10
+analyze_patterns "o2" "p3" 8 10
 
 # end of file
