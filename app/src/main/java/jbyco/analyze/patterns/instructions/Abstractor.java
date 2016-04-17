@@ -51,7 +51,7 @@ public class Abstractor extends MethodVisitor {
 		this.isStatic = ((access & Opcodes.ACC_STATIC) != 0);
 		
 		// what is the maximal index of method arguments?
-		this.maxArgs = isStatic ? 1 : 0;
+		this.maxArgs = isStatic ? 0 : 1;
 		
 		for (Type type : Type.getArgumentTypes(desc)) {
 			
@@ -59,7 +59,7 @@ public class Abstractor extends MethodVisitor {
 			int sort = type.getSort();
 			
 			// add number of variables
-			maxArgs = (sort == Opcodes.DOUBLE || sort == Opcodes.LONG) ? 2 : 1;
+			maxArgs += (sort == Opcodes.DOUBLE || sort == Opcodes.LONG) ? 2 : 1;
 		}
 		
 		// init
