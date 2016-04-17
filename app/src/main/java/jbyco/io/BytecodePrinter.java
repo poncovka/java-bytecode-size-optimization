@@ -200,16 +200,21 @@ public class BytecodePrinter {
 		PrintWriter out = new PrintWriter(System.out);
 		BytecodePrinter printer = new BytecodePrinter(out);
 		
-		// print files
-		for(Path path : paths) {
-			
-			// process files
-			for (CommonFile file : (new BytecodeFilesIterator(path))) {
+		// create temporary directory
+		Path workingDirectory = TemporaryFiles.createDirectory();		
+		
+		try {
+			// print files
+			for(Path path : paths) {
 				
-				// print
-				printer.print(file);
-				
+				// print class files
+				for (CommonFile file : (new BytecodeFilesIterator(path, workingDirectory))) {
+					printer.print(file);
+				}
 			}
+		}
+		finally {
+			TemporaryFiles.deleteDirectory(workingDirectory);
 		}
 		
 		// close output

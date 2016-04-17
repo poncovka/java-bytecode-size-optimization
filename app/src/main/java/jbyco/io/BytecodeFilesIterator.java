@@ -6,12 +6,30 @@ import java.nio.file.Path;
 
 public class BytecodeFilesIterator extends FilesIterator {
 
-	public BytecodeFilesIterator(Path path) throws IOException {
-		super(path);
+	Path workingDirectory;
+	
+	public BytecodeFilesIterator() throws IOException {
+		// nothing
+	}
+	
+	public BytecodeFilesIterator(Path path, Path workingDirectory) throws IOException {
+		super();
+		init(path, workingDirectory);
+	}
+
+	public void init(Path path, Path workingDirectory) throws IOException {
+
+		// set temporary directory
+		this.workingDirectory = workingDirectory;
 		
+		// init files iterator
+		super.init(path);		
+		
+		// find next file
 		if (!checkFile(next)) {
 			next = findNextFile();
 		}
+
 	}
 	
 	public boolean checkFile(CommonFile file) throws IOException {
@@ -43,7 +61,7 @@ public class BytecodeFilesIterator extends FilesIterator {
 		if(file.isFile() && file.isJar()) {
 					
 			// create temporary file
-			Path tmp = Files.createTempDirectory(name);
+			Path tmp = Files.createTempDirectory(workingDirectory, name);
 						
 			// extract files
 			JarExtractor.extract(path, tmp);

@@ -3,6 +3,7 @@ package jbyco.analyze.patterns.wildcards;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;

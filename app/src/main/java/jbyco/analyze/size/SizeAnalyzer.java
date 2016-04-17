@@ -29,6 +29,7 @@ import org.apache.bcel.util.ByteSequence;
 import jbyco.analyze.Analyzer;
 import jbyco.io.BytecodeFilesIterator;
 import jbyco.io.CommonFile;
+import jbyco.io.TemporaryFiles;
 
 public class SizeAnalyzer implements Analyzer {
 	
@@ -292,16 +293,25 @@ public class SizeAnalyzer implements Analyzer {
 		// init analyzer
 		Analyzer analyzer = new SizeAnalyzer();
 		
-		// process files
-		for (String str : args) {
+		// create temporary directory
+		Path workingDirectory = TemporaryFiles.createDirectory();
+				
+		try {
 			
-			// get path
-			Path path = Paths.get(str);
-			
-			// process files on the path
-			for (CommonFile file : (new BytecodeFilesIterator(path))) {
-				analyzer.processFile(file);
+			// process files
+			for (String str : args) {
+				
+				// get path
+				Path path = Paths.get(str);
+				
+				// process files on the path
+				for (CommonFile file : (new BytecodeFilesIterator(path, workingDirectory))) {
+					analyzer.processFile(file);
+				}
 			}
+		}
+		finally {
+			TemporaryFiles.deleteDirectory(workingDirectory);
 		}
 		
 		// print results

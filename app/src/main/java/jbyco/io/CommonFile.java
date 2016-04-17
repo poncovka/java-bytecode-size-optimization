@@ -64,4 +64,8 @@ public class CommonFile {
 		return file.isFile();
 	}
 	
+	public boolean delete() {
+		return file.delete();
+	}
+	
 }

@@ -12,7 +12,15 @@ public class FilesIterator implements Iterator<CommonFile>, Iterable<CommonFile>
 	CommonFile next;
 	Stack<DirectoryIterator> stack;
 	
+	public FilesIterator() throws IOException {
+		// nothing
+	}
+	
 	public FilesIterator(Path path) throws IOException {
+		init(path);
+	}
+	
+	public void init(Path path) throws IOException {
 		
 		// check the path
 		if (!path.toFile().exists()) {
@@ -23,8 +31,8 @@ public class FilesIterator implements Iterator<CommonFile>, Iterable<CommonFile>
 		this.stack = new Stack<>();
 				
 		// find next general file
-		next = processFile(path, null);
-		updateStack(next);
+		this.next = processFile(path, null);
+		updateStack(this.next);		
 	}
 
 	@Override

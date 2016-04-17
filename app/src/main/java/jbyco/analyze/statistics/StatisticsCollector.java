@@ -13,12 +13,13 @@ import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ClassGenException;
-import org.apache.bcel.util.ByteSequence;
 import org.apache.bcel.generic.Instruction;
+import org.apache.bcel.util.ByteSequence;
 
 import jbyco.analyze.Analyzer;
 import jbyco.io.BytecodeFilesIterator;
 import jbyco.io.CommonFile;
+import jbyco.io.TemporaryFiles;
 
 public class StatisticsCollector implements Analyzer {
 	
@@ -131,16 +132,25 @@ public class StatisticsCollector implements Analyzer {
 		// init analyzer
 		Analyzer analyzer = new StatisticsCollector();
 		
-		// process files
-		for (String str : args) {
+		// create temporary directory
+		Path workingDirectory = TemporaryFiles.createDirectory();
+				
+		try {
 			
-			// get path
-			Path path = Paths.get(str);
-			
-			// process files on the path
-			for (CommonFile file : (new BytecodeFilesIterator(path))) {
-				analyzer.processFile(file);
+			// process files
+			for (String str : args) {
+				
+				// get path
+				Path path = Paths.get(str);
+				
+				// process files on the path
+				for (CommonFile file : (new BytecodeFilesIterator(path, workingDirectory))) {
+					analyzer.processFile(file);
+				}
 			}
+		}
+		finally {
+			TemporaryFiles.deleteDirectory(workingDirectory);
 		}
 		
 		// print results

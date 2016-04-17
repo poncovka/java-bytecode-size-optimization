@@ -37,6 +37,7 @@ import jbyco.analyze.patterns.wildcards.WildSequenceGenerator;
 import jbyco.io.BytecodeFilesCounter;
 import jbyco.io.BytecodeFilesIterator;
 import jbyco.io.CommonFile;
+import jbyco.io.TemporaryFiles;
 import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
 import jbyco.lib.Utils;
@@ -354,7 +355,9 @@ public class PatternsAnalyzer implements Analyzer {
 		Runtime runtime = Runtime.getRuntime();
 		
 		// check available memory
-		int memoryUsage = (int)((runtime.totalMemory() - runtime.freeMemory()) * 100.0 / runtime.maxMemory());
+		int memoryUsage = (int) (
+			(runtime.totalMemory() - runtime.freeMemory()) * 100.0 / runtime.maxMemory()
+		);
 			
 		// prune?
 		if (memoryUsage > MEMORY_USAGE) {
@@ -459,20 +462,19 @@ public class PatternsAnalyzer implements Analyzer {
 		int maxLength = 10;
 		int minFrequency = 100;
 		int memoryUsage = 70;
-		
 		String delimiter = "; ";
 		boolean progress = true;
 		
+		// set default factories
 		AbstractOperationFactory operations = new TypedOperationFactory();
 		AbstractParameterFactory parameters = new FullParameterFactory();
 		AbstractLabelFactory labels = new RelativeLabelFactory();
 		
+		// init list of paths
 		Collection<Path> paths = new ArrayList<>();
 		
 		// process parameters
-		
-		int index = 0;
-		for (;index < args.length; index++) {
+		for (int index = 0; index < args.length; index++) {
 			
 			// get option
 			String arg = args[index];
@@ -531,31 +533,46 @@ public class PatternsAnalyzer implements Analyzer {
 						memoryUsage
 		);
 		
-		// analyze files
-		for (Path path : paths) {
-			
-			// process files on the path
-			for (CommonFile file : (new BytecodeFilesIterator(path))) {
-								
-				// analyze file
-				analyzer.processFile(file);
+		// create temporary directory
+		Path workingDirectory = TemporaryFiles.createDirectory();
+		
+		try {
+	
+			// analyze files
+			for (Path path : paths) {
 				
-				// show progress
-				if (progress) {
-					System.err.printf(
-							"Processed %s%%, pruned %d times.\r",
-							Utils.intDivToString(++counter * 100, total),
-							analyzer.pruningThreshold);
+				// process files on the path
+				for (CommonFile file : (new BytecodeFilesIterator(path, workingDirectory))) {
+									
+					// analyze file
+					analyzer.processFile(file);
+					
+					// show progress
+					if (progress) {
+						System.err.printf(
+								"Processed %s%%, pruned %d times.\r",
+								Utils.intDivToString(++counter * 100, total),
+								analyzer.pruningThreshold
+						);
+					}
 				}
 			}
+			
+			// last prune
+			analyzer.finishProcessing();
+			
 		}
-		
-		// last prune
-		analyzer.finishProcessing();
+		// delete temporary directory
+		finally {
+			TemporaryFiles.deleteDirectory(workingDirectory);
+		}
 		
 		// print info
 		if (progress) {
-			System.err.printf("Processed 100%%, pruned %d times.\n", analyzer.pruningThreshold);
+			System.err.printf(
+					"Processed 100%%, pruned %d times.\n", 
+					analyzer.pruningThreshold
+			);
 		}
 		
 		// print results
