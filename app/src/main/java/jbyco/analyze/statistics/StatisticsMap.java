@@ -42,10 +42,10 @@ public class StatisticsMap {
 		Map<String, Item> map = new TreeMap<>(this.map);
 		
 		// format
-		String format = "%-50s %-20s %-20s\n";
+		String format = "%-40s%-20s%-20s\n";
 				
 		// header
-		out.printf(format, "KEY", "TOTAL", "AVERAGE");
+		out.printf(format, "ITEM", "COUNT", "COUNT/FILES");
 				
 		for (String key : map.keySet()) {
 			Item item = map.get(key);

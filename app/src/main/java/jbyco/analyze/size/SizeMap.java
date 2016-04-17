@@ -44,10 +44,10 @@ public class SizeMap  {
 		Map<String, Item> map = new TreeMap<>(this.map);
 		
 		// format
-		String format = "%-50s %-20s %-20s %-20s\n";
+		String format = "%-40s%-20s%-20s%-20s\n";
 		
 		// header
-		out.printf(format, "KEY", "SIZE", "SIZE/COUNT", "SIZE/TOTAL");
+		out.printf(format, "ITEM", "SIZE", "SIZE/COUNT", "SIZE/TOTAL");
 		
 		// get file item
 		Item file = this.map.get("FILE");

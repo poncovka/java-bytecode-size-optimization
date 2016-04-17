@@ -86,7 +86,7 @@ public class VariablesMap {
 	public void writeMap(PrintWriter out, HashMap<Integer, Item> map) {
 		
 		// set format
-		String format = "%-15s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n";
+		String format = "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n";
 		
 		// print header
 		out.printf(format, 
@@ -94,12 +94,12 @@ public class VariablesMap {
 				"COUNT",
 				"LOAD", 
 				"STORE", 
-				"OTHER", 
-				"TOTAL", 
-				"AVG LOAD", 
-				"AVG STORE", 
-				"AVG OTHER", 
-				"AVG TOTAL"
+				"INC", 
+				"ALL", 
+				"AVG_LOAD", 
+				"AVG_STORE", 
+				"AVG_INC", 
+				"AVG_ALL"
 		);
 		
 		// print items
