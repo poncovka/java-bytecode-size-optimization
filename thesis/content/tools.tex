@@ -4,7 +4,7 @@
 Tato kapitola je věnovaná existujícím nástrojům pro manipulaci s~bajtkódem. Vybrala jsem tři populární knihovny BCEL, ASM a Javassist implementované v~jazyce Java. Knihovny se navzájem liší mírou abstrakce a způsobem manipulace s~bajtkódem.
 
 
-\section{BCEL}\label{ToolsBCEL}
+\subsubsection{BCEL}\label{ToolsBCEL}
 
 % Z jakých nejdůležitějších tříd se knihovna skládá?
 % Jakým způsobem lze manipulovat s bajtkódem?
@@ -26,7 +26,7 @@ Knihovna BCEL poskytuje pro bajtkód velmi nízkou úroveň abstrakce. Je třeba
 
 % FIndBugs
 
-\section{ASM}\label{ToolsASM}
+\subsubsection{ASM}\label{ToolsASM}
 
 ASM \cite{ASM} je knihovna od OW2 Consortium poskytovaná pod licencí BSD. Na rozdíl od BCEL se jedná o~aktivní projekt a Java 8 je oficiálně plně podporovaná. ASM si zakládá na snadné použitelnosti, výkonnosti a malé velikosti. 
 Knihovna je založena na návrhovém vzoru Návštěvník (Visitor). Místo reprezentace \texttt{class} souboru pomocí objektů jsou při syntaktické analýze volány pro jednotlivé položky metody návštěvníka. Návštěvník může položky zpracovat a předat je dalšímu návštěvníkovi. Pomocí takového zřetězení lze jedním až dvěma průchody \texttt{class} souboru dosáhnout požadovaného zpracování bajtkódu. Pokud je třeba provést větší počet průchodů, může být vhodnější použít objektovou reprezentaci pomocí stromu. ASM umožňuje oba přístupy libovolně kombinovat.
@@ -39,7 +39,7 @@ ASM zaujme svým návrhem a možností výběru mezi dvěma způsoby práce s~ba
 
 % ASMFiier plugin
 
-\section{Javassist}\label{ToolsJavassist}
+\subsubsection{Javassist}\label{ToolsJavassist}
 
 Javassist nebo-li Java Programming Assistant \cite{Javassist} je knihovna poskytovaná pod trojitou licencí MPL, LGPL a Apache License. Je vhodná zejména pro úpravu bajtkódu za běhu programu. Knihovna umožňuje pracovat s~\texttt{class} soubory na dvou úrovních. Úroveň zdrojového kódu nevyžaduje znalost bajtkódu, ale umožňuje s~bajtkódem manipulovat pomocí slovníku programovacího jazyka Java. Úroveň bajtkódu umožňuje přístup k~reprezentaci blízké formátu \texttt{class} souboru. Java 8 je podporovaná.
 
