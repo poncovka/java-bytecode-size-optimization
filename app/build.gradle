@@ -20,6 +20,14 @@ repositories {
     jcenter()
 }
 
+sourceSets {
+    examples {
+    	output.classesDir = 'build/examples' 
+    	output.resourcesDir = 'build/examples'
+    
+    }
+}
+
 jar {
 	
     baseName = 'jbyco'
@@ -58,6 +66,10 @@ distributions {
             into ('bin' ) { from { 'src/tools' } }
         }
     }
+}
+
+clean{
+    delete 'bin/'
 }
 
 
