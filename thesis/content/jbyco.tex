@@ -2,7 +2,6 @@
 \chapter{Nástroj pro analýzu bajtkódu}\label{Tool}
 
 % TODO 
-% * sumarizující? je to korektní?
 % * dostatečně
 % * obrázek s instrukcemi a stromem
 % * příklady zobecnění instrukcí 
@@ -12,12 +11,12 @@
 % * kešování
 
 
-V~této kapitole popisuji návrh a implementaci nástroje \texttt{jbyco}. Nástroj je určen pro zpracování \texttt{class} souborů a získání dat sumarizujících obsahy těchto souborů. Následná analýza dat poslouží k~návrhu optimalizace velikosti.
+V~této kapitole popisuji návrh a implementaci nástroje \texttt{jbyco}. Nástroj je určen pro zpracování \texttt{class} souborů a získání dat shrnujících obsahy těchto souborů. Následná analýza dat poslouží k~návrhu optimalizace velikosti bajtkódu.
 
 \section{Návrh programu}\label{ToolDesign}
 
-Při návrhu programu jsem zohlednila následující požadavky. 
-Výstupy programu by měly umět zodpovědět následující otázky. Jak vypadá obsah konkrétního \texttt{class} souboru? Kolik bajtů, tříd, metod a členských proměnných se zpracovalo? Jaké jsou velikosti jednotlivých položek v~souborech? Jaké je využití lokálních proměnných? Jaké jsou typické sekvence instrukcí v~souborech? K~zodpovězení většiny otázek je vždy třeba zpracovat dostatečně velké množství souborů, aby získané odpovědi byly dostatečně obecné. 
+Při návrhu programu jsem vycházela z požadavků na výstupy programu.
+Ty by měly umět zodpovědět následující otázky. Jak vypadá obsah konkrétního \texttt{class} souboru? Jaké jsou velikosti jednotlivých položek v~souborech? Kolik souborů, bajtů, tříd, metod a členských proměnných se zpracovalo? Jaké je využití lokálních proměnných? A jaké jsou typické sekvence instrukcí v~souborech?
 
 Program jsem vzhledem k~požadavkům rozdělila na několik podprogramů, přičemž každý z~nich zodpovídá jednu otázku. 
 Většinu požadovaných dat lze získat snadno pomocí knihoven ASM a BCEL. Největší problém tak představovalo nalezení typických sekvencí instrukcí.
