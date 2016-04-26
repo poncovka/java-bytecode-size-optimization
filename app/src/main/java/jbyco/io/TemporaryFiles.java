@@ -47,7 +47,7 @@ public class TemporaryFiles {
 		Deque<CommonFile> dirs = new ArrayDeque<>();
 		
 		// process files
-		for (CommonFile file : (new FilesIterator(dir))) {
+		for (CommonFile file : (new CommonFilesIterator(dir))) {
 		
 			// push directories on the stack
 			if (file.isDirectory()) {

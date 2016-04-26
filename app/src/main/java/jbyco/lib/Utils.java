@@ -1,5 +1,8 @@
 package jbyco.lib;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -52,5 +55,25 @@ public class Utils {
 	
 	public static boolean endsWithJar(String s) {
 		return s.endsWith(".jar");
+	}
+	
+	public static byte[] toByteArray(InputStream in) throws IOException {
+		
+		// set the length of the buffer
+		final int lenght = 1024;
+		
+		// init
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		byte[] buffer = new byte[lenght];
+		int n = 0;
+		
+		// read input stream
+		while ((n = in.read(buffer, 0, lenght)) != -1) {
+			out.write(buffer, 0, n);
+		}
+		
+		// get byte array
+		out.flush();
+		return out.toByteArray();		
 	}
 }

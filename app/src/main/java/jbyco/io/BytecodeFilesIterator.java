@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class BytecodeFilesIterator extends FilesIterator {
+public class BytecodeFilesIterator extends CommonFilesIterator {
 
 	Path workingDirectory;
 	
@@ -49,7 +49,7 @@ public class BytecodeFilesIterator extends FilesIterator {
 		// get abstracted path from parent dirs
 		else {
 			path = Paths.get("");
-			for (DirectoryIterator i : stack) {
+			for (CommonDirectoryIterator i : stack) {
 				path = path.resolve(i.getFile().getName());
 			}
 		}

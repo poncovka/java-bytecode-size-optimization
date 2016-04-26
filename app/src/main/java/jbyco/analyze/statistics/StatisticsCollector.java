@@ -6,13 +6,11 @@ import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
-import org.apache.bcel.generic.ClassGenException;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.util.ByteSequence;
 
@@ -31,31 +29,18 @@ public class StatisticsCollector implements Analyzer {
 	}
 	
 	@Override
-	public void processFile(CommonFile file) {
-		try {		
-			// get input stream
-			String filename = file.getName();
-			InputStream stream = file.getInputStream();
-			
-			// parse class file
-			ClassParser parser = new ClassParser(stream, filename);
-			JavaClass klass = parser.parse();
+	public void processClassFile(InputStream in) throws IOException {
+				
+		// parse class file
+		ClassParser parser = new ClassParser(in, null);
+		JavaClass klass = parser.parse();
 						
-			// process file
-			processClassFile(klass);
-
-			// close stream
-			stream.close();
-						
-		} catch (ClassFormatException e) {
-			e.printStackTrace();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		// process file
+		processClassFile(klass);
+		
 	}
 
-	protected void processClassFile(JavaClass klass) {
+	protected void processClassFile(JavaClass klass) throws IOException {
 		
 		map.add("FILES", 1);
 		map.add("METHODS", klass.getMethods().length);
@@ -68,7 +53,7 @@ public class StatisticsCollector implements Analyzer {
 
 	}
 	
-	protected void processAttributes(JavaClass klass) {
+	protected void processAttributes(JavaClass klass) throws IOException {
 		
 		int total = klass.getAttributes().length;
 		
@@ -88,7 +73,7 @@ public class StatisticsCollector implements Analyzer {
 		map.add("ATTRIBUTES", total);
 	}
 	
-	protected void processInstructions(JavaClass klass) {
+	protected void processInstructions(JavaClass klass) throws IOException {
 		
 		int total = 0;
 		
@@ -96,26 +81,17 @@ public class StatisticsCollector implements Analyzer {
 			
 			Code code = m.getCode();
 			if (code != null) {
-				
-				try {		
 					
-					// get byte sequence
-					ByteSequence seq = new ByteSequence(code.getCode());
+				// get byte sequence
+				ByteSequence seq = new ByteSequence(code.getCode());
 					
-					// read instructions
-					while(seq.available() > 0) {
-						Instruction.readInstruction(seq);
-						total++;
-					}
-					
-					seq.close();
-					
-				} catch (ClassGenException e) {
-					e.printStackTrace();
-					
-				} catch (IOException e) {
-					e.printStackTrace();
+				// read instructions
+				while(seq.available() > 0) {
+					Instruction.readInstruction(seq);
+					total++;
 				}
+					
+				seq.close();					
 			}
 		}
 		
@@ -145,7 +121,10 @@ public class StatisticsCollector implements Analyzer {
 				
 				// process files on the path
 				for (CommonFile file : (new BytecodeFilesIterator(path, workingDirectory))) {
-					analyzer.processFile(file);
+					
+					InputStream in = file.getInputStream();
+					analyzer.processClassFile(in);
+					in.close();
 				}
 			}
 		}

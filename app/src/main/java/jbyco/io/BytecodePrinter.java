@@ -1,5 +1,6 @@
 package jbyco.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -8,7 +9,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
 import org.objectweb.asm.ClassReader;
@@ -17,6 +17,7 @@ import org.objectweb.asm.util.TraceClassVisitor;
 
 import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
+import jbyco.lib.Utils;
 
 public class BytecodePrinter {
 	
@@ -48,65 +49,61 @@ public class BytecodePrinter {
 		this.out = out;
 	}
 	
-	public void print(CommonFile file) {
+	public void print(InputStream in) throws IOException {
 		
-		printFile(file);
+		// print only the byte code without the pool
+		if (!POOL) {
+			printFile(in);
+		}
 		
-		if (POOL) {
+		// print the byte code and the pool
+		else {
+			
+			// read input to array
+			byte[] bytes = Utils.toByteArray(in);
+			
+			// print file
+			in = new ByteArrayInputStream(bytes);
+			printFile(in);
+			in.close();
+			
+			// print new line
 			out.println();
-			printConstanPool(file);
+			
+			// print pool
+			in = new ByteArrayInputStream(bytes);
+			printConstanPool(in);
+			in.close();
 		}
+	}
+	
+	public void printFile(InputStream in) throws IOException {
+		
+		// read input stream
+		ClassReader reader = new ClassReader(in);
+			
+		// print bytecode
+		ClassVisitor visitor = new TraceClassVisitor(out);  
+			
+		// start the visit
+		reader.accept(visitor, getFlags());
 		
 	}
 	
-	public void printFile(CommonFile file) {
-		
-		try {
+	public void printConstanPool(InputStream in) throws IOException {
+						
+		// parse class file
+		ClassParser parser = new ClassParser(in, null);
+		JavaClass klass = parser.parse();
 			
-			// get input stream
-			InputStream in = file.getInputStream();
+		// init writer
+		ConstantPoolWriter writer = new ConstantPoolWriter(out);
 			
-			// read input stream
-			ClassReader reader = new ClassReader(in);
+		// print
+		writer.write(klass);
 			
-			// print bytecode
-			ClassVisitor visitor = new TraceClassVisitor(out);  
-			
-			// start the visit
-			reader.accept(visitor, getFlags());
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
 	}
-	
-	public void printConstanPool(CommonFile file) {
-				
-		try {		
-			// get input stream
-			InputStream stream = file.getInputStream();
-			
-			// parse class file
-			ClassParser parser = new ClassParser(stream, file.getName());
-			JavaClass klass = parser.parse();
-			
-			// init writer
-			ConstantPoolWriter writer = new ConstantPoolWriter(out);
-			
-			// print
-			writer.write(klass);
-			
-		} catch (ClassFormatException e) {
-			e.printStackTrace();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		
-	}
-	
-	
 
 	///////////////////////////////////////////////////////////////// MAIN
 	
@@ -209,7 +206,10 @@ public class BytecodePrinter {
 				
 				// print class files
 				for (CommonFile file : (new BytecodeFilesIterator(path, workingDirectory))) {
-					printer.print(file);
+					
+					InputStream in = file.getInputStream();
+					printer.print(in);
+					in.close();
 				}
 			}
 		}

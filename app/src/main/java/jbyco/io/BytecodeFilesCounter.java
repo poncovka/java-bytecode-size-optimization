@@ -30,7 +30,7 @@ public class BytecodeFilesCounter {
 	
 	public int countFiles(Path path) throws IOException {
 		
-		for (CommonFile file : new FilesIterator(path)) {
+		for (CommonFile file : new CommonFilesIterator(path)) {
 			
 			if (file.isClassFile()) {
 				counter++;

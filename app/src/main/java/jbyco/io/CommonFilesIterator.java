@@ -7,16 +7,16 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 
-public class FilesIterator implements Iterator<CommonFile>, Iterable<CommonFile> {
+public class CommonFilesIterator implements Iterator<CommonFile>, Iterable<CommonFile> {
 
 	CommonFile next;
-	Deque<DirectoryIterator> stack;
+	Deque<CommonDirectoryIterator> stack;
 	
-	public FilesIterator() throws IOException {
+	public CommonFilesIterator() throws IOException {
 		// nothing
 	}
 	
-	public FilesIterator(Path path) throws IOException {
+	public CommonFilesIterator(Path path) throws IOException {
 		init(path);
 	}
 	
@@ -67,7 +67,7 @@ public class FilesIterator implements Iterator<CommonFile>, Iterable<CommonFile>
 
 		// push directory on the stack
 		if (file != null && file.isDirectory()) {
-			stack.push(new DirectoryIterator(file));
+			stack.push(new CommonDirectoryIterator(file));
 		}
 	}
 	
@@ -79,7 +79,7 @@ public class FilesIterator implements Iterator<CommonFile>, Iterable<CommonFile>
 		while (file == null && !stack.isEmpty()) {
 			
 			// get directory
-			DirectoryIterator dir = stack.peek();
+			CommonDirectoryIterator dir = stack.peek();
 			
 			// get file
 			if (dir.hasNext()) {

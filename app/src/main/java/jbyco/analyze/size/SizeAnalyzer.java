@@ -3,14 +3,12 @@ package jbyco.analyze.size;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.BitSet;
 
 import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.Attribute;
-import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.Constant;
@@ -22,7 +20,6 @@ import org.apache.bcel.classfile.ConstantUtf8;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
-import org.apache.bcel.generic.ClassGenException;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.util.ByteSequence;
 
@@ -40,35 +37,20 @@ public class SizeAnalyzer implements Analyzer {
 		map = new SizeMap();
 	}
 	
-	public void processFile(CommonFile file) {
-		
-		try {		
-			// get input stream
-			String filename = file.getName();
-			InputStream stream = file.getInputStream();
-			
-			// parse class file
-			ClassParser parser = new ClassParser(stream, filename);
-			JavaClass klass = parser.parse();
+	public void processClassFile(InputStream in) throws IOException {
+					
+		// parse class file
+		ClassParser parser = new ClassParser(in, null);
+		JavaClass klass = parser.parse();
 						
-			// process file
-			processClassFile(klass);
+		// process file
+		processClassFile(klass);
 			
-			// process strings in a file
-			processStrings(klass);
-			
-			// close stream
-			stream.close();
-						
-		} catch (ClassFormatException e) {
-			e.printStackTrace();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		// process strings in a file
+		processStrings(klass);
 	}
 	
-	static public int getConstantSize(Constant c) {
+	static public int getConstantSize(Constant c) throws IOException {
 		
 		int size = 0;
 		
@@ -88,25 +70,20 @@ public class SizeAnalyzer implements Analyzer {
 			case Constants.CONSTANT_MethodHandle: 		size = 4; break;
 			case Constants.CONSTANT_MethodType: 		size = 3; break;
 			case Constants.CONSTANT_InvokeDynamic: 		size = 5; break;
-			default: throw new IllegalArgumentException("Unknown constant tag " + c + ".");
 		}
 		
 		// add variable size
 		if (c instanceof ConstantUtf8) {
-			try {
-				
-				ConstantUtf8 c2 = (ConstantUtf8) c;
-				size += c2.getBytes().getBytes("UTF-8").length;
-				
-			} catch (UnsupportedEncodingException e) {
-				throw new IllegalArgumentException("Unreadable CONSTANT_Utf8 " + c + ".");
-			}
+			
+			ConstantUtf8 c2 = (ConstantUtf8) c;
+			size += c2.getBytes().getBytes("UTF-8").length;
+			
 		}
 		
 		return size;
 	}
 	
-	protected void processClassFile(JavaClass klass) {
+	protected void processClassFile(JavaClass klass) throws IOException {
 		
 		processConstantPool(klass.getConstantPool());
 		processFields(klass.getFields());
@@ -118,7 +95,7 @@ public class SizeAnalyzer implements Analyzer {
 		
 	}
 
-	protected void processConstantPool(ConstantPool pool) {
+	protected void processConstantPool(ConstantPool pool) throws IOException {
 		
 		for (Constant c : pool.getConstantPool()) {
 			
@@ -137,7 +114,7 @@ public class SizeAnalyzer implements Analyzer {
 		}
 	}
 	
-	protected void processFields(Field[] fields) {
+	protected void processFields(Field[] fields) throws IOException {
 		
 		// process attributes
 		for (Field f : fields) {
@@ -146,7 +123,7 @@ public class SizeAnalyzer implements Analyzer {
 		
 	}
 
-	protected void processMethods(Method[] methods) {
+	protected void processMethods(Method[] methods) throws IOException {
 
 		for (Method m : methods) {
 			
@@ -165,32 +142,24 @@ public class SizeAnalyzer implements Analyzer {
 		}
 	}
 
-	protected void processInstructions(byte[] instructions) {
+	protected void processInstructions(byte[] instructions) throws IOException {
 		
-		try {		
+		// get byte sequence
+		ByteSequence seq = new ByteSequence(instructions);
 			
-			// get byte sequence
-			ByteSequence seq = new ByteSequence(instructions);
-			
-			// read instructions
-			while(seq.available() > 0) {
+		// read instructions
+		while(seq.available() > 0) {
 				
-				// get instruction
-				Instruction i = Instruction.readInstruction(seq);
+			// get instruction
+			Instruction i = Instruction.readInstruction(seq);
 				
-				// size of instructions in all files
-				map.add("INSTRUCION_" + i.getName(), i.getLength());
-			}
-			
-		} catch (ClassGenException e) {
-			e.printStackTrace();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
+			// size of instructions in all files
+			map.add("INSTRUCION_" + i.getName(), i.getLength());
 		}
+		
 	}
 
-	protected void processAttributes(Attribute[] attributes) {
+	protected void processAttributes(Attribute[] attributes) throws IOException {
 		
 		// size of attributes in all files
 		for (Attribute a : attributes) {
@@ -198,7 +167,7 @@ public class SizeAnalyzer implements Analyzer {
 		}	
 	}
 	
-	private void processStrings(JavaClass klass) {
+	private void processStrings(JavaClass klass) throws IOException {
 		
 		// get constant pool
 		ConstantPool cp = klass.getConstantPool();
@@ -266,7 +235,7 @@ public class SizeAnalyzer implements Analyzer {
 		processStringIndexes(cp, fieldSignatures, 	"FIELD_SIGNATURE");
 	}
 	
-	protected void processStringIndexes(ConstantPool cp, BitSet set, String description) {
+	protected void processStringIndexes(ConstantPool cp, BitSet set, String description) throws IOException {
 		
 		for (int i = set.nextSetBit(0); i >= 0; i = set.nextSetBit(i+1)) {
 			
@@ -306,7 +275,10 @@ public class SizeAnalyzer implements Analyzer {
 				
 				// process files on the path
 				for (CommonFile file : (new BytecodeFilesIterator(path, workingDirectory))) {
-					analyzer.processFile(file);
+					
+					InputStream in = file.getInputStream();
+					analyzer.processClassFile(in);
+					in.close();
 				}
 			}
 		}

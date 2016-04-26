@@ -2,6 +2,7 @@ package jbyco.io;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -14,7 +15,11 @@ import jbyco.lib.Utils;
 public class CommonFile {
 	
 	// existing file
-	final java.io.File file;
+	final File file;
+	
+	public CommonFile(File file) {
+		this.file = file;
+	}
 	
 	public CommonFile(Path path) {
 		this.file = path.toFile();
@@ -26,6 +31,10 @@ public class CommonFile {
 	
 	public Path getPath() {
 		return file.toPath();
+	}
+	
+	public File toSimpleFile() {
+		return file;
 	}
 	
 	public InputStream getInputStream() throws IOException {

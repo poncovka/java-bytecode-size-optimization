@@ -1,5 +1,6 @@
 package jbyco.io;
 
+import java.io.InputStream;
 import java.io.PrintWriter;
 
 import org.apache.bcel.Constants;
@@ -28,6 +29,10 @@ public class ConstantPoolWriter extends EmptyVisitor {
 	
 	public ConstantPoolWriter(PrintWriter out) {
 		this.out = out;
+	}
+	
+	public void write(InputStream in) {
+		
 	}
 	
 	public void write(JavaClass klass) {

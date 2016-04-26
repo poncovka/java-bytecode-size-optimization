@@ -6,13 +6,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-public class DirectoryIterator implements Iterator<Path> {
+public class CommonDirectoryIterator implements Iterator<Path> {
 	
 	CommonFile file;
 	Iterator<Path> iterator;
 	DirectoryStream<Path> stream;
 	
-	public DirectoryIterator(CommonFile file) throws IOException {
+	public CommonDirectoryIterator(CommonFile file) throws IOException {
 		
 		// init
 		this.file = file;

@@ -120,36 +120,25 @@ public class PatternsAnalyzer implements Analyzer {
 	}
 	
 	@Override
-	public void processFile(CommonFile file) {
-		
-		try {
+	public void processClassFile(InputStream in) throws IOException {
 			
-			// get input stream
-			InputStream in = file.getInputStream();
+		// read input stream
+		ClassReader reader = new ClassReader(in);
 			
-			// read input stream
-			ClassReader reader = new ClassReader(in);
+		// create class node
+		ClassNode visitor = new ClassNode(Opcodes.ASM5);
 			
-			// create class node
-			ClassNode visitor = new ClassNode(Opcodes.ASM5);
+		// start the visit
+		reader.accept(visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 			
-			// start the visit
-			reader.accept(visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+		// process methods
+		for (Object method : visitor.methods) {
+			processMethod((MethodNode)method);
+		}
 			
-			// process methods
-			for (Object method : visitor.methods) {
-				processMethod((MethodNode)method);
-			}
+		// check memory
+		checkMemory();
 			
-			// check memory
-			checkMemory();
-
-			// close stream
-			in.close();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}		
 	}
 	
 	public void processMethod(MethodNode method) {
@@ -543,9 +532,11 @@ public class PatternsAnalyzer implements Analyzer {
 				
 				// process files on the path
 				for (CommonFile file : (new BytecodeFilesIterator(path, workingDirectory))) {
-									
+					
 					// analyze file
-					analyzer.processFile(file);
+					InputStream in = file.getInputStream();
+					analyzer.processClassFile(in);
+					in.close();
 					
 					// show progress
 					if (progress) {
