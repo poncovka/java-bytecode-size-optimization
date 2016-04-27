@@ -6,24 +6,37 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * The representation of the node in a graph.
+ * Each node represents item of the type T.
+ *
+ * @param <T> the generic type of the node
+ */
 public class Node<T> {
 	
-	// identifier
+	/** The maximal identifier. */
 	static int maxid = 0;
+	
+	/** The identifier. */
 	int id;
 	
-	// item
+	/** The item represented by the node. */
 	T item;
 	
-	// how many sequences are represented?
+	/** The count of represented items. */
 	int counter;
 	
-	// the input node
+	/** The input node. */
 	Node<T> in;
 	
-	// set of output nodes
+	/** The output nodes. */
 	Map<T, Node<T>> out;
 
+	/**
+	 * Instantiates a new node.
+	 *
+	 * @param item the item
+	 */
 	public Node(T item) {
 		
 		this.id = maxid++;
@@ -50,6 +63,9 @@ public class Node<T> {
 		return counter;
 	}
 	
+	/**
+	 * Increment count.
+	 */
 	public void incrementCount() {
 		counter++;
 	}
@@ -62,6 +78,11 @@ public class Node<T> {
 		this.item = item;
 	}
 
+	/**
+	 * Adds the input node.
+	 *
+	 * @param node the node
+	 */
 	public void addInputNode(Node<T> node) {
 		in = node;
 	}
@@ -70,10 +91,20 @@ public class Node<T> {
 		return in;
 	}
 
+	/**
+	 * Removes the input node.
+	 *
+	 * @param node the node
+	 */
 	public void removeInputNode(Node<T> node) {
 		in = null;
 	}
 
+	/**
+	 * Adds the output node.
+	 *
+	 * @param node the node
+	 */
 	public void addOutputNode(Node<T> node) {
 		
 		// init the output nodes map
@@ -89,11 +120,22 @@ public class Node<T> {
 		else				return out.values();
 	}
 	
+	/**
+	 * Find next node.
+	 *
+	 * @param item the item
+	 * @return the node with the given item
+	 */
 	public Node<T> findNextNode(T item) {
 		if (out == null) 	return null;
 		else				return out.get(item);
 	}
 	
+	/**
+	 * Removes the output node.
+	 *
+	 * @param node the node
+	 */
 	public void removeOutputNode(Node<T> node) {
 		
 		if (out == null) {
@@ -108,6 +150,11 @@ public class Node<T> {
 		}
 	}
 	
+	/**
+	 * Removes the output node.
+	 *
+	 * @param i the iterator over output nodes
+	 */
 	public void removeOutputNode(Iterator<Node<T>> i) {
 		
 		// remove the current node
@@ -119,16 +166,29 @@ public class Node<T> {
 		}
 	}
 
+	/**
+	 * Adds the edge.
+	 *
+	 * @param node the node
+	 */
 	public void addEdge(Node<T> node) {
 		this.addOutputNode(node);
 		node.addInputNode(this);
 	}
 	
+	/**
+	 * Removes the edge.
+	 *
+	 * @param node the node
+	 */
 	public void removeEdge(Node<T> node) {
 		this.removeOutputNode(node);
 		node.removeInputNode(this);
 	}
 		
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "(" + id + (item == null ? "" : "," + item.toString()) + ")";

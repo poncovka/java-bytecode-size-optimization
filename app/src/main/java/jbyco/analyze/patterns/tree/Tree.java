@@ -3,11 +3,19 @@ package jbyco.analyze.patterns.tree;
 import java.io.PrintWriter;
 import java.util.Stack;
 
+/**
+ * The tree of nodes of the type T.
+ *
+ * @param <T> the generic type
+ */
 public class Tree<T> {
 
-	// root node of the graph with no item
+	/** The root of the graph with no item. */
 	Node<T> root;
 	
+	/**
+	 * Instantiates a new tree.
+	 */
 	public Tree() {
 		root = new Node<T>(null);
 	}
@@ -16,6 +24,11 @@ public class Tree<T> {
 		return root;
 	}	
 	
+	/**
+	 * Write the graph to the output.
+	 *
+	 * @param out the out
+	 */
 	public void write(PrintWriter out) {
 		
 		out.printf("%-15s%-30s%-30s\n", "[node]", "[output]", "[count]");
@@ -39,6 +52,11 @@ public class Tree<T> {
 		
 	}
 	
+	/**
+	 * Export the graph to the output in GML format.
+	 *
+	 * @param out the out
+	 */
 	public void export(PrintWriter out) {
 		
 		TreeExporter exporter = new TreeExporter(out);

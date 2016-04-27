@@ -10,23 +10,35 @@ import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LookupSwitchInsnNode;
 import org.objectweb.asm.tree.TableSwitchInsnNode;
 
+/**
+ * A class that generates sequences of instructions with wild cards.
+ * Wild cards are represented by null and they represent any instruction, 
+ * that is not a label or a jump.
+ */
 public class WildSequenceGenerator implements Iterator<Collection<AbstractInsnNode>> {
 
-	// number of wild cards in a list
+	/** The number of wild cards in one sequence. */
 	int wildcards;
 	
-	// iterator over all allowed indexes of wild cards in a list
+	/** The iterator over all allowed indexes of wild cards in a sequence. */
 	CombinationIterator iterator;
 	
-	// list of values
+	/** The sequence of instructions. */
 	ArrayList<AbstractInsnNode> list;
 	
-	// list of forbidden indexes
+	/** The forbidden indexes. */
 	ArrayList<Integer> forbidden;
 	
-	// wild card
+	/** The wild card. */
 	AbstractInsnNode wildcard;
 	
+	/**
+	 * Instantiates a new wild sequence generator.
+	 *
+	 * @param list the list of instructions
+	 * @param wildcard the wild card
+	 * @param wildcards the number of wild cards
+	 */
 	public WildSequenceGenerator(Collection<AbstractInsnNode> list, AbstractInsnNode wildcard, int wildcards) {
 		
 		this.wildcard = wildcard;
@@ -36,6 +48,12 @@ public class WildSequenceGenerator implements Iterator<Collection<AbstractInsnNo
 		this.iterator = getIterator(this.list, this.forbidden);
 	}
 	
+	/**
+	 * Checks if it is a forbidden instruction.
+	 *
+	 * @param node the node with instruction
+	 * @return true, if it is a forbidden instruction
+	 */
 	boolean isForbiddenNode(AbstractInsnNode node) {
 		return (node instanceof LabelNode 
 				|| node instanceof JumpInsnNode 
@@ -43,6 +61,12 @@ public class WildSequenceGenerator implements Iterator<Collection<AbstractInsnNo
 				|| node instanceof TableSwitchInsnNode);
 	}
 	
+	/**
+	 * Gets the forbidden indexes.
+	 *
+	 * @param list the list of instruction
+	 * @return the forbidden indexes
+	 */
 	public ArrayList<Integer> getForbiddenIndexes(ArrayList<AbstractInsnNode> list) {
 		
 		ArrayList<Integer> indexes = new ArrayList<>();
@@ -58,6 +82,13 @@ public class WildSequenceGenerator implements Iterator<Collection<AbstractInsnNo
 		return indexes;
 	}
 	
+	/**
+	 * Gets the iterator over combinations.
+	 *
+	 * @param list the list of instructions
+	 * @param forbidden the forbidden indexes
+	 * @return the iterator over combinations
+	 */
 	public CombinationIterator getIterator(ArrayList<AbstractInsnNode> list, ArrayList<Integer> forbidden) {
 		
 		int n = wildcards;
@@ -67,11 +98,17 @@ public class WildSequenceGenerator implements Iterator<Collection<AbstractInsnNo
 		return new CombinationIterator(n, min, max);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#hasNext()
+	 */
 	@Override
 	public boolean hasNext() {
 		return iterator.hasNext();
 	}
 
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#next()
+	 */
 	@Override
 	public Collection<AbstractInsnNode> next() {
 		
@@ -82,6 +119,12 @@ public class WildSequenceGenerator implements Iterator<Collection<AbstractInsnNo
 		return applyCombination(combination);
 	}
 	
+	/**
+	 * Apply combination.
+	 *
+	 * @param combination the combination
+	 * @return the list of instructions
+	 */
 	public Collection<AbstractInsnNode> applyCombination(int[] combination) {
 		
 		// get size of the array

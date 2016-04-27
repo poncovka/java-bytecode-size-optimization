@@ -9,8 +9,18 @@ import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+/**
+ * The class for extraction JAR files.
+ */
 public class JarExtractor {
 
+	/**
+	 * Extract JAR file.
+	 *
+	 * @param from the path to the JAR file
+	 * @param to the path to the output directory
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	static public void extract(Path from, Path to) throws IOException {
 		
 		JarFile jar = new JarFile(from.toFile());

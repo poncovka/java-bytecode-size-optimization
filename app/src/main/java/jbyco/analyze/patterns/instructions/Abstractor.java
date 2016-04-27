@@ -15,26 +15,45 @@ import jbyco.analyze.patterns.operations.AbstractOperationFactory;
 import jbyco.analyze.patterns.parameters.AbstractParameter;
 import jbyco.analyze.patterns.parameters.AbstractParameterFactory;
 
+/**
+ * The class for abstraction of instructions in a given method.
+ * The visited instructions of the method will be abstracted and saved in a collection.
+ * The level of abstraction is given by the factories {@link AbstractOperationFactory}, 
+ * {@link AbstractParameterFactory} and {@link AbstractLabelFactory}.
+ */
 public class Abstractor extends MethodVisitor {
 
-	// abstraction of the given instruction node
+	/** The list of abstracted instructions. */
 	Collection<AbstractInstruction> list;
 	
-	// operation factory
+	/** The operations' factory. */
 	AbstractOperationFactory operations;
 	
-	// parameter factory
+	/** The parameters' factory */
 	AbstractParameterFactory parameters;
 	
-	// label factory
+	/** The labels' factory. */
 	AbstractLabelFactory labels;
 	
-	// max index of method arguments
+	/** The maximal index of method parameters. */
 	int maxArgs = 0;
 	
-	// is it static method?
+	/** Is the current method static. */
 	boolean isStatic = false;
 		
+	/**
+	 * Instantiates a new abstractor with method information 
+	 * and abstraction factories.
+	 *
+	 * @param access 		the access flags of the method
+	 * @param name 			the name of the method
+	 * @param desc 			the descriptor of the method
+	 * @param signature 	the signature of the method
+	 * @param exceptions 	the exceptions
+	 * @param operations 	the operations' factory
+	 * @param parameters 	the parameters' factory
+	 * @param labels 		the labels' factory
+	 */
 	public Abstractor(	int access,
    					  	String name,
 			            String desc,
@@ -71,18 +90,38 @@ public class Abstractor extends MethodVisitor {
 		init();
 	}
 	
+	/**
+	 * Initializes the abstractor.
+	 */
 	public void init() {
 		this.list = new ArrayList<>();
 	}
 	
+	/**
+	 * Adds the new instruction to the list.
+	 *
+	 * @param operation 	the operation of the instruction
+	 * @param params 		the parameters of the instruction
+	 */
 	public void add(AbstractOperation operation, AbstractParameter ...params) {
 		add(new Instruction(operation, params));
 	}
 	
+	/**
+	 *  Adds the new instruction to the list.
+	 *
+	 * @param operation 	the operation of the instruction
+	 * @param params 		the collection of parameters of the instruction
+	 */
 	public void add(AbstractOperation operation, Collection<AbstractParameter> params) {
 		add(new Instruction(operation, (AbstractParameter[]) params.toArray(new AbstractParameter[params.size()])));
 	}
 	
+	/**
+	 * Adds the instruction to the list.
+	 *
+	 * @param instruction the instruction
+	 */
 	public void add(AbstractInstruction instruction) {
 		list.add(instruction);
 	}
@@ -91,6 +130,12 @@ public class Abstractor extends MethodVisitor {
 		return list;
 	}
 	
+	/**
+	 * Returns the abstracted local variable.
+	 *
+	 * @param index 	the index of the variable
+	 * @return the abstract parameter
+	 */
 	public AbstractParameter processVariable(int index) {
 		
 		// this
@@ -107,6 +152,12 @@ public class Abstractor extends MethodVisitor {
 		}
 	}
 	
+	/**
+	 * Returns the abstracted class or array type.
+	 *
+	 * @param internalName 	the internal name
+	 * @return the abstract parameter
+	 */
 	public AbstractParameter getClassOrArray(String internalName) {
 		
 		int sort = Type.getObjectType(internalName).getSort();
@@ -122,6 +173,12 @@ public class Abstractor extends MethodVisitor {
 		}
 	}
 	
+	/**
+	 * Returns the collection of abstracted constant values.
+	 *
+	 * @param cst 		the constant object from ASM library
+	 * @return the collection of parameters
+	 */
 	public Collection<AbstractParameter> processConstantValue(Object cst) {
 		
 		Collection<AbstractParameter> list = new ArrayList<>();
@@ -175,6 +232,9 @@ public class Abstractor extends MethodVisitor {
 		return list;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitInsn(int)
+	 */
 	@Override
 	public void visitInsn(int opcode) {
 		
@@ -208,6 +268,9 @@ public class Abstractor extends MethodVisitor {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitIntInsn(int, int)
+	 */
 	@Override
 	public void visitIntInsn(int opcode, int operand) {
 		
@@ -245,6 +308,9 @@ public class Abstractor extends MethodVisitor {
 		add(operation, param);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitVarInsn(int, int)
+	 */
 	@Override
 	public void visitVarInsn(int opcode, int var) {
 		
@@ -252,6 +318,9 @@ public class Abstractor extends MethodVisitor {
 		add(operations.getOperation(opcode), processVariable(var));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitTypeInsn(int, java.lang.String)
+	 */
 	@Override
 	public void visitTypeInsn(int opcode, String type) {
 			
@@ -259,6 +328,9 @@ public class Abstractor extends MethodVisitor {
 		add(operations.getOperation(opcode), getClassOrArray(type));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitFieldInsn(int, java.lang.String, java.lang.String, java.lang.String)
+	 */
 	@Override
 	public void visitFieldInsn(int opcode, String owner, String name, String desc) {
 		
@@ -270,6 +342,9 @@ public class Abstractor extends MethodVisitor {
 		add(operations.getOperation(opcode), param1, param2);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitMethodInsn(int, java.lang.String, java.lang.String, java.lang.String, boolean)
+	 */
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
 		
@@ -281,6 +356,9 @@ public class Abstractor extends MethodVisitor {
 		add(operations.getOperation(opcode), param1, param2);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitInvokeDynamicInsn(java.lang.String, java.lang.String, org.objectweb.asm.Handle, java.lang.Object[])
+	 */
 	@Override
 	public void visitInvokeDynamicInsn(String name, String desc, Handle bsm, Object... bsmArgs) {
 
@@ -302,6 +380,9 @@ public class Abstractor extends MethodVisitor {
 		add(operations.getOperation(Opcodes.INVOKEDYNAMIC), params);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitJumpInsn(int, org.objectweb.asm.Label)
+	 */
 	@Override
 	public void visitJumpInsn(int opcode, Label label) {
 				
@@ -309,6 +390,9 @@ public class Abstractor extends MethodVisitor {
 		add(operations.getOperation(opcode), labels.getLabel(label));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitLabel(org.objectweb.asm.Label)
+	 */
 	@Override
 	public void visitLabel(Label label) {
 		
@@ -316,6 +400,9 @@ public class Abstractor extends MethodVisitor {
 		add(labels.getLabel(label));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitLdcInsn(java.lang.Object)
+	 */
 	@Override
 	public void visitLdcInsn(Object cst) {
 						
@@ -323,6 +410,9 @@ public class Abstractor extends MethodVisitor {
 		add(operations.getOperation(Opcodes.LDC), processConstantValue(cst));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitIincInsn(int, int)
+	 */
 	@Override
 	public void visitIincInsn(int var, int increment) {
 		
@@ -330,6 +420,9 @@ public class Abstractor extends MethodVisitor {
 		add(operations.getOperation(Opcodes.IINC), processVariable(var), parameters.getInt(increment));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitTableSwitchInsn(int, int, org.objectweb.asm.Label, org.objectweb.asm.Label[])
+	 */
 	@Override
 	public void visitTableSwitchInsn(int min, int max, Label dflt, Label... lbs) {
 		
@@ -348,6 +441,9 @@ public class Abstractor extends MethodVisitor {
 		add(operations.getOperation(Opcodes.TABLESWITCH), params);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitLookupSwitchInsn(org.objectweb.asm.Label, int[], org.objectweb.asm.Label[])
+	 */
 	@Override
 	public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] lbs) {
 		
@@ -368,6 +464,9 @@ public class Abstractor extends MethodVisitor {
 		add(operations.getOperation(Opcodes.LOOKUPSWITCH), params);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.objectweb.asm.MethodVisitor#visitMultiANewArrayInsn(java.lang.String, int)
+	 */
 	@Override
 	public void visitMultiANewArrayInsn(String desc, int dims) {
 		

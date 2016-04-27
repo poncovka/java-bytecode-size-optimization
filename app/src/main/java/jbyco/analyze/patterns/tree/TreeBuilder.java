@@ -4,14 +4,30 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Stack;
 
+/**
+ * A class for building the graph of type T.
+ *
+ * @param <T> the generic type
+ */
 public class TreeBuilder<T> {
 	
+	/** The built graph. */
 	Tree<T> graph;
 		
+	/**
+	 * Instantiates a new tree builder.
+	 *
+	 * @param graph the graph
+	 */
 	public TreeBuilder(Tree<T> graph) {
 		this.graph = graph;
 	}
 	
+	/**
+	 * Adds the collection of items.
+	 *
+	 * @param items the items
+	 */
 	public void addPath(Collection<T> items) {
 		
 		// init
@@ -24,6 +40,13 @@ public class TreeBuilder<T> {
 		}
 	}
 	
+	/**
+	 * Adds the next node.
+	 *
+	 * @param node the parent node
+	 * @param item the item of the next node
+	 * @return the next node
+	 */
 	public Node<T> addNextNode(Node<T> node, T item) {
 		
 		// try to find node in neighbors of previous node
@@ -45,6 +68,11 @@ public class TreeBuilder<T> {
 		return next;
 	}
 	
+	/**
+	 * Prune the tree.
+	 *
+	 * @param threshold the threshold
+	 */
 	public void pruneTree(int threshold) {
 		
 		// init stack, the root cannot be removed

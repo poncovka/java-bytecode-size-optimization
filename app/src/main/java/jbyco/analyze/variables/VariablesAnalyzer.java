@@ -21,15 +21,24 @@ import jbyco.io.BytecodeFilesIterator;
 import jbyco.io.CommonFile;
 import jbyco.io.TemporaryFiles;
 
+/**
+ * A tool for analysis of the variables' usage.
+ */
 public class VariablesAnalyzer implements Analyzer {
 
-	// map
+	/** The map with collected data. */
 	VariablesMap map;
 	
+	/**
+	 * Instantiates a new variables analyzer.
+	 */
 	public VariablesAnalyzer() {
 		this.map = new VariablesMap();
 	}
 	
+	/* (non-Javadoc)
+	 * @see jbyco.analyze.Analyzer#processClassFile(java.io.InputStream)
+	 */
 	public void processClassFile(InputStream in) throws IOException {
 			
 		// parse class file
@@ -41,6 +50,12 @@ public class VariablesAnalyzer implements Analyzer {
 				
 	}
 	
+	/**
+	 * Process methods.
+	 *
+	 * @param methods the BCEL methods
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void processMethods(Method[] methods) throws IOException {
 		
 		// for all methods
@@ -73,6 +88,11 @@ public class VariablesAnalyzer implements Analyzer {
 		}
 	}
 	
+	/**
+	 * Process instruction.
+	 *
+	 * @param i the BCEL instruction
+	 */
 	protected void processInstruction(Instruction i) {
 		
 		if (i instanceof LocalVariableInstruction) {
@@ -91,10 +111,19 @@ public class VariablesAnalyzer implements Analyzer {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see jbyco.analyze.Analyzer#writeResults(java.io.PrintWriter)
+	 */
 	public void writeResults(PrintWriter out) {
 		map.write(out);
 	}
 	
+	/**
+	 * The main method.
+	 *
+	 * @param args the arguments
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static void main(String[] args) throws IOException {
 		
 		// init analyzer

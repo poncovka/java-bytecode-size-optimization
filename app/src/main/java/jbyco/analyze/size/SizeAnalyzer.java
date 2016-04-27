@@ -28,15 +28,24 @@ import jbyco.io.BytecodeFilesIterator;
 import jbyco.io.CommonFile;
 import jbyco.io.TemporaryFiles;
 
+/**
+ * The tool for analysis the sizes of items in class files.
+ */
 public class SizeAnalyzer implements Analyzer {
 	
-	// dictionary of sizes
+	/** The map of sizes. */
 	SizeMap map;
 	
+	/**
+	 * Instantiates a new size analyzer.
+	 */
 	public SizeAnalyzer() {
 		map = new SizeMap();
 	}
 	
+	/* (non-Javadoc)
+	 * @see jbyco.analyze.Analyzer#processClassFile(java.io.InputStream)
+	 */
 	public void processClassFile(InputStream in) throws IOException {
 					
 		// parse class file
@@ -50,6 +59,13 @@ public class SizeAnalyzer implements Analyzer {
 		processStrings(klass);
 	}
 	
+	/**
+	 * Gets the size of the constant from the constant pool.
+	 *
+	 * @param c the constant
+	 * @return the constant size
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	static public int getConstantSize(Constant c) throws IOException {
 		
 		int size = 0;
@@ -83,6 +99,12 @@ public class SizeAnalyzer implements Analyzer {
 		return size;
 	}
 	
+	/**
+	 * Process the class file.
+	 *
+	 * @param klass the BCEL class
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void processClassFile(JavaClass klass) throws IOException {
 		
 		processConstantPool(klass.getConstantPool());
@@ -95,6 +117,12 @@ public class SizeAnalyzer implements Analyzer {
 		
 	}
 
+	/**
+	 * Process constant pool.
+	 *
+	 * @param pool the BCEL pool
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void processConstantPool(ConstantPool pool) throws IOException {
 		
 		for (Constant c : pool.getConstantPool()) {
@@ -114,6 +142,12 @@ public class SizeAnalyzer implements Analyzer {
 		}
 	}
 	
+	/**
+	 * Process fields.
+	 *
+	 * @param fields the BCEL fields
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void processFields(Field[] fields) throws IOException {
 		
 		// process attributes
@@ -123,6 +157,12 @@ public class SizeAnalyzer implements Analyzer {
 		
 	}
 
+	/**
+	 * Process methods.
+	 *
+	 * @param methods the BCEL methods
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void processMethods(Method[] methods) throws IOException {
 
 		for (Method m : methods) {
@@ -142,6 +182,12 @@ public class SizeAnalyzer implements Analyzer {
 		}
 	}
 
+	/**
+	 * Process instructions.
+	 *
+	 * @param instructions the instructions
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void processInstructions(byte[] instructions) throws IOException {
 		
 		// get byte sequence
@@ -159,6 +205,12 @@ public class SizeAnalyzer implements Analyzer {
 		
 	}
 
+	/**
+	 * Process attributes.
+	 *
+	 * @param attributes the attributes
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void processAttributes(Attribute[] attributes) throws IOException {
 		
 		// size of attributes in all files
@@ -167,6 +219,12 @@ public class SizeAnalyzer implements Analyzer {
 		}	
 	}
 	
+	/**
+	 * Process strings.
+	 *
+	 * @param klass the BCEL class
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	private void processStrings(JavaClass klass) throws IOException {
 		
 		// get constant pool
@@ -235,6 +293,14 @@ public class SizeAnalyzer implements Analyzer {
 		processStringIndexes(cp, fieldSignatures, 	"FIELD_SIGNATURE");
 	}
 	
+	/**
+	 * Process string indexes.
+	 *
+	 * @param cp the BCEL constant pool
+	 * @param set the flags
+	 * @param description the description
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void processStringIndexes(ConstantPool cp, BitSet set, String description) throws IOException {
 		
 		for (int i = set.nextSetBit(0); i >= 0; i = set.nextSetBit(i+1)) {
@@ -252,11 +318,20 @@ public class SizeAnalyzer implements Analyzer {
 		 }
 	}
 
+	/* (non-Javadoc)
+	 * @see jbyco.analyze.Analyzer#writeResults(java.io.PrintWriter)
+	 */
 	@Override
 	public void writeResults(PrintWriter out) {
 		this.map.write(out);
 	}
 	
+	/**
+	 * The main method.
+	 *
+	 * @param args the arguments
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static void main(String[] args) throws IOException {
 		
 		// init analyzer

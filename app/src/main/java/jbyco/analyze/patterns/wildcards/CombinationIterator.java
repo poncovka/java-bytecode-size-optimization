@@ -3,14 +3,33 @@ package jbyco.analyze.patterns.wildcards;
 import java.util.Arrays;
 import java.util.Iterator;
 
+/**
+ * A class for iterating over combinations of numbers.
+ */
 public class CombinationIterator implements Iterator<int[]> {
 	
+	/** The minimal value. */
 	int min;
+	
+	/** The maximal value. */
 	int max;
+	
+	/** The index of next change. */
 	int index;
+	
+	/** The current combination. */
 	int[] array;
+	
+	/** The result of the check method. */
 	boolean check;
 	
+	/**
+	 * Instantiates a new combination iterator.
+	 *
+	 * @param n the length of the combination
+	 * @param min the minimal value
+	 * @param max the maximal value
+	 */
 	public CombinationIterator(int n, int min, int max) {
 		
 		// init
@@ -27,15 +46,29 @@ public class CombinationIterator implements Iterator<int[]> {
 		this.check = check(n, min, max);
 	}
 
+	/**
+	 * Check the conditions.
+	 *
+	 * @param n the length of the combination
+	 * @param min the minimal value
+	 * @param max the maximal value
+	 * @return true, if successful
+	 */
 	public boolean check(int n, int min, int max) {
 		return n > 0 && min < max && max - min + 1 >= n;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#hasNext()
+	 */
 	@Override
 	public boolean hasNext() {
 		return 0 <= index && index < array.length && check;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#next()
+	 */
 	@Override
 	public int[] next() {
 	
@@ -48,6 +81,12 @@ public class CombinationIterator implements Iterator<int[]> {
 		return array;
 	}
 	
+	/**
+	 * Restart combination.
+	 *
+	 * @param from the index from where the restart starts
+	 * @param value the value used for initialization
+	 */
 	public void restartCombination(int from, int value) {
 	
 		for(int i = from; i < array.length; i++) {
@@ -57,6 +96,11 @@ public class CombinationIterator implements Iterator<int[]> {
 		
 	}
 
+	/**
+	 * Compute next index of change.
+	 *
+	 * @return the index or -1
+	 */
 	public int computeNextIndex() {
 		
 		// find highest index with value smaller than the maximal possible one
@@ -70,13 +114,4 @@ public class CombinationIterator implements Iterator<int[]> {
 		return -1;
 	}
 	
-	public static void main(String[] args) {
-		
-		CombinationIterator i = new CombinationIterator(3, 1, 6);
-		
-		while(i.hasNext()) {
-			System.out.println(Arrays.toString(i.next()));
-		}
-		
-	}
 }

@@ -4,24 +4,36 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A factory for creating NumberedParameter objects.
+ */
 public class NumberedParameterFactory extends FullParameterFactory {
 
-	// dictionary of created parameters
+	/** The map of parameters mapped to numbered parameters. */
 	Map<AbstractParameter, AbstractParameter> map;
 	
-	// dictionary of max numbers used in numbered parameters
+	/** The maximal numbers used in numbered parameters. */
 	Map<ParameterType, Integer> numbers;
 	
+	/**
+	 * Instantiates a new numbered parameter factory.
+	 */
 	public NumberedParameterFactory() {
 		init();
 	}
 	
+	/* (non-Javadoc)
+	 * @see jbyco.analyze.patterns.parameters.FullParameterFactory#init()
+	 */
 	@Override
 	public void init() {
 		map = new HashMap<>();
 		numbers = new EnumMap<>(ParameterType.class);
 	}
 	
+	/* (non-Javadoc)
+	 * @see jbyco.analyze.patterns.parameters.FullParameterFactory#createParameter(jbyco.analyze.patterns.parameters.ParameterType, java.lang.Object[])
+	 */
 	@Override
 	public AbstractParameter createParameter(ParameterType type, Object... components) {
 		

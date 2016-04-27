@@ -12,26 +12,53 @@ import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
 import jbyco.lib.Utils;
 
-public class App {
+/**
+ * Application is the main class of the jbyco package.
+ * It reads command line options and run one of the tools.
+ */
+public class Application {
 	
+	/**
+	 * The command line options for Application.
+	 */
 	enum Option implements AbstractOption {
 		
+		/** The option to analyze size. */
 		ANALYZE_SIZE 		("Print sizes of items in classfiles.",
 							 "--analyze-size"),
+		
+		/** The option to analyze variables. */
 		ANALYZE_VARIABLES 	("Print usage of local variables and parameters.", 
 							 "--analyze-variables"),
+		
+		/** The option to analyze patterns. */
 		ANALYZE_PATTERNS 	("Print frequent instruction sequencies.",
 							 "--analyze-patterns" ),
+		
+		/** The option to get statistics. */
 		STATISTICS 			("Print statistics.", 
 							 "--statistics"),
+		
+		/** The option to print bytecode. */
 		PRINT 				("Print the content of class files.", 
 							 "--print"),
+		
+		/** The option to print help. */
 		HELP 				("Show this message.", 
 							 "-h", "--help");
 		
+		/** The description of the option. */
 		String description;
+		
+		/* The names of the option. */
 		String[] names;
 		
+		/**
+		 * Instantiates a new command line option.
+		 *
+		 * @param description 	the description of the option
+		 * @param names 		the names of the option
+		 */
 		private Option(String description, String ...names) {
 			this.description = description;
 			this.names = names;
@@ -48,8 +75,14 @@ public class App {
 		}	
 	}
 	
+	/**
+	 * The class of all command line options for Application.
+	 */
 	static class Options extends AbstractOptions {
 
+		/* (non-Javadoc)
+		 * @see jbyco.lib.AbstractOptions#all()
+		 */
 		@Override
 		public AbstractOption[] all() {
 			return Option.values();
@@ -57,6 +90,12 @@ public class App {
 		
 	}
 	
+	/**
+	 * The main method.
+	 *
+	 * @param args			the arguments
+	 * @throws IOException 	Signals that an I/O exception has occurred.
+	 */
 	public static void main(String[] args) throws IOException {
 		
 		// get options and map of options

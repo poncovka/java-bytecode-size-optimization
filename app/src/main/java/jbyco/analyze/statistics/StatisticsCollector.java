@@ -19,15 +19,24 @@ import jbyco.io.BytecodeFilesIterator;
 import jbyco.io.CommonFile;
 import jbyco.io.TemporaryFiles;
 
+/**
+ * A tool for getting basic statistics about class files.
+ */
 public class StatisticsCollector implements Analyzer {
 	
-	// collected data
+	/** The map with collected data. */
 	StatisticsMap map;
 	
+	/**
+	 * Instantiates a new statistics collector.
+	 */
 	public StatisticsCollector() {
 		this.map = new StatisticsMap();
 	}
 	
+	/* (non-Javadoc)
+	 * @see jbyco.analyze.Analyzer#processClassFile(java.io.InputStream)
+	 */
 	@Override
 	public void processClassFile(InputStream in) throws IOException {
 				
@@ -40,6 +49,12 @@ public class StatisticsCollector implements Analyzer {
 		
 	}
 
+	/**
+	 * Process class file.
+	 *
+	 * @param klass the BCEL class
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void processClassFile(JavaClass klass) throws IOException {
 		
 		map.add("FILES", 1);
@@ -53,6 +68,12 @@ public class StatisticsCollector implements Analyzer {
 
 	}
 	
+	/**
+	 * Process attributes.
+	 *
+	 * @param klass the BCEL class
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void processAttributes(JavaClass klass) throws IOException {
 		
 		int total = klass.getAttributes().length;
@@ -73,6 +94,12 @@ public class StatisticsCollector implements Analyzer {
 		map.add("ATTRIBUTES", total);
 	}
 	
+	/**
+	 * Process instructions.
+	 *
+	 * @param klass the BCEL class
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void processInstructions(JavaClass klass) throws IOException {
 		
 		int total = 0;
@@ -98,11 +125,20 @@ public class StatisticsCollector implements Analyzer {
 		map.add("INSTRUCTIONS", total);
 	}
 
+	/* (non-Javadoc)
+	 * @see jbyco.analyze.Analyzer#writeResults(java.io.PrintWriter)
+	 */
 	@Override
 	public void writeResults(PrintWriter out) {
 		map.write(out);
 	}
 	
+	/**
+	 * The main method.
+	 *
+	 * @param args the arguments
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static void main(String[] args) throws IOException {
 		
 		// init analyzer

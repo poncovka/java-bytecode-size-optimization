@@ -19,16 +19,34 @@ import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
 import jbyco.lib.Utils;
 
+/**
+ * A tool for printing the content of the class files.
+ */
 public class BytecodePrinter {
 	
+	/** The flag for printing the code. */
 	static boolean CODE 	= true;
+	
+	/** The flag for printing the debug information. */
 	static boolean DEBUG 	= false;
+	
+	/** The flag for printing frames. */
 	static boolean FRAMES 	= false;
+	
+	/** The flag for printing expanded frames. */
 	static boolean EXPANDED = false;
+	
+	/** The flag for printing the constant pool. */
 	static boolean POOL 	= false;
 	
+	/** The output. */
 	PrintWriter out;
 	
+	/**
+	 * Instantiates a new bytecode printer.
+	 *
+	 * @param out the out
+	 */
 	public BytecodePrinter(PrintWriter out) {
 		this.out = out;
 	}
@@ -49,6 +67,12 @@ public class BytecodePrinter {
 		this.out = out;
 	}
 	
+	/**
+	 * Prints the content of the input class file.
+	 *
+	 * @param in the input
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public void print(InputStream in) throws IOException {
 		
 		// print only the byte code without the pool
@@ -72,11 +96,17 @@ public class BytecodePrinter {
 			
 			// print pool
 			in = new ByteArrayInputStream(bytes);
-			printConstanPool(in);
+			printConstantPool(in);
 			in.close();
 		}
 	}
 	
+	/**
+	 * Prints the class file.
+	 *
+	 * @param in the input
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public void printFile(InputStream in) throws IOException {
 		
 		// read input stream
@@ -90,7 +120,13 @@ public class BytecodePrinter {
 		
 	}
 	
-	public void printConstanPool(InputStream in) throws IOException {
+	/**
+	 * Prints the constant pool.
+	 *
+	 * @param in the input
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
+	public void printConstantPool(InputStream in) throws IOException {
 						
 		// parse class file
 		ClassParser parser = new ClassParser(in, null);
@@ -107,24 +143,47 @@ public class BytecodePrinter {
 
 	///////////////////////////////////////////////////////////////// MAIN
 	
+	/**
+	 * The command line options.
+	 */
 	enum Option implements AbstractOption {
 		
+		/** The option for printing the basic information. */
 		PRINT_BASIC 	("Print withount code.",
 						 "--basic"),
+		
+		/** The option for printing the debug information. */
 		PRINT_DEBUG 	("Print debug information.",
 						 "--debug"),
+		
+		/** The option for printing frames. */
 		PRINT_FRAMES	("Print frames.",
 						 "--frames"),
+		
+		/** The option for printing extended frames. */
 		PRINT_EFRAMES 	("Print expanded frames.",
 						 "--expanded-frames"),
+		
+		/** The option for printing the constant pool. */
 		PRINT_POOL		("Print the constant pool.",
 						 "--pool"),
+		
+		/** The option for printing help. */
 		HELP			("Show this message.",
 						 "-h", "--help");
 		
+		/** The description. */
 		String description;
+		
+		/** The names. */
 		String[] names;
 		
+		/**
+		 * Instantiates a new option.
+		 *
+		 * @param description the description
+		 * @param names the names
+		 */
 		private Option(String description, String ...names) {
 			this.description = description;
 			this.names = names;
@@ -141,8 +200,14 @@ public class BytecodePrinter {
 		}
 	}
 	
+	/**
+	 * Command line options.
+	 */
 	static class Options extends AbstractOptions {
 
+		/* (non-Javadoc)
+		 * @see jbyco.lib.AbstractOptions#all()
+		 */
 		@Override
 		public AbstractOption[] all() {
 			return Option.values();
@@ -150,6 +215,12 @@ public class BytecodePrinter {
 		
 	}
 	
+	/**
+	 * The main method.
+	 *
+	 * @param args the arguments
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static void main(String[] args) throws IOException {
 		
 		Options options = new Options();

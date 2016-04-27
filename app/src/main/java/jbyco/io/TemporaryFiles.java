@@ -6,18 +6,42 @@ import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/**
+ * A library of functions for working with temporary files.
+ */
 public class TemporaryFiles {
 
+	/** The default suffix of the main temporary directory. */
 	final static String DEFAULT_SUFFIX = "jbyco";
 	
+	/**
+	 * Creates the directory.
+	 *
+	 * @return the path to the directory
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	static public Path createDirectory() throws IOException {
 		return Files.createTempDirectory(DEFAULT_SUFFIX);
 	}
 	
+	/**
+	 * Creates the directory.
+	 *
+	 * @param dir the path to the parent
+	 * @param suffix the suffix
+	 * @return the path to the directory
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	static public Path createDirectory(Path dir, String suffix) throws IOException {
 		return Files.createTempDirectory(dir, suffix);
 	}
 	
+	/**
+	 * Clean the directory.
+	 *
+	 * @param dir the path to the directory
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	static public void cleanDirectory(Path dir) throws IOException {
 		
 		// init stack of directories
@@ -29,6 +53,12 @@ public class TemporaryFiles {
 		}
 	}
 	
+	/**
+	 * Delete the directory.
+	 *
+	 * @param dir the path to the directory
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	static public void deleteDirectory(Path dir) throws IOException {
 		
 		// init stack of directories
@@ -41,6 +71,13 @@ public class TemporaryFiles {
 		
 	}
 
+	/**
+	 * Delete files.
+	 *
+	 * @param dir the path to the directory
+	 * @return the collection of directories
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	static protected Deque<CommonFile> deleteFiles(Path dir) throws IOException {
 		
 		// init stack of directories

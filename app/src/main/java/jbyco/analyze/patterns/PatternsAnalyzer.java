@@ -42,50 +42,76 @@ import jbyco.lib.AbstractOption;
 import jbyco.lib.AbstractOptions;
 import jbyco.lib.Utils;
 
+/**
+ * PatternsAnalyzer is a class for finding common sequences of instructions.
+ * <p>
+ * The class builds a representation of the common instruction sequences and 
+ * prints the content of this representation. The sequences are represented 
+ * by {@link Tree}. The class {@link Abstractor} allows to use a different 
+ * levels of abstraction for the instructions. The class {@link Cache} is
+ * used to reduce the number of objects with instructions.
+ */
 public class PatternsAnalyzer implements Analyzer {
 	
-	// number of wild cards in a pattern
+	/** The number of wild cards in a sequence. */
 	final int WILDCARDS;
 	
-	// max length of patterns
+	/** The maximal length of the sequence. */
 	final int MAX_LENGTH;
 	
-	// minimal frequency of printed patterns
+	/** The minimal frequency of the printed sequence. */
 	final int MIN_FREQUENCY;
 		
-	// max memory usage in percents
+	/** The maximal memory usage in percents. */
 	final int MEMORY_USAGE;
 	
-	// graph
+	/** The tree of sequences. */
 	Tree<AbstractInstruction> graph;
 			
-	// graph builder
+	/** The tree builder. */
 	TreeBuilder<AbstractInstruction> builder;
-	
-	// threshold for tree pruning
-	int pruningThreshold = 0;
-	
-	// instruction abstractor
+		
+	/** The instructions' abstractor. */
 	Abstractor abstractor;
 	
-	// instruction cache
+	/** The instructions' cache. */
 	Cache cache;
 	
-	// labels for begin and end of the method
+	/** The label marks the start of the current method. */
 	Label begin = null;
+	
+	/** The label marks the end of the current method. */
 	Label end = null;
 	
-	// number of processed sequenced
+	/** The current pruning threshold. */
+	int pruningThreshold = 0;
+	
+	/** The number of processed sequenced. */
 	long numseq = 0;
 	
-	// factories
+	/** The factory for operations' abstraction. */
 	AbstractOperationFactory operations;
+	
+	/** The factory for parameters' abstraction. */
 	AbstractParameterFactory parameters;
+	
+	/** The factory for labels' abstraction. */
 	AbstractLabelFactory labels;
 	
-	// active labels of the current method
+	/** The class for finding active labels. */
 	ActiveLabelsFinder activeLabels;
 			
+	/**
+	 * Instantiates a new patterns analyzer.
+	 *
+	 * @param operations 	the operations' factory
+	 * @param parameters 	the parameters' factory
+	 * @param labels 		the labels' factory
+	 * @param wildcards 	the number of wild cards
+	 * @param maxLength 	the maximal length of sequences
+	 * @param minFrequency 	the minimal frequency of printed sequences
+	 * @param memoryUsage 	the maximal memory usage
+	 */
 	public PatternsAnalyzer (
 			AbstractOperationFactory operations, 
 			AbstractParameterFactory parameters, 
@@ -115,10 +141,19 @@ public class PatternsAnalyzer implements Analyzer {
 		this.cache = new Cache();
 	}
 	
+	/**
+	 * Gets the representation of instruction sequences.
+	 *
+	 * @return the tree of instruction sequences
+	 */
 	public Tree<AbstractInstruction> getGraph() {
 		return graph;
 	}
 	
+	
+	/* (non-Javadoc)
+	 * @see jbyco.analyze.Analyzer#processClassFile(java.io.InputStream)
+	 */
 	@Override
 	public void processClassFile(InputStream in) throws IOException {
 			
@@ -141,6 +176,14 @@ public class PatternsAnalyzer implements Analyzer {
 			
 	}
 	
+	/**
+	 * Processes the method of the current class file.
+	 * <p>
+	 * Initializes {@link Abstractor}, adds labels that mark begin and end of the method,
+	 * finds active labels and calls the method that processes the instructions.
+	 *
+	 * @param method the method node representing the method of the class file
+	 */
 	public void processMethod(MethodNode method) {
 						
 		// create abstractor
@@ -172,6 +215,11 @@ public class PatternsAnalyzer implements Analyzer {
 		processInstructions(list);	
 	}
 	
+	/**
+	 * Processes instructions.
+	 *
+	 * @param list the list of instructions
+	 */
 	public void processInstructions(InsnList list) {
 		
 		if (WILDCARDS == 0) {
@@ -182,6 +230,12 @@ public class PatternsAnalyzer implements Analyzer {
 		}
 	}
 	
+	/**
+	 * Processes the list of instructions without wild cards.
+	 * It adds every valid suffix of the list with a given maximal length to the graph.
+	 *
+	 * @param list the list of instructions
+	 */
 	public void processSuffixes(InsnList list) {
 		
 		// process every suffix of the list
@@ -200,6 +254,13 @@ public class PatternsAnalyzer implements Analyzer {
 		}
 	}
 	
+	/**
+	 * Processes suffixes with wild cards.
+	 * It adds every valid suffix of the list with a given maximal length 
+	 * and a given number of wild cards to the graph. 
+	 *
+	 * @param list the list of instructions
+	 */
 	public void processSuffixesWithWildCards(InsnList list) {
 		
 		// process every suffix of the list
@@ -229,6 +290,14 @@ public class PatternsAnalyzer implements Analyzer {
 		}
 	}
 	
+	/**
+	 * Gets the suffix.
+	 *
+	 * @param list 		the list of instructions
+	 * @param index 	the index of the first instruction in a suffix
+	 * @param length 	the maximal length of the suffix
+	 * @return the suffix of instructions
+	 */
 	public Collection<AbstractInsnNode> getSuffix(InsnList list, int index, int length) {
 		
 		// init
@@ -260,11 +329,24 @@ public class PatternsAnalyzer implements Analyzer {
 	}
 	
 	
+	/**
+	 * Checks if is node can be the first node in a suffix.
+	 *
+	 * @param node the node
+	 * @return true, if the node can be the first node in a suffix
+	 */
 	public boolean isFirstNode(AbstractInsnNode node) {
 		// any active node
 		return isActiveNode(node);
 	}
 	
+	/**
+	 * Checks if is the node is active.
+	 * Active node is an active label node or any other node.
+	 *
+	 * @param node the node
+	 * @return true, if the node is active
+	 */
 	protected boolean isActiveNode(AbstractInsnNode node) {
 		
 		// only LabelNode with active label is active
@@ -276,6 +358,12 @@ public class PatternsAnalyzer implements Analyzer {
 		return true;
 	}
 	
+	/**
+	 * Adds the suffix of instructions to the graph.
+	 * The suffix is abstracted, cached and added to the graph.
+	 *
+	 * @param nodes the suffix of instructions
+	 */
 	public void addSuffix(Collection<AbstractInsnNode> nodes) {
 		
 		// init
@@ -294,6 +382,13 @@ public class PatternsAnalyzer implements Analyzer {
 		numseq += nodes.size();
 	}
 	
+	/**
+	 * Gets the abstracted suffix.
+	 * Factories are initialized before the abstraction.
+	 *
+	 * @param suffix the suffix
+	 * @return the abstracted suffix
+	 */
 	public Collection<AbstractInstruction> getAbstractedSuffix(Collection<AbstractInsnNode> suffix) {
 		
 		// init, operations don't need to be initialized again
@@ -318,6 +413,12 @@ public class PatternsAnalyzer implements Analyzer {
 		return abstractor.getList();
 	}
 	
+	/**
+	 * Gets the cached suffix.
+	 *
+	 * @param suffix the suffix
+	 * @return the cached suffix
+	 */
 	public Collection<AbstractInstruction> getCachedSuffix(Collection<AbstractInstruction> suffix) {
 		
 		// init
@@ -338,6 +439,11 @@ public class PatternsAnalyzer implements Analyzer {
 	}
 	
 	
+	/**
+	 * Checks if the current memory usage is less then {@link PatternsAnalyzer#MEMORY_USAGE}}.
+	 * If it is higher, then it increments the pruning threshold and prunes the graph.
+	 * In the end, it tries to run the garbage collector.
+	 */
 	public void checkMemory() {
 
 		// get runtime
@@ -362,6 +468,10 @@ public class PatternsAnalyzer implements Analyzer {
 		}
 	}
 	
+	/**
+	 * Finish processing.
+	 * The graph is pruned one more times.
+	 */
 	public void finishProcessing() {
 
 		// prune graph for the last time
@@ -370,11 +480,20 @@ public class PatternsAnalyzer implements Analyzer {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see jbyco.analyze.Analyzer#writeResults(java.io.PrintWriter)
+	 */
 	@Override
 	public void writeResults(PrintWriter out) {
 		writeResults(out, ";");		
 	}
 		
+	/**
+	 * Write results.
+	 *
+	 * @param out 			the output stream
+	 * @param delimiter 	the delimiter between instructions
+	 */
 	public void writeResults(PrintWriter out, String delimiter) {
 		
 		// print total number of sequences
@@ -387,34 +506,64 @@ public class PatternsAnalyzer implements Analyzer {
 	
 	///////////////////////////////////////////////////////////////// MAIN
 	
+	/**
+	 * The command line options for this tool.
+	 */
 	enum Option implements AbstractOption {
 		
+		/** The option to set the maximal length of the pattern. */
 		MAX_LENGTH			("Set the maximal length of a pattern. Default: 10.",
 							 "--max-length"),
+		
+		/** The option to set the minimal frequency of the pattern. */
 		MIN_FREQUENCY		("Set the minimal frequency of a printed pattern. Default: 100.",
 							 "--min-frequency"),
+		
+		/** The option to set the delimiter to separate the instructions. */
 		DELIMITER			("Set a string used to separate instruction in patterns. Default: '; '.",
 							 "--delimiter"),
+		
+		/** The option to use the general form of operations. */
 		GENERAL_OPERATIONS ("Use a general form of operations.",
 							 "-o1", "--general-operations"),
+		
+		/** The option to use the typed form of operations. */
 		TYPED_OPERATIONS 	("Use a typed form of operations. Default option.",
 							 "-o2", "--typed-operations"),
+		
+		/** The option to use the general form of parameters. */
 		GENERAL_PARAMETERS	("Use a general form of parameters.",
 							 "-p1", "--general-parameters"),
+		
+		/** The option to use the numbered form of parameters. */
 		NUMBERED_PARAMETERS	("Use a numbered form of parameters.",
 							 "-p2", "--numbered-parameters"),
+		
+		/** The option to use the full form parameters. */
 		FULL_PARAMETERS		("Use a full form of parameters. Default option.",
 							 "-p3", "--full-parameters"),
+		
+		/** The option to set the number of wildcards. */
 		WILDCARDS			("Set the number of wildcards in a pattern. Default: 0.",
 							"-w", "--wildcards"),
+		
+		/** The option to do not show the progress. */
 		NO_PROGRESS			("Don't show information about progress.",
 							"--no-progress"),
+		
+		/** The option for help. */
 		HELP				("Show this message.", 
 							 "-h", "--help");
 
 		String description;
 		String[] names;
 		
+		/**
+		 * Instantiates a new option.
+		 *
+		 * @param description the description of the option
+		 * @param names the names of the option
+		 */
 		private Option(String description, String ...names) {
 			this.description = description;
 			this.names = names;
@@ -432,8 +581,14 @@ public class PatternsAnalyzer implements Analyzer {
 		
 	}
 	
+	/**
+	 * The command line options.
+	 */
 	static class Options extends AbstractOptions {
 
+		/* (non-Javadoc)
+		 * @see jbyco.lib.AbstractOptions#all()
+		 */
 		@Override
 		public AbstractOption[] all() {
 			return Option.values();
@@ -441,6 +596,12 @@ public class PatternsAnalyzer implements Analyzer {
 		
 	}
 	
+	/**
+	 * The main method.
+	 *
+	 * @param args the arguments
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static void main(String[] args) throws IOException {
 		
 		// get options and map of options

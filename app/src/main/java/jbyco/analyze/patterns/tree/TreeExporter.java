@@ -2,14 +2,26 @@ package jbyco.analyze.patterns.tree;
 
 import java.io.PrintWriter;
 
+/**
+ * GML exporter.
+ */
 public class TreeExporter {
 	
+	/** The output. */
 	PrintWriter out;
 	
+	/**
+	 * Instantiates a new tree exporter.
+	 *
+	 * @param out the out
+	 */
 	public TreeExporter(PrintWriter out) {
 		this.out = out;
 	}
 	
+	/**
+	 * Prints the document head.
+	 */
 	public void printDocumentHead() {
 		out.print(
 			"Creator \"jbyco\"\n" +
@@ -17,6 +29,9 @@ public class TreeExporter {
 		);
 	}
 	
+	/**
+	 * Prints the graph start.
+	 */
 	public void printGraphStart() {
 		out.print(
 			"graph\n" +
@@ -27,6 +42,12 @@ public class TreeExporter {
 		);
 	}
 		
+	/**
+	 * Prints the node.
+	 *
+	 * @param id the id
+	 * @param label the label
+	 */
 	public void printNode(int id, Object label) {
 		out.printf(
 			"node\n" +
@@ -39,10 +60,25 @@ public class TreeExporter {
 		);
 	}
 
+	/**
+	 * Prints the edge.
+	 *
+	 * @param source the source
+	 * @param target the target
+	 * @param label the label
+	 */
 	public void printEdge(int source, int target, Object label) {
 		printEdge(source, target, label, 1.0);
 	}
 	
+	/**
+	 * Prints the edge.
+	 *
+	 * @param source the source
+	 * @param target the target
+	 * @param label the label
+	 * @param weight the weight
+	 */
 	public void printEdge(int source, int target, Object label, double weight) {
 		
 		// check and corrent the value of weight
@@ -81,6 +117,9 @@ public class TreeExporter {
 		);
 	}
 
+	/**
+	 * Prints the end.
+	 */
 	public void printGraphEnd() {
 		out.print("]\n");
 	}

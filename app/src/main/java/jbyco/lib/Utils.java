@@ -9,12 +9,29 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+/**
+ * A library of useful functions.
+ */
 public class Utils {
 	
+	/**
+	 * Convert division of two integers to the string.
+	 *
+	 * @param x the x
+	 * @param y the y
+	 * @return the string
+	 */
 	public static String intDivToString(int x, int y) {
 		return (y == 0) ? "0" : Integer.toString(x/y);
 	}
 	
+	/**
+	 * Convert division of two doubles to the string.
+	 *
+	 * @param x the x
+	 * @param y the y
+	 * @return the string
+	 */
 	public static String doubleDivToString(int x, int y) {
 		
 		// set format
@@ -27,6 +44,14 @@ public class Utils {
 		return (y == 0) ? "0" : format.format(x * 1.0 / y); 
 	}
 	
+	/**
+	 * Convert an array to the string.
+	 *
+	 * @param <T> the generic type
+	 * @param array the array
+	 * @param delimiter the delimiter
+	 * @return the string
+	 */
 	public static <T> String arrayToString(T[] array, String delimiter) {
 		
 		StringBuilder builder = new StringBuilder();
@@ -45,18 +70,44 @@ public class Utils {
 		return builder.toString();
 	}
 	
+	/**
+	 * Gets the escaped string.
+	 *
+	 * @param string the string
+	 * @param quoted the string appended to the begin and end of the escaped string
+	 * @return the escaped string
+	 */
 	public static String getEscapedString(String string, String quoted) {
 		return quoted + StringEscapeUtils.escapeJava(string) + quoted;
 	}
 	
+	/**
+	 * Ends with class.
+	 *
+	 * @param s the string
+	 * @return true, if successful
+	 */
 	public static boolean endsWithClass(String s) {
 		return s.endsWith(".class");
 	}
 	
+	/**
+	 * Ends with jar.
+	 *
+	 * @param s the string
+	 * @return true, if successful
+	 */
 	public static boolean endsWithJar(String s) {
 		return s.endsWith(".jar");
 	}
 	
+	/**
+	 * To byte array.
+	 *
+	 * @param in the input
+	 * @return the byte[]
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static byte[] toByteArray(InputStream in) throws IOException {
 		
 		// set the length of the buffer

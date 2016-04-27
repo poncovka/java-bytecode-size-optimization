@@ -3,15 +3,31 @@ package jbyco.analyze.patterns.instructions;
 import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
 
+/**
+ * The class to cache abstracted instructions.
+ */
 public class Cache {
 	
-	// map instruction -> cached instruction
+	/** 
+	 * The map of abstracted instructions mapped to cached instructions. 
+	 * The map uses only weak references, therefore objects can be collected
+	 * by the garbage collector.
+	 */
 	WeakHashMap<AbstractInstruction, WeakReference<CachedInstruction>> map;
 	
+	/**
+	 * Instantiates a new cache.
+	 */
 	public Cache() {
 		map = new WeakHashMap<>();
 	}
 	
+	/**
+	 * Gets the cached instruction.
+	 *
+	 * @param i 	the abstracted instruction
+	 * @return the cached instruction
+	 */
 	public AbstractInstruction getCachedInstruction(AbstractInstruction i) {
 			
 		// check null

@@ -7,21 +7,39 @@ import java.util.TreeMap;
 
 import jbyco.lib.Utils;
 
+/**
+ * The result of analysis in {@link SizeAnalyzer}.
+ */
 public class SizeMap  {
 
-	// item of the map
+	/**
+	 * The item of the map.
+	 */
 	private class Item {
+		
+		/** The count of items. */
 		public int count = 0;
+		
+		/** The size of items. */
 		public int size = 0;
 	}
 
-	// map string->item
+	/** The map of item names mapped to counters. */
 	Map<String, Item> map;
 	
+	/**
+	 * Instantiates a new size map.
+	 */
 	public SizeMap() {
 		this.map = new HashMap<>();
 	}
 	
+	/**
+	 * Adds the item.
+	 *
+	 * @param key the name of item
+	 * @param size the size of item
+	 */
 	public void add(String key, int size) {
 		
 		// get item
@@ -38,6 +56,11 @@ public class SizeMap  {
 		item.size += size;
 	}
 		
+	/**
+	 * Write the results to the output.
+	 *
+	 * @param out the output
+	 */
 	public void write(PrintWriter out) {
 		
 		// ordering

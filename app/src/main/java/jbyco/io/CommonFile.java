@@ -12,15 +12,28 @@ import java.nio.file.Path;
 
 import jbyco.lib.Utils;
 
+/**
+ * A representation of the file.
+ */
 public class CommonFile {
 	
-	// existing file
+	/** The existing file. */
 	final File file;
 	
+	/**
+	 * Instantiates a new common file.
+	 *
+	 * @param file the file
+	 */
 	public CommonFile(File file) {
 		this.file = file;
 	}
 	
+	/**
+	 * Instantiates a new common file.
+	 *
+	 * @param path the path
+	 */
 	public CommonFile(Path path) {
 		this.file = path.toFile();
 	}
@@ -33,6 +46,11 @@ public class CommonFile {
 		return file.toPath();
 	}
 	
+	/**
+	 * To simple file.
+	 *
+	 * @return the file
+	 */
 	public File toSimpleFile() {
 		return file;
 	}
@@ -61,6 +79,11 @@ public class CommonFile {
 		return file.isFile();
 	}
 	
+	/**
+	 * Delete.
+	 *
+	 * @return true, if successful
+	 */
 	public boolean delete() {
 		return file.delete();
 	}

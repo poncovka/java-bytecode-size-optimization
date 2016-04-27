@@ -5,28 +5,47 @@ import java.util.HashMap;
 
 import jbyco.lib.Utils;
 
-/* TODO
- * analýza počtu proměných a počtu parametrů
- * 
+/**
+ * A results of {@link VariablesAnalyzer}.
  */
-
 public class VariablesMap {
 	
-	// item of the map
+	/**
+	 * The item of the map.
+	 */
 	private class Item {
+		
+		/** The counter. */
 		public int counter = 0;
+		
+		/** The number of load instructions. */
 		public int load = 0;
+		
+		/** The number of store instructions. */
 		public int store = 0;
+		
+		/** The number of inc instructions. */
 		public int other = 0;
 	}
 	
+	/** The number of variables. */
 	protected int nvars = 0;
+	
+	/** The number of parameters. */
 	protected int nparams = 0;
 	
-	// map int->item
+	/** The map of variables. */
 	protected HashMap<Integer, Item> variables = new HashMap<>();
+	
+	/** The map of parameters. */
 	protected HashMap<Integer, Item> parameters = new HashMap<>();
 	
+	/**
+	 * Adds the method.
+	 *
+	 * @param nparams the number of parameters
+	 * @param nvars the number of variables
+	 */
 	public void addMethod(int nparams, int nvars) {
 		
 		this.nvars = nvars;
@@ -45,6 +64,12 @@ public class VariablesMap {
 		}
 	}
 	
+	/**
+	 * Adds the variable.
+	 *
+	 * @param key the index
+	 * @param op the opcode
+	 */
 	public void add(int key, String op) {
 		
 		HashMap<Integer, Item> map = (key < nparams) ? parameters : variables;
@@ -58,6 +83,13 @@ public class VariablesMap {
 		}		
 	}
 	
+	/**
+	 * Gets the item.
+	 *
+	 * @param map the map
+	 * @param key the index
+	 * @return the item
+	 */
 	public Item getItem(HashMap<Integer, Item> map, int key) {
 		
 		// get item
@@ -72,6 +104,11 @@ public class VariablesMap {
 		return item;
 	}
 		
+	/**
+	 * Write results to the output.
+	 *
+	 * @param out the output
+	 */
 	public void write(PrintWriter out) {
 		
 		out.println("Parameters:");
@@ -83,6 +120,12 @@ public class VariablesMap {
 		writeMap(out, variables);
 	}
 	
+	/**
+	 * Write map to the output.
+	 *
+	 * @param out the output
+	 * @param map the map
+	 */
 	public void writeMap(PrintWriter out, HashMap<Integer, Item> map) {
 		
 		// set format

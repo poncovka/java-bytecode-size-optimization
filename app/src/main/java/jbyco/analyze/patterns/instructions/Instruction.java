@@ -5,14 +5,24 @@ import java.util.Arrays;
 import jbyco.analyze.patterns.operations.AbstractOperation;
 import jbyco.analyze.patterns.parameters.AbstractParameter;
 
+/**
+ * The representation of abstracted instruction. 
+ * Abstract instructions are created by Abstractor.
+ */
 public class Instruction implements AbstractInstruction {
 	
-	// abstraction of opcode
+	/** The abstraction of the operation code. */
 	final AbstractOperation operation;
 	
-	// parameters of the instruction
+	/** The abstraction of parameters. */
 	final AbstractParameter[] parameters;
 	
+	/**
+	 * Instantiates a new instruction.
+	 *
+	 * @param operation 	the operation
+	 * @param params 		the parameters
+	 */
 	public Instruction(AbstractOperation operation, AbstractParameter[] params) {
 		this.operation = operation;
 		this.parameters = params;
@@ -26,6 +36,9 @@ public class Instruction implements AbstractInstruction {
 		return parameters;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		
@@ -39,6 +52,9 @@ public class Instruction implements AbstractInstruction {
 		return buffer.toString();
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		
@@ -52,6 +68,9 @@ public class Instruction implements AbstractInstruction {
 	}
 
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		

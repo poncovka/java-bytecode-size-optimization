@@ -4,16 +4,34 @@ import java.util.Arrays;
 
 import jbyco.lib.Utils;
 
+/**
+ * The parameter with no abstraction.
+ */
 public class FullParameter implements AbstractParameter {
 	
+	/** The type of the parameter */
 	final ParameterType type;
+	
+	/** The components of the parameter. */
 	final Object[] components;
 		
+	/**
+	 * Instantiates a new full parameter.
+	 *
+	 * @param type the type
+	 * @param components the components
+	 */
 	public FullParameter(ParameterType type, Object ...components) {
 		this.type = type;
 		this.components = components;
 	}
 	
+	/**
+	 * Returns the string representation of the given component.
+	 *
+	 * @param component the component
+	 * @return the string
+	 */
 	public String componentToString(Object component) {
 		
 		if (type == ParameterType.STRING) {
@@ -24,6 +42,9 @@ public class FullParameter implements AbstractParameter {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		
@@ -49,6 +70,9 @@ public class FullParameter implements AbstractParameter {
 		return buffer.toString();
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -58,6 +82,9 @@ public class FullParameter implements AbstractParameter {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		
