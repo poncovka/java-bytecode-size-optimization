@@ -12,7 +12,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 applicationName = "jbyco"
-mainClassName = "jbyco.App"
+mainClassName = "jbyco.Application"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 

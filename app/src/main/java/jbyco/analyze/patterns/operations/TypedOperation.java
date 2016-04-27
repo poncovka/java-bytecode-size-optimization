@@ -7,7 +7,7 @@ import org.objectweb.asm.Opcodes;
  * <p>
  * Typed operations are managed by {@link TypedOperationFactory}.
  */
-enum TypedOperation implements AbstractOperation {
+public enum TypedOperation implements AbstractOperation {
 	
 	/** The nop operation. */
 	NOP			(Opcodes.NOP),

@@ -223,85 +223,85 @@ public class PatternsAnalyzer implements Analyzer {
 	public void processInstructions(InsnList list) {
 		
 		if (WILDCARDS == 0) {
-			processSuffixes(list);
+			processSequences(list);
 		}
 		else {
-			processSuffixesWithWildCards(list);
+			processSequencesWithWildCards(list);
 		}
 	}
 	
 	/**
 	 * Processes the list of instructions without wild cards.
-	 * It adds every valid suffix of the list with a given maximal length to the graph.
+	 * It adds every valid sequence of instructions with a given maximal length to the graph.
 	 *
 	 * @param list the list of instructions
 	 */
-	public void processSuffixes(InsnList list) {
+	public void processSequences(InsnList list) {
 		
 		// process every suffix of the list
 		for (int i = 0; i < list.size(); i++) {
 			
-			// get the suffix from the list
-			Collection<AbstractInsnNode> suffix = getSuffix(list, i, MAX_LENGTH);
+			// get the sequence from the list
+			Collection<AbstractInsnNode> sequence = getSequence(list, i, MAX_LENGTH);
 			
-			// check suffix
-			if (suffix == null) {
+			// check the sequence
+			if (sequence == null) {
 				continue;
 			}	
 			
-			// add the suffix to the graph
-			addSuffix(suffix);
+			// add the sequence to the graph
+			addSequence(sequence);
 		}
 	}
 	
 	/**
-	 * Processes suffixes with wild cards.
-	 * It adds every valid suffix of the list with a given maximal length 
+	 * Processes sequences with wild cards.
+	 * It adds every valid sequence of the list with a given maximal length 
 	 * and a given number of wild cards to the graph. 
 	 *
 	 * @param list the list of instructions
 	 */
-	public void processSuffixesWithWildCards(InsnList list) {
+	public void processSequencesWithWildCards(InsnList list) {
 		
 		// process every suffix of the list
 		for (int i = 0; i < list.size(); i++) {
 			
-			// get the basic suffix from the list
-			Collection<AbstractInsnNode> nodes = getSuffix(list, i, MAX_LENGTH);
+			// get the basic sequence from the list
+			Collection<AbstractInsnNode> nodes = getSequence(list, i, MAX_LENGTH);
 			
-			// check the length of the suffix
+			// check the length of the sequence
 			if (nodes == null) {
 				continue;
 			}
 			
-			// init a creator of suffixes
+			// init a creator of sequences
 			WildSequenceGenerator generator = 
 					new WildSequenceGenerator(nodes, null, WILDCARDS);
 			
-			// iterate over all suffixes with wild cards
+			// iterate over all sequences with wild cards
 			while(generator.hasNext()) {
 				
-				// get the suffix with nulls as wild cards
-				Collection<AbstractInsnNode> suffix = generator.next();
+				// get the sequence with nulls as wild cards
+				Collection<AbstractInsnNode> sequence = generator.next();
 				
-				// add the suffix to the graph
-				addSuffix(suffix);
+				// add the sequence to the graph
+				addSequence(sequence);
 			}	
 		}
 	}
 	
 	/**
-	 * Gets the suffix.
+	 * Gets the sequence.
 	 *
 	 * @param list 		the list of instructions
-	 * @param index 	the index of the first instruction in a suffix
-	 * @param length 	the maximal length of the suffix
-	 * @return the suffix of instructions
+	 * @param index 	the index of the first instruction in a sequence
+	 * @param length 	the maximal length of the sequence
+	 * @return the sequence of instructions
 	 */
-	public Collection<AbstractInsnNode> getSuffix(InsnList list, int index, int length) {
+	public Collection<AbstractInsnNode> getSequence(InsnList list, int index, int length) {
 		
 		// init
-		Collection<AbstractInsnNode> suffix = new ArrayList<>();
+		Collection<AbstractInsnNode> sequence = new ArrayList<>();
 		
 		// create a list of active nodes of the given length starting from the index 
 		for (int i = index, l = 0; i < list.size() && l < length; i++) {
@@ -319,21 +319,21 @@ public class PatternsAnalyzer implements Analyzer {
 				continue;
 			}
 			
-			// add node to the suffix
-			suffix.add(node);
+			// add node to the sequence
+			sequence.add(node);
 			l++;
 		}
 		
-		// return new suffix
-		return suffix;
+		// return new sequence
+		return sequence;
 	}
 	
 	
 	/**
-	 * Checks if is node can be the first node in a suffix.
+	 * Checks if is node can be the first node in a sequence.
 	 *
 	 * @param node the node
-	 * @return true, if the node can be the first node in a suffix
+	 * @return true, if the node can be the first node in a sequence
 	 */
 	public boolean isFirstNode(AbstractInsnNode node) {
 		// any active node
@@ -359,45 +359,45 @@ public class PatternsAnalyzer implements Analyzer {
 	}
 	
 	/**
-	 * Adds the suffix of instructions to the graph.
-	 * The suffix is abstracted, cached and added to the graph.
+	 * Adds the sequence of instructions to the graph.
+	 * The sequence is abstracted, cached and added to the graph.
 	 *
-	 * @param nodes the suffix of instructions
+	 * @param nodes the sequence of instructions
 	 */
-	public void addSuffix(Collection<AbstractInsnNode> nodes) {
+	public void addSequence(Collection<AbstractInsnNode> nodes) {
 		
 		// init
-		Collection<AbstractInstruction> suffix;
+		Collection<AbstractInstruction> sequence;
 		
-		// abstract instructions in a suffix
-		suffix = getAbstractedSuffix(nodes);
+		// abstract instructions in a sequence
+		sequence = getAbstractedSequence(nodes);
 		
-		// cache objects in a suffix
-		suffix = getCachedSuffix(suffix);
+		// cache objects in a sequence
+		sequence = getCachedSequence(sequence);
 		
-		// add cached suffix to the graph
-		builder.addPath(suffix);
+		// add cached sequence to the graph
+		builder.addPath(sequence);
 		
 		// update counter
 		numseq += nodes.size();
 	}
 	
 	/**
-	 * Gets the abstracted suffix.
+	 * Gets the abstracted sequence.
 	 * Factories are initialized before the abstraction.
 	 *
-	 * @param suffix the suffix
-	 * @return the abstracted suffix
+	 * @param sequence the sequence
+	 * @return the abstracted sequence
 	 */
-	public Collection<AbstractInstruction> getAbstractedSuffix(Collection<AbstractInsnNode> suffix) {
+	public Collection<AbstractInstruction> getAbstractedSequence(Collection<AbstractInsnNode> sequence) {
 		
 		// init, operations don't need to be initialized again
 		abstractor.init();
 		parameters.init();
 		labels.init(begin, end);
 				
-		// process instructions in a suffix
-		for (AbstractInsnNode node : suffix) {
+		// process instructions in a sequence
+		for (AbstractInsnNode node : sequence) {
 			
 			// add null
 			if (node == null) {
@@ -414,18 +414,18 @@ public class PatternsAnalyzer implements Analyzer {
 	}
 	
 	/**
-	 * Gets the cached suffix.
+	 * Gets the cached sequence.
 	 *
-	 * @param suffix the suffix
-	 * @return the cached suffix
+	 * @param sequence the sequence
+	 * @return the cached sequence
 	 */
-	public Collection<AbstractInstruction> getCachedSuffix(Collection<AbstractInstruction> suffix) {
+	public Collection<AbstractInstruction> getCachedSequence(Collection<AbstractInstruction> sequence) {
 		
 		// init
-		Collection<AbstractInstruction> cached = new ArrayList<>(suffix.size());
+		Collection<AbstractInstruction> cached = new ArrayList<>(sequence.size());
 		
 		// process instructions
-		for (AbstractInstruction i : suffix) {
+		for (AbstractInstruction i : sequence) {
 			
 			// get cached instruction or null
 			AbstractInstruction i2 = cache.getCachedInstruction(i);
