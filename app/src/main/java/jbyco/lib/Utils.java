@@ -127,4 +127,8 @@ public class Utils {
 		out.flush();
 		return out.toByteArray();		
 	}
+	
+	public static boolean isMathInteger(double x) {
+		return (x % 1) == 0;
+	}
 }
