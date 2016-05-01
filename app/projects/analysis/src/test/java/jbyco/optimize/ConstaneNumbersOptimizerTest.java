@@ -4,11 +4,11 @@ import org.junit.Test;
 
 public class ConstaneNumbersOptimizerTest {
 
-	@Test
-	public void test() {
-		
-		
-		
-	}
-	
+    @Test
+    public void test() {
+
+
+
+    }
+
 }
