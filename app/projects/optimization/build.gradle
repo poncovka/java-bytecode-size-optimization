@@ -1,0 +1,21 @@
+/*
+ *
+ * The configuration for Gradle.
+ * Author: Vendula Poncova
+ * Date:   1.5.2016
+ *
+ */
+
+//apply plugin: 'application'
+//mainClassName = "jbyco."
+
+dependencies {
+  
+  // project common
+  compile project(':projects:common')
+  
+  // ASM
+  compile 'org.ow2.asm:asm-all:5.0.4'
+  
+}
+

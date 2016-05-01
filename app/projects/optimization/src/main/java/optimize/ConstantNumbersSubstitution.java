@@ -5,13 +5,13 @@ import org.objectweb.asm.Opcodes;
 
 import jbyco.lib.Utils;
 
-public class ConstantNumbersOptimizer extends MethodVisitor {
+public class ConstantNumbersSubstitution extends MethodVisitor {
 
-	public ConstantNumbersOptimizer() {
+	public ConstantNumbersSubstitution() {
 		super(Opcodes.ASM5);
 	}
 	
-	public ConstantNumbersOptimizer(MethodVisitor visitor) {
+	public ConstantNumbersSubstitution(MethodVisitor visitor) {
 		super(Opcodes.ASM5, visitor);
 	}
 	

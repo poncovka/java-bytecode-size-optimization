@@ -1,0 +1,18 @@
+/*
+ *
+ * The configuration for Gradle.
+ * Author: Vendula Poncova
+ * Date:   1.5.2016
+ *
+ */
+
+//apply plugin: 'application'
+//mainClassName = "jbyco."
+
+dependencies {
+
+  // string escape
+  compile 'org.apache.commons:commons-lang3:3.4'
+  
+}
+
