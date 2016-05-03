@@ -1,46 +1,16 @@
 package jbyco.optimize;
 
-import java.util.Deque;
-import java.util.List;
+import java.lang.annotation.*;
 
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
-
-// TODO: Auto-generated Javadoc
 /**
- * The Class Patterns.
+ * Created by vendy on 2.5.16.
  */
-public class Patterns {
 
-    /**
-     * The Class AddPatern.
-     * Simplify:
-     *     CONST I(0); ADD;
-     */
-    public class AddPatern implements Pattern {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Patterns {
 
-        /* (non-Javadoc)
-         * @see jbyco.optimize.Pattern#findAndReplace(org.objectweb.asm.tree.InsnList, java.util.List)
-         */
-        @Override
-        public boolean findAndReplace(InsnList list, List<AbstractInsnNode> group) {
-
-            int len = group.size();
-            int last = len - 1;
-
-            if (len >= 2) {
-                AbstractInsnNode n1 = group.get(last);
-                AbstractInsnNode n2 = group.get(last - 1);
-
-                if (n1.getOpcode() == Opcodes.IADD) {
-                }
-            }
-
-
-            return false;
-        }
-
-    }
+    Pattern[] value();
 
 }

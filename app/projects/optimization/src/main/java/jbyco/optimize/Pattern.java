@@ -1,12 +1,17 @@
 package jbyco.optimize;
 
-import java.util.List;
+import java.lang.annotation.*;
 
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
+/**
+ * Created by vendy on 2.5.16.
+ */
 
-public interface Pattern {
+@Documented
+@Repeatable(Patterns.class)
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Pattern {
 
-    public boolean findAndReplace(InsnList list, List<AbstractInsnNode> group);
+    Symbols[] value();
 
 }
