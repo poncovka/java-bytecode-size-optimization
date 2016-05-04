@@ -8,7 +8,9 @@ import java.util.Map;
  */
 public abstract class AbstractOptions {
 
-    /** The map of names mapped to options. */
+    /**
+     * The map of names mapped to options.
+     */
     Map<String, AbstractOption> map = new HashMap<>();
 
     /**

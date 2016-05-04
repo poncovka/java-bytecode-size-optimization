@@ -6,16 +6,24 @@
  *
  */
 
-//apply plugin: 'application'
-//mainClassName = "jbyco."
+apply plugin: 'application'
+
+applicationName = "jbyco"
+mainClassName = "jbyco.optimization.Application"
+archivesBaseName = "jbyco-optimization"
 
 dependencies {
-  
-  // project common
-  compile project(':projects:common')
-  
-  // ASM
-  compile 'org.ow2.asm:asm-all:5.0.4'
-  
+
+    // project common
+    compile project(':projects/common')
+
+    // ASM
+    compile 'org.ow2.asm:asm-all:5.0.4'
+
+}
+
+run {
+    // Run with arguments: gradle run -Dappargs="arg1 arg2 arg3"
+    args System.getProperty("appargs", "").split()
 }
 

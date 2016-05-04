@@ -8,24 +8,25 @@
 
 apply plugin: 'application'
 
-applicationName = "jbyco-analysis"
-mainClassName   = "jbyco.analyze.Application"
+applicationName = "jbyca"
+mainClassName = "jbyco.analysis.Application"
+archivesBaseName = "jbyco-analysis"
 
 dependencies {
-  
-  // project common
-  compile project(':projects:common')
-  
-  // BCEL
-  compile 'com.google.code.findbugs:bcel-findbugs:6.0'
-    
-  // ASM
-  compile 'org.ow2.asm:asm-all:5.0.4'
-    
+
+    // project common
+    compile project(':projects/common')
+
+    // BCEL
+    compile 'com.google.code.findbugs:bcel-findbugs:6.0'
+
+    // ASM
+    compile 'org.ow2.asm:asm-all:5.0.4'
+
 }
 
-run {    
-  // Run with arguments: gradle run -Dappargs="arg1 arg2 arg3"
-  args System.getProperty("appargs","").split()
+run {
+    // Run with arguments: gradle run -Dappargs="arg1 arg2 arg3"
+    args System.getProperty("appargs", "").split()
 }
 

@@ -6,27 +6,52 @@
  *
  */
 
+def buildDir = 'build'
+
 // Set common settings for all subprojects:
 subprojects {
 
-  apply plugin: 'java'
-  sourceCompatibility = 1.8
-  targetCompatibility = 1.8
-  archivesBaseName = "jbyco-${archivesBaseName}"
+    apply plugin: 'java'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
-  repositories {
-    jcenter()
-  }
+    repositories {
+        jcenter()
+    }
 
-  dependencies {
-    testCompile 'junit:junit:4.12'
-  }
-  
-  clean {
-    delete 'bin/'
-  }
+    dependencies {
+        testCompile 'junit:junit:4.12'
+    }
 
+    clean {
+        delete 'build'
+    }
 }
 
+task collectDistributions(type: Sync, dependsOn: subprojects.collect() { it.tasks.getByName('build') }) {
+    from subprojects.collect { it.file('build/distributions') }
+    into "${buildDir}/distributions"
+}
+
+task collectScripts(type: Sync, dependsOn: subprojects.collect() { it.tasks.getByName('build') }) {
+    from subprojects.collect { it.file('build/scripts') }
+    into "$buildDir/install/jbyco/bin"
+}
+
+task collectDependencies(type: Sync, dependsOn: subprojects.collect() { it.tasks.getByName('build') }) {
+    from subprojects.collect { it.configurations.runtime }
+    from subprojects.collect { it.file('build/libs') }
+    into "$buildDir/install/jbyco/lib"
+}
+
+// builds the project
+task build {
+    dependsOn(['collectScripts', 'collectDependencies', 'collectDistributions'])
+}
+
+// clean the project
+task clean {
+    delete 'build'
+}
 
 // end of file

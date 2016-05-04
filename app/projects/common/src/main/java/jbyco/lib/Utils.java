@@ -1,13 +1,13 @@
 package jbyco.lib;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-
-import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * A library of useful functions.
@@ -22,7 +22,7 @@ public class Utils {
      * @return the string
      */
     public static String intDivToString(int x, int y) {
-        return (y == 0) ? "0" : Integer.toString(x/y);
+        return (y == 0) ? "0" : Integer.toString(x / y);
     }
 
     /**
@@ -47,8 +47,8 @@ public class Utils {
     /**
      * Convert an array to the string.
      *
-     * @param <T> the generic type
-     * @param array the array
+     * @param <T>       the generic type
+     * @param array     the array
      * @param delimiter the delimiter
      * @return the string
      */

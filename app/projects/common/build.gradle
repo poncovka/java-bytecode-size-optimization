@@ -8,11 +8,12 @@
 
 //apply plugin: 'application'
 //mainClassName = "jbyco."
+archivesBaseName = "jbyco-common"
 
 dependencies {
 
-  // string escape
-  compile 'org.apache.commons:commons-lang3:3.4'
-  
+    // string escape
+    compile 'org.apache.commons:commons-lang3:3.4'
+
 }
 
