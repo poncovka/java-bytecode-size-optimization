@@ -50,11 +50,15 @@ public class ConstantPoolWriter extends EmptyVisitor {
 
             // get constant
             Constant c = pool[i];
-            String name = getConstantName(c);
-            String items = getConstantItems(c);
 
             // print constant
-            out.printf("   %-5s %-20s (%s)\n", i + ":", name, items);
+            if (c != null) {
+
+                String name = getConstantName(c);
+                String items = getConstantItems(c);
+
+                out.printf("   %-5s %-20s (%s)\n", i + ":", name, items);
+            }
         }
 
         // print end
