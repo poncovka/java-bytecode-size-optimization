@@ -1,4 +1,4 @@
-package jbyco.optimization;
+package jbyco.optimization.peephole;
 
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
@@ -29,6 +29,12 @@ public class State {
         this.matched = new AbstractInsnNode[size];
     }
 
+    public String getDescription() {
+        return    action.getDeclaringClass().getCanonicalName()
+                + "."
+                + action.getName();
+    }
+
     public State copyInitial() {
         return new State(pattern, action);
     }
@@ -56,12 +62,28 @@ public class State {
     }
 
     public boolean doAction(InsnList list) {
+
+        boolean result = false;
+
         try {
-            Object result = action.invoke(list, (Object[]) matched);
-            return ((Boolean) result).booleanValue();
+
+            Object object = action.invoke(null, list, matched);
+            result = ((Boolean) object).booleanValue();
+
+            if (result) {
+                System.err.println(">>> Action: " + getDescription());
+                System.err.println(">>> Matched:");
+                InsnUtils.debug(matched);
+                System.err.println(">>> Result:");
+                InsnUtils.debug(list);
+                System.err.println();
+            }
+
         } catch (Exception e) {
+            System.err.println("Unable to do the action for " + getDescription() + ".");
             e.printStackTrace();
-            return false;
         }
+
+        return result;
     }
 }

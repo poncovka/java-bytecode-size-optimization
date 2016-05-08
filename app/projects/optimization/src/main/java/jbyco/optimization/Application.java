@@ -40,16 +40,17 @@ public class Application {
                 while (index < args.length) {
                     paths.add(Paths.get(args[index++]));
                 }
-
-                continue;
             }
+            else {
 
-            switch (option) {
-                case OUTPUT:
-                    outputDirectory = Paths.get(args[++index]);
-                case HELP:
-                    options.help();
-                    return;
+                switch (option) {
+                    case OUTPUT:
+                        outputDirectory = Paths.get(args[++index]);
+                        break;
+                    case HELP:
+                        options.help();
+                        return;
+                }
             }
 
         }
@@ -63,10 +64,7 @@ public class Application {
         try {
 
             // process files
-            for (String str : args) {
-
-                // get path
-                Path path = Paths.get(str);
+            for (Path path : paths) {
 
                 // process files on the path
                 for (CommonFile file : (new BytecodeFilesIterator(path, workingDirectory))) {
@@ -82,7 +80,7 @@ public class Application {
                     // recreate the file in a new path
                     Path path2 = file.resolveRelativePath(outputDirectory);
                     CommonFile file2 = file.copy(path2.toFile());
-                    file2.createDirectories();
+                    file2.toFile().getParentFile().mkdirs();
 
                     // write the optimized bytes to the prepared file
                     OutputStream out = file2.getOutputStream();
@@ -100,9 +98,10 @@ public class Application {
      * The command line options.
      */
     enum Option implements AbstractOption {
-        OUTPUT("Set the output directory. Default: '.'.",
-                "-o, --output"),
-        HELP("Show this message.",
+
+        OUTPUT  ("Set the output directory. Default: '.'.",
+                "-o", "--output"),
+        HELP    ("Show this message.",
                 "-h", "--help");
 
         /**

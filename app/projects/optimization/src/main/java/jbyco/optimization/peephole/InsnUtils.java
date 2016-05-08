@@ -1,10 +1,13 @@
-package jbyco.optimization;
+package jbyco.optimization.peephole;
 
+import jbyco.optimization.peephole.Symbols;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.IntInsnNode;
-import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
+import org.objectweb.asm.tree.*;
+import org.objectweb.asm.util.Printer;
+import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.util.TraceMethodVisitor;
+
+import java.io.PrintWriter;
 
 /**
  * Created by vendy on 3.5.16.
@@ -228,6 +231,38 @@ public class InsnUtils {
             default:
                 throw new IllegalArgumentException();
         }
+    }
+
+
+    public static void debug(AbstractInsnNode[] array) {
+        Printer printer = new Textifier();
+        TraceMethodVisitor visitor = new TraceMethodVisitor(printer);
+
+        for (AbstractInsnNode node : array) {
+            node.accept(visitor);
+        }
+
+        PrintWriter writer = new PrintWriter(System.err);
+        printer.print(writer);
+        writer.flush();
+    }
+
+    public static void debug(InsnList list) {
+        Printer printer = new Textifier();
+        TraceMethodVisitor visitor = new TraceMethodVisitor(printer);
+        list.accept(visitor);
+        PrintWriter writer = new PrintWriter(System.err);
+        printer.print(writer);
+        writer.flush();
+    }
+
+    public static void debug(MethodNode method) {
+        Printer printer = new Textifier();
+        TraceMethodVisitor visitor = new TraceMethodVisitor(printer);
+        method.accept(visitor);
+        PrintWriter writer = new PrintWriter(System.err);
+        printer.print(writer);
+        writer.flush();
     }
 
 

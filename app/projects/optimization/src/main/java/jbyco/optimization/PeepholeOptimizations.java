@@ -1,10 +1,13 @@
 package jbyco.optimization;
 
+import jbyco.optimization.peephole.InsnUtils;
+import jbyco.optimization.peephole.Pattern;
+import jbyco.optimization.peephole.Symbols;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 /**
- * The Class Optimizations is a library of optimization methods.
+ * The Class PeepholeOptimizations is a library of optimization methods.
  * Each optimization method has the @Pattern annotation.
  * The expected definition of the pattern method is:
  * <p>
@@ -13,7 +16,7 @@ import org.objectweb.asm.tree.*;
  * The array of matched instructions contains instructions that match the pattern.
  * The method returns true if the list of instructions was modified, else false.
  */
-public class Optimizations {
+public class PeepholeOptimizations {
 
     // ------------------------------------------------------------------------ REMOVE INSTRUCTIONS
 
@@ -130,6 +133,9 @@ public class Optimizations {
 
     // ------------------------------------------------------------------------ OPTIMIZE JUMPS
 
+    // TODO update FRAMES
+    // TODO join LABELS: LABEL, LABEL -> LABEL
+
     @Pattern({Symbols.GOTO /*x*/, Symbols.LABEL /*x*/}) /* => LABEL x */
     public static boolean removeJump(InsnList list, AbstractInsnNode[] matched) {
 
@@ -141,6 +147,12 @@ public class Optimizations {
         return false;
     }
 
+    @Pattern({Symbols.LABEL, Symbols.FRAME, Symbols.LABEL}) /* => LABEL, LABEL */
+    public static boolean removeFrame(InsnList list, AbstractInsnNode[] matched) {
+        list.remove(matched[1]);
+        return true;
+    }
+
     @Pattern({Symbols.RETURN, Symbols.NOTLABEL}) /* => RETURN */
     @Pattern({Symbols.GOTO, Symbols.NOTLABEL}) /* => GOTO */
     public static boolean removeAfterJump(InsnList list, AbstractInsnNode[] matched) {
@@ -148,16 +160,17 @@ public class Optimizations {
         return true;
     }
 
-    // TODO SWITCH - implement class for switch optimizations, the absolute label values are neccessary
+    // TODO SWITCH - implement class for switch optimizations, the absolute label values are neccessary, POP!!!
     // TODO LABEL x, GOTO y - implement class for jump optimizations
     // TODO GOTO x, ...., LABEL x, iRETURN
 
-    @Pattern({Symbols.LOOKUPSWITCH /* default */}) /* => GOTO default */
+    @Pattern({Symbols.LOOKUPSWITCH /* default */}) /* => POP; GOTO default */
     public static boolean removeLookupswitch(InsnList list, AbstractInsnNode[] matched) {
 
         LookupSwitchInsnNode i = ((LookupSwitchInsnNode) matched[0]);
 
         if (i.labels.isEmpty()) {
+            list.insertBefore(matched[0], new InsnNode(Opcodes.POP));
             list.set(matched[0], new JumpInsnNode(Opcodes.GOTO, i.dflt));
             return true;
         }
@@ -166,9 +179,9 @@ public class Optimizations {
     }
 
 
-    // TODO LOAD VAR(0); LOAD VAR(0); IFEQ LABEL(0);
-    // TODO LOAD VAR(0); LOAD VAR(0); IFNE LABEL(0);
-    // TODO IF LABEL(0); GOTO LABEL(0);
+    // TODO LOAD VAR(0); LOAD VAR(0); IFEQ LABEL(0); -> GOTO;
+    // TODO LOAD VAR(0); LOAD VAR(0); IFNE LABEL(0); -> GOTO
+    // TODO IF LABEL(0); GOTO LABEL(0); -> POP, POP?, GOTO
     // TODO CONST; CONST; IF LABEL(0)
     // TODO CONST null; IFNULL LABEL(0);
     // TODO
@@ -189,18 +202,30 @@ public class Optimizations {
 
     // ------------------------------------------------------------------------ ALGEBRAIC SIMPLIFICATION
 
-    // TODO mistake, result is NaN
 
-    @Pattern({Symbols.LDC /*NaN*/, Symbols.FADD}) /* => NaN */
-    @Pattern({Symbols.LDC /*NaN*/, Symbols.DADD}) /* => NaN */
-    public static boolean simplifyAddNaN(InsnList list, AbstractInsnNode[] matched) {
+    // TODO multiply zero, sub zero, div one, multiply one, special cases in double and float!
+
+    @Pattern({Symbols.LDC /*NaN*/, Symbols.FADD}) /* => POP, LDC NaN */
+    public static boolean simplifyAddFloatNaN(InsnList list, AbstractInsnNode[] matched) {
 
         Object value = ((LdcInsnNode) matched[0]).cst;
 
-        if ((value instanceof Double && ((Double) value).isNaN())
-                || (value instanceof Float && ((Float) value).isNaN())) {
+        if ((value instanceof Float && ((Float) value).isNaN())) {
+            list.insertBefore(matched[0], new InsnNode(Opcodes.POP));
+            list.remove(matched[1]);
+            return true;
+        }
 
-            list.remove(matched[0]);
+        return false;
+    }
+
+    @Pattern({Symbols.LDC /*NaN*/, Symbols.DADD}) /* => POP2, LDC NaN */
+    public static boolean simplifyAddDoubleNaN(InsnList list, AbstractInsnNode[] matched) {
+
+        Object value = ((LdcInsnNode) matched[0]).cst;
+
+        if ((value instanceof Double && ((Double) value).isNaN())) {
+            list.insertBefore(matched[0], new InsnNode(Opcodes.POP2));
             list.remove(matched[1]);
             return true;
         }
@@ -385,7 +410,7 @@ public class Optimizations {
 
     // ------------------------------------------------------------------------ DUPLICATE
 
-    @Pattern({Symbols.INT, Symbols.INT}) /* => INT; DUP */
+    @Pattern({Symbols.INT /*x*/, Symbols.INT /*x*/}) /* => INT x; DUP */
     public static boolean duplicateInt(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.compareInt(matched[0], matched[1])) {
@@ -396,7 +421,7 @@ public class Optimizations {
         return false;
     }
 
-    @Pattern({Symbols.LONG, Symbols.LONG}) /* => LONG; DUP2 */
+    @Pattern({Symbols.LONG /*x*/, Symbols.LONG /*x*/}) /* => LONG x; DUP2 */
     public static boolean duplicateLong(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.compareLong(matched[0], matched[1])) {
@@ -408,7 +433,7 @@ public class Optimizations {
     }
 
 
-    @Pattern({Symbols.FLOAT, Symbols.FLOAT}) /* => FLOAT; DUP */
+    @Pattern({Symbols.FLOAT /*x*/, Symbols.FLOAT /*x*/}) /* => FLOAT x; DUP */
     public static boolean duplicateFloat(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.compareFloat(matched[0], matched[1])) {
@@ -419,7 +444,7 @@ public class Optimizations {
         return false;
     }
 
-    @Pattern({Symbols.DOUBLE, Symbols.DOUBLE}) /* => DOUBLE; DUP2 */
+    @Pattern({Symbols.DOUBLE /*x*/, Symbols.DOUBLE /*x*/}) /* => DOUBLE x; DUP2 */
     public static boolean duplicateDouble(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.compareDouble(matched[0], matched[1])) {
@@ -482,7 +507,7 @@ public class Optimizations {
         return false;
     }
 
-    // TODO PUTSTATIC OBJECT(0) FIELD(0); GETSTATIC OBJECT(0) FIELD(0); → DUP; PUTSTATIC OBJECT(0) FIELD(0);
+    // TODO PUTSTATIC OBJECT(0) FIELD(0); GETSTATIC OBJECT(0) FIELD(0); → DUP; PUTSTATIC OBJECT(0) FIELD(0); - nelze i kvůli vláknům, výjimky
     // TODO LOAD VAR(0); LOAD VAR(1); LOAD VAR(0); → LOAD VAR(1); LOAD VAR(0); DUP X;
     // TODO LOAD VAR(0); LOAD VAR(1); LOAD VAR(0); LOAD VAR(1); → LOAD VAR(0); LOAD VAR(1); DUP2;
 

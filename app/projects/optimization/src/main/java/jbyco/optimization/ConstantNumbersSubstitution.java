@@ -1,37 +1,36 @@
 package jbyco.optimization;
 
 import jbyco.lib.Utils;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+/**
+ * The method adapter
+ */
 public class ConstantNumbersSubstitution extends MethodVisitor {
-
-    public ConstantNumbersSubstitution() {
-        super(Opcodes.ASM5);
-    }
 
     public ConstantNumbersSubstitution(MethodVisitor visitor) {
         super(Opcodes.ASM5, visitor);
     }
 
-
     public void visitOptimalInt(int operand) {
 
         // ICONST
         if (operand >= -1 && operand <= 5) {
-            super.visitInsn(Opcodes.ICONST_0 + operand);
+            mv.visitInsn(Opcodes.ICONST_0 + operand);
         }
         // BIPUSH
         else if (operand >= Byte.MIN_VALUE && operand <= Byte.MAX_VALUE) {
-            super.visitIntInsn(Opcodes.BIPUSH, operand);
+            mv.visitIntInsn(Opcodes.BIPUSH, operand);
         }
         // SIPUSH
         else if (operand >= Short.MIN_VALUE && operand <= Short.MAX_VALUE) {
-            super.visitIntInsn(Opcodes.SIPUSH, operand);
+            mv.visitIntInsn(Opcodes.SIPUSH, operand);
         }
         // LDC I
         else {
-            super.visitLdcInsn(new Integer(operand));
+            mv.visitLdcInsn(new Integer(operand));
         }
     }
 
@@ -39,7 +38,7 @@ public class ConstantNumbersSubstitution extends MethodVisitor {
 
         // LCONST
         if (operand >= 0 && operand <= 1) {
-            super.visitInsn(Opcodes.LCONST_0 + (int) operand);
+            mv.visitInsn(Opcodes.LCONST_0 + (int) operand);
         }
         // ICONST; I2L;
         // BIPUSH; I2L;
@@ -47,11 +46,11 @@ public class ConstantNumbersSubstitution extends MethodVisitor {
         // LDC I;  I2L; ?
         else if (operand >= Integer.MIN_VALUE && operand <= Integer.MAX_VALUE) {
             visitOptimalInt((int) operand);
-            super.visitInsn(Opcodes.I2L);
+            mv.visitInsn(Opcodes.I2L);
         }
         // LDC L
         else {
-            super.visitLdcInsn(new Long(operand));
+            mv.visitLdcInsn(new Long(operand));
         }
     }
 
@@ -61,14 +60,14 @@ public class ConstantNumbersSubstitution extends MethodVisitor {
         if (Float.isNaN(operand)) {
 
             // LDC F
-            super.visitLdcInsn(new Float(operand));
+            mv.visitLdcInsn(new Float(operand));
 
         }
         // is infinite?
         else if (Float.isInfinite(operand)) {
 
             // LDC F
-            super.visitLdcInsn(new Float(operand));
+            mv.visitLdcInsn(new Float(operand));
 
         }
         // is finite?
@@ -76,7 +75,7 @@ public class ConstantNumbersSubstitution extends MethodVisitor {
 
             // FCONST
             if (operand == 0.0 || operand == 1.0 || operand == 2.0) {
-                super.visitInsn(Opcodes.FCONST_0 + (int) operand);
+                mv.visitInsn(Opcodes.FCONST_0 + (int) operand);
             }
 
             // ICONST; I2F;
@@ -86,12 +85,12 @@ public class ConstantNumbersSubstitution extends MethodVisitor {
                     && operand >= Short.MIN_VALUE && operand <= Short.MAX_VALUE) {
 
                 visitOptimalInt((int) operand);
-                super.visitInsn(Opcodes.I2F);
+                mv.visitInsn(Opcodes.I2F);
             }
 
             // LDC F
             else {
-                super.visitLdcInsn(new Float(operand));
+                mv.visitLdcInsn(new Float(operand));
             }
         }
     }
@@ -102,16 +101,16 @@ public class ConstantNumbersSubstitution extends MethodVisitor {
         if (Double.isNaN(operand)) {
 
             // DCONST_0; DUP2; DDIV;
-            super.visitInsn(Opcodes.DCONST_0);
-            super.visitInsn(Opcodes.DUP2);
-            super.visitInsn(Opcodes.DDIV);
+            mv.visitInsn(Opcodes.DCONST_0);
+            mv.visitInsn(Opcodes.DUP2);
+            mv.visitInsn(Opcodes.DDIV);
 
         }
         // is infinite?
         else if (Double.isInfinite(operand)) {
 
             // LDC D
-            super.visitLdcInsn(new Double(operand));
+            mv.visitLdcInsn(new Double(operand));
 
         }
         // is finite?
@@ -119,7 +118,7 @@ public class ConstantNumbersSubstitution extends MethodVisitor {
 
             // DCONST
             if (operand == 0.0 || operand == 1.0) {
-                super.visitInsn(Opcodes.DCONST_0 + (int) operand);
+                mv.visitInsn(Opcodes.DCONST_0 + (int) operand);
             }
 
             // ICONST; I2D;
@@ -130,18 +129,18 @@ public class ConstantNumbersSubstitution extends MethodVisitor {
                     && operand >= Integer.MIN_VALUE && operand <= Integer.MAX_VALUE) {
 
                 visitOptimalInt((int) operand);
-                super.visitInsn(Opcodes.I2D);
+                mv.visitInsn(Opcodes.I2D);
             }
 
             // LDC F; F2D; ?
             else if (operand >= Float.MIN_VALUE && operand <= Float.MAX_VALUE) {
-                super.visitLdcInsn(new Float(operand));
-                super.visitInsn(Opcodes.F2D);
+                mv.visitLdcInsn(new Float(operand));
+                mv.visitInsn(Opcodes.F2D);
             }
 
             // LDC D
             else {
-                super.visitLdcInsn(new Double(operand));
+                mv.visitLdcInsn(new Double(operand));
             }
         }
     }
@@ -149,7 +148,7 @@ public class ConstantNumbersSubstitution extends MethodVisitor {
     @Override
     public void visitInsn(int opcode) {
         // nothing, all instructions for constant numbers are optimal
-        super.visitInsn(opcode);
+        mv.visitInsn(opcode);
     }
 
     @Override
@@ -161,7 +160,7 @@ public class ConstantNumbersSubstitution extends MethodVisitor {
         }
         // or nothing
         else {
-            super.visitIntInsn(opcode, operand);
+            mv.visitIntInsn(opcode, operand);
         }
     }
 
@@ -187,7 +186,7 @@ public class ConstantNumbersSubstitution extends MethodVisitor {
         }
         // or nothing
         else {
-            super.visitLdcInsn(cst);
+            mv.visitLdcInsn(cst);
         }
     }
 

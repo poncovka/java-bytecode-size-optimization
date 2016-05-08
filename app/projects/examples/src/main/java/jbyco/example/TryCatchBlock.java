@@ -1,7 +1,6 @@
-/**
- * Created by vendy on 3.5.16.
- */
-public class FinallyBlock {
+package jbyco.example;
+
+public class TryCatchBlock {
 
     public void function() {
 
@@ -10,9 +9,8 @@ public class FinallyBlock {
             int a = 1 / 0;
         } catch (RuntimeException e) {
             System.out.println("catch");
-        } finally {
-            System.out.println("finally");
         }
 
     }
+
 }

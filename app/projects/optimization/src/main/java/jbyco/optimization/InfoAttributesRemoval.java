@@ -3,7 +3,7 @@ package jbyco.optimization;
 import org.objectweb.asm.*;
 
 /**
- * A class visitor for removing attributes with debugging information.
+ * A class adapter for removing attributes with debugging information.
  * <p>
  * Removed attributes are:
  * SourceFile - class
@@ -14,13 +14,6 @@ import org.objectweb.asm.*;
  * LocalVariableTypeTable - code
  */
 public class InfoAttributesRemoval extends ClassVisitor {
-
-    /**
-     * Instantiates a new class visitor for info attributes removal.
-     */
-    public InfoAttributesRemoval() {
-        super(Opcodes.ASM5);
-    }
 
     /**
      * Instantiates a new class visitor for info attributes removal.
@@ -48,7 +41,7 @@ public class InfoAttributesRemoval extends ClassVisitor {
         // remove Deprecated attribute from access
         access &= ~Opcodes.ACC_DEPRECATED;
 
-        super.visit(version, access, name, signature, superName, interfaces);
+        cv.visit(version, access, name, signature, superName, interfaces);
     }
 
     @Override
@@ -59,10 +52,14 @@ public class InfoAttributesRemoval extends ClassVisitor {
         access &= ~Opcodes.ACC_DEPRECATED;
 
         // call super visit method
-        MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
+        MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
 
         // remove info attributes in the code of the method
-        return new InfoAttributesMethodRemoval(mv);
+        if (mv != null) {
+            return new InfoAttributesMethodRemoval(mv);
+        }
+
+        return mv;
     }
 
     @Override
@@ -71,14 +68,10 @@ public class InfoAttributesRemoval extends ClassVisitor {
         // remove Deprecated attribute from access
         access &= ~Opcodes.ACC_DEPRECATED;
 
-        return super.visitField(access, name, desc, signature, value);
+        return cv.visitField(access, name, desc, signature, value);
     }
 
     public class InfoAttributesMethodRemoval extends MethodVisitor {
-
-        public InfoAttributesMethodRemoval() {
-            super(Opcodes.ASM5);
-        }
 
         public InfoAttributesMethodRemoval(MethodVisitor mv) {
             super(Opcodes.ASM5, mv);

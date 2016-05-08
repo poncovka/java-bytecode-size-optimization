@@ -1,4 +1,4 @@
-package jbyco.optimization;
+package jbyco.optimization.peephole;
 
 import org.objectweb.asm.tree.AbstractInsnNode;
 

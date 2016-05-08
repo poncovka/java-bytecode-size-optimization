@@ -1,7 +1,8 @@
-package jbyco.optimization;
+package jbyco.optimization.peephole;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.FrameNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 
@@ -780,6 +781,13 @@ public enum Symbols implements Symbol {
         @Override
         public boolean match(AbstractInsnNode i) {
             return !(i instanceof LabelNode);
+        }
+    },
+
+    FRAME {
+        @Override
+        public boolean match(AbstractInsnNode i) {
+            return i instanceof FrameNode;
         }
     },
 

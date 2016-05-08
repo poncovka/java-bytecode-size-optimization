@@ -1,4 +1,4 @@
-package jbyco.optimization;
+package jbyco.optimization.peephole;
 
 import java.lang.annotation.*;
 
@@ -7,10 +7,11 @@ import java.lang.annotation.*;
  */
 
 @Documented
+@Repeatable(Patterns.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Patterns {
+public @interface Pattern {
 
-    Pattern[] value();
+    Symbols[] value();
 
 }

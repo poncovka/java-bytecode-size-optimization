@@ -1,7 +1,9 @@
-package jbyco.optimization;
+package jbyco.optimization.peephole;
 
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
@@ -11,14 +13,13 @@ import java.util.Set;
 /**
  * Created by vendy on 2.5.16.
  */
-public class OptimizationsRunner {
+public class PeepholeRunner {
 
     Set<State> initialStates;
     Set<State> states;
 
-    public OptimizationsRunner(Class<?> klass) {
+    public PeepholeRunner() {
         initialStates = new LinkedHashSet<>();
-        loadPatterns(klass);
         init();
     }
 
@@ -30,20 +31,38 @@ public class OptimizationsRunner {
 
         // search methods
         for (Method method : klass.getMethods()) {
+            loadPatterns(method);
+        }
+    }
 
-            // search annotations
-            Pattern[] patterns = method.getAnnotationsByType(Pattern.class);
+    public void loadPatterns(Method method) {
 
-            // for every pattern
-            for (Pattern pattern : patterns) {
+        // search annotations
+        Pattern[] patterns = method.getAnnotationsByType(Pattern.class);
 
-                // add new initial state for the given optimization
-                initialStates.add(new State(pattern.value(), method));
-            }
+        // for every pattern
+        for (Pattern pattern : patterns) {
+
+            // add new initial state for the given optimization
+            initialStates.add(new State(pattern.value(), method));
+        }
+
+    }
+
+    public void run(ClassNode cn) {
+
+        System.err.println(">>> Class:" + cn.name);
+        for (Object mn : cn.methods) {
+
+            System.err.println(">>> Method:" + ((MethodNode)mn).name);
+            run(((MethodNode)mn).instructions);
         }
     }
 
     public void run(InsnList list) {
+
+        System.err.println(">>> Instructions:");
+        InsnUtils.debug(list);
 
         // iterate over the list while there is are changes
         boolean change = true;
@@ -51,6 +70,9 @@ public class OptimizationsRunner {
 
             // no change
             change = false;
+
+            // initiate states
+            init();
 
             // iterate over instructions of the list
             AbstractInsnNode node = list.getFirst();
