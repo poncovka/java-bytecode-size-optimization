@@ -40,7 +40,7 @@ Jedna divoká karta zastupuje v sekvenci jednu instrukci. Vyskytuje-li se tedy v
 
 \section{Popis implementace}\label{ToolImplementation}
 
-Program jsem implementovala v~jazyce Java 8 s~použitím knihoven ASM a BCEL a nástroje Gradle. V~hlavním balíčku \texttt{jbyco} je třída \texttt{Application} s~metodou \texttt{main}, která dle předaných parametrů spustí některý z~nástrojů. Každý nástroj má definovanou vlastní metodu \texttt{main} a lze jej tedy spustit i samostatně.
+Program jsem implementovala v~jazyce Java 8 s~použitím knihoven ASM 5.0 a BCEL 6.0 a nástroje Gradle 2.7. V~hlavním balíčku \texttt{jbyco} je třída \texttt{Application} s~metodou \texttt{main}, která dle předaných parametrů spustí některý z~nástrojů. Každý nástroj má definovanou vlastní metodu \texttt{main} a lze jej tedy spustit i samostatně.
 
 Balíček \texttt{jbyco.lib} slouží jako knihovna užitečných tříd a funkcí. Jeho součástí jsou třídy \texttt{AbstractOption} a \texttt{AbstractOptions} sloužící k~definování a zpracování argumentů příkazové řádky a třída \texttt{Utils} obsahující různé statické metody. 
 
@@ -81,6 +81,17 @@ Hledání typických sekvencí probíhá ve třídě \texttt{PatternsAnalyzer} n
 
 \section{Překlad a spuštění}\label{ToolRun}
 
-TODO
+Nástroj \texttt{jbyco} je implementován jazyce Java 8, proto je pro jeho překlad a spuštění vyžádovaná instalace Java JDK 8 a JRE 8.
+Překlad a instalaci zajišťuje skript \texttt{gradlew} vygenerovaný nástrojem Gradle. Nápovědu k tomuto skriptu lze vypsat příkazem \texttt{./gradlew tasks}. 
+
+Příkaz \texttt{./gradlew build} do adresáře \texttt{build} přeloží zdrojové soubory, stáhne potřebné knihovny a sestaví a zabalí výslednou distribuci. Po zadání příkazu \texttt{./gradlew installDist} se distribuce nainstaluje do adresáře \texttt{build/install}. Výsledkem instalace je adresář \texttt{jbyco} se dvěma podadresáři \texttt{bin} a \texttt{lib} pro spustitelné soubory a knihovny. Nástroj lze spustit příkazem \texttt{./jbyco} z adresáře \texttt{bin}. Nápověda k nástroji se vypíše po uvedení přepínače \texttt{---help}. Dokumentaci k programovému rozhraní lze vygenerovat příkazem \texttt{./gradlew javadoc}. Dokumentace bude k dispozici v adresáři \texttt{build/docs}.
+
+Součástí spustitelných souborů jsou dva nástroje pro vygenerování a zpracování výstupů. Příkaz \texttt{./jbyco-analyze data out} spustí sérii analýz nad soubory v adresáři \texttt{data} a získané soubory uloží do adresáře \texttt{out}. Příkaz \texttt{jbyco-process out cls} zpracuje výstupy v adresáři \texttt{out} a vygeneruje sjednocené a seřazené výstupy do adresáře \texttt{cls}. Obě činnosti mohou být v závislosti na velikosti vstupních dat časově náročné.
+
+
+
+
+
+
 
 %=========================================================================

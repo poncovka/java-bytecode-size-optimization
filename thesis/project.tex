@@ -39,6 +39,7 @@
 \usepackage{tikz-qtree}
 \usetikzlibrary{trees}
 \usepackage{epstopdf}
+\usepackage{makecell}
 
 %\theoremstyle{definition}
 %\newtheorem{Def}{Definice}[section]
@@ -49,6 +50,21 @@
 %\newcommand{\nt}[1]{$<$\textit{#1}$>$}
 \newcommand{\N}[1]{\textit{#1}}
 \newcommand{\T}[1]{\texttt{#1}}
+
+\newenvironment{tpatterns}
+{
+  \newcommand{\code}[1]{\texttt{\makecell*[tp{3.5cm}]{##1}}}
+  \newcommand{\desc}[1]{\makecell*[tp{6cm}]{##1}}
+
+  \begin{center}
+  \begin{tabular}{l l l}
+  \textbf{Vzor} & \textbf{Náhrada} & \textbf{Popis} \\\hline
+}
+{
+  \end{tabular}
+  \end{center}
+}
+
 %--------------------------
 
 \usepackage{listings}
