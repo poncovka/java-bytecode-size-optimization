@@ -9,7 +9,7 @@ import org.objectweb.asm.tree.*;
 /**
  * A library of patterns and actions to optimize string concatenation.
  */
-public class StringAppendOptimizations {
+public class StringAppendSimplifications {
 
     @Pattern({Symbols.INVOKESPECIAL/*init*/, Symbols.STRING/*s*/, Symbols.INVOKEVIRTUAL/*append*/}) /* => nothing */
     public static boolean initStringBuilder(InsnList list, AbstractInsnNode[] matched) {

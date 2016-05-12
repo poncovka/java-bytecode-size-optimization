@@ -1058,6 +1058,7 @@ public enum Symbols implements Symbol {
             return Symbols.ACONST_NULL.match(i)
                     || Symbols.INT.match(i)
                     || Symbols.FLOAT.match(i)
+                    || Symbols.ALOAD.match(i)
                     || Symbols.ILOAD.match(i)
                     || Symbols.FLOAD.match(i);
         }

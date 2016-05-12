@@ -1,6 +1,8 @@
 package jbyco.optimization;
 
+import jbyco.optimization.expansion.DuplicationExpansion;
 import jbyco.optimization.reductions.ConstantNumbersSubstitution;
+import jbyco.optimization.reductions.DuplicationReduction;
 import jbyco.optimization.reductions.InfoAttributesRemoval;
 import jbyco.optimization.peephole.*;
 import jbyco.optimization.simplifications.*;
@@ -15,13 +17,30 @@ import java.io.IOException;
  */
 public class Optimizer {
 
+    Runner phase1runner;
     Runner phase2runner;
+    Runner phase3runner;
+    Statistics stats;
 
     public Optimizer() {
+        this.phase1runner = getPhase1Runner();
         this.phase2runner = getPhase2Runner();
+        this.phase3runner = getPhase3Runner();
+    }
+
+    public void setStatistics(Statistics stats) {
+        this.stats = stats;
+        this.phase1runner.setStatistics(stats);
+        this.phase2runner.setStatistics(stats);
+        this.phase3runner.setStatistics(stats);
     }
 
     public byte[] optimizeClassFile(byte[] input) throws IOException {
+
+        // statistics
+        if (stats != null) {
+            stats.addSizeBefore(input.length);
+        }
 
         // create class node
         ClassNode result1 = phase1(input);
@@ -34,6 +53,11 @@ public class Optimizer {
 
         // checkInput the output
         check(result3);
+
+        // statistics
+        if (stats != null) {
+            stats.addSizeAfter(result3.length);
+        }
 
         return result3;
     }
@@ -49,22 +73,34 @@ public class Optimizer {
         ClassReader reader = new ClassReader(input);
         reader.accept(cv, ClassReader.SKIP_DEBUG /*|ClassReader.SKIP_FRAMES*/);
 
+        // apply peephole optimizations runner
+        phase1runner.findAndReplace(node);
+
         // return the node
         return node;
     }
 
-    public Runner getPhase2Runner() {
+    public Runner getPhase1Runner() {
         Runner runner = new Runner();
         runner.loadPatterns(
-                ArithmeticSimplifications.class,
-                VariablesOptimizations.class,
-                JumpOptimizations.class,
-                MachineIdiomsUsage.class,
-                ObjectInsnOptimizations.class,
-                StackInsnOptimizations.class,
-                StringAppendOptimizations.class
+                DuplicationExpansion.class
         );
+        return runner;
+    }
 
+    public Runner getPhase2Runner() {
+        // from specific to general
+        // duplication simplifications are last
+        Runner runner = new Runner();
+        runner.loadPatterns(
+                ObjectSimplifications.class,
+                StringAppendSimplifications.class,
+                ConversionsSimplifications.class,
+                ArithmeticSimplifications.class,
+                JumpSimplifications.class,
+                StackSimplifications.class,
+                DuplicationSimplifications.class
+        );
         return runner;
     }
 
@@ -77,12 +113,24 @@ public class Optimizer {
         return input;
     }
 
+    public Runner getPhase3Runner() {
+        Runner runner = new Runner();
+        runner.loadPatterns(
+                DuplicationReduction.class
+        );
+        return runner;
+    }
+
     public byte[] phase3(ClassNode input) {
+
+        // apply peephole optimizations
+        phase3runner.findAndReplace(input);
+
+        // TODO optimize constants, optimize jumps, calculate size, repeat
 
         // create the chain of visitors
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS /*|ClassWriter.COMPUTE_FRAMES*/);
         ClassVisitor cv = writer;
-        cv = new CheckClassAdapter(cv, false);
         cv = new ClassVisitor(Opcodes.ASM5, cv) {
 
             @Override
@@ -102,22 +150,6 @@ public class Optimizer {
     }
 
     public void check(byte[] input) {
-
-        /*
-        // init
-        ClassReader reader = new ClassReader(input);
-        StringWriter writer = new StringWriter();
-
-        // verify
-        CheckClassAdapter.verify(reader, false, new PrintWriter(writer));
-        String message = writer.toString();
-
-        // throw exception if there is an error
-        if (!message.isEmpty()) {
-            throw new IllegalArgumentException(message);
-        }
-        */
-
         // prepare visitors
         ClassWriter writer = new ClassWriter(0);
         ClassVisitor cv = writer;
@@ -126,7 +158,6 @@ public class Optimizer {
         // process input
         ClassReader reader = new ClassReader(input);
         reader.accept(cv, 0);
-
     }
 
 }

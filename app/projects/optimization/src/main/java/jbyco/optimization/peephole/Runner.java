@@ -1,5 +1,6 @@
 package jbyco.optimization.peephole;
 
+import jbyco.optimization.Statistics;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
@@ -10,14 +11,14 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
- * The class loads patterns and simplifications from given
- * classes, finds given patterns and applies given simplifications on lists
- * of instructions.
+ * The class loads patterns and actions from given
+ * classes, finds patterns and applies actions on lists
+ * of instructions. The patterns are searched in the order of loading.
+ * Longer patterns have higher priority. Each list of instructions is searched
+ * in the reverse order, so arguments of instructions are processed first.
  * <p>
  * Each action is an simplifications method that has the @Pattern annotation.
  * The expected definition of the action is:
@@ -26,19 +27,25 @@ import java.util.Set;
  * <p>
  * The array of matched instructions contains instructions that match the pattern.
  * The method returns true if the list of instructions was modified, else false.
+ *
  */
 public class Runner {
 
-    Set<StateMachine> loaded;
-    Set<StateMachine> running;
+    Collection<StateMachine> loaded;
+    Collection<StateMachine> running;
+    Statistics stats;
 
     public Runner() {
-        loaded = new LinkedHashSet<>();
+        loaded = new LinkedList<>();
         init();
     }
 
     public void init() {
-        running = new LinkedHashSet<>();
+        running = new LinkedList<>();
+    }
+
+    public void setStatistics(Statistics stats) {
+        this.stats = stats;
     }
 
     public void loadPatterns(Class<?> ...klasses) {
@@ -132,11 +139,12 @@ public class Runner {
             init();
 
             // iterate over instructions of the list
-            AbstractInsnNode node = list.getFirst();
+            // the list is iterated from the last to the first node!
+            AbstractInsnNode node = list.getLast();
             while (node != null) {
 
                 // get the state node
-                AbstractInsnNode next = node.getNext();
+                AbstractInsnNode next = node.getPrevious();
 
                 // the flag to restart the search
                 boolean restart = false;
@@ -189,6 +197,11 @@ public class Runner {
 
         // replace matched instructions in a list
         boolean result = fsm.applyAction(list);
+
+        // record statistics
+        if (result && stats != null) {
+            stats.addPepphole(fsm.toString());
+        }
 
         /*
         if (result) {

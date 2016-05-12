@@ -8,7 +8,7 @@ import org.objectweb.asm.tree.*;
 /**
  * A library of patterns and actions for a reduction of the operations with objects.
  */
-public class ObjectInsnOptimizations {
+public class ObjectSimplifications {
 
     @Pattern({Symbols.ACONST_NULL, Symbols.CHECKCAST}) /* => null */
     public static boolean removeNullCheckcast(InsnList list, AbstractInsnNode[] matched) {

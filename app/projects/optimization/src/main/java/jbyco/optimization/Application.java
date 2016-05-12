@@ -10,6 +10,7 @@ import jbyco.lib.Utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -26,7 +27,8 @@ public class Application {
         Options options = new Options();
 
         // parameters
-        Path outputDirectory = Paths.get(System.getProperty("user.dir"));
+        Statistics statistics = null;
+        Path outdir = null;
         Collection<Path> paths = new ArrayList<>();
 
         // process command line options
@@ -44,19 +46,26 @@ public class Application {
             else {
 
                 switch (option) {
-                    case OUTPUT:
-                        outputDirectory = Paths.get(args[++index]);
+                    case OUTDIR:
+                        outdir = Paths.get(args[++index]);
+                        break;
+                    case STATISTICS:
+                        statistics = new Statistics();
                         break;
                     case HELP:
                         options.help();
                         return;
                 }
             }
-
         }
 
         // create file optimizer
         Optimizer optimizer = new Optimizer();
+
+        // set statistics
+        if (statistics != null) {
+            optimizer.setStatistics(statistics);
+        }
 
         // create temporary directory
         Path workingDirectory = TemporaryFiles.createDirectory();
@@ -77,19 +86,28 @@ public class Application {
                     // simplifications the class file
                     bytes = optimizer.optimizeClassFile(bytes);
 
-                    // recreate the file in a new path
-                    Path path2 = file.resolveRelativePath(outputDirectory);
-                    CommonFile file2 = file.copy(path2.toFile());
-                    file2.toFile().getParentFile().mkdirs();
+                    if (outdir != null) {
 
-                    // write the optimized bytes to the prepared file
-                    OutputStream out = file2.getOutputStream();
-                    out.write(bytes);
-                    out.close();
+                        // recreate the file in a new path
+                        Path path2 = file.resolveRelativePath(outdir);
+                        CommonFile file2 = file.copy(path2.toFile());
+                        file2.toFile().getParentFile().mkdirs();
+
+                        // write the optimized bytes to the prepared file
+                        OutputStream out = file2.getOutputStream();
+                        out.write(bytes);
+                        out.close();
+
+                    }
                 }
             }
         } finally {
             TemporaryFiles.deleteDirectory(workingDirectory);
+        }
+
+        // print statistics
+        if (statistics != null) {
+            statistics.write(new PrintWriter(System.out));
         }
 
     }
@@ -99,18 +117,11 @@ public class Application {
      */
     enum Option implements AbstractOption {
 
-        OUTPUT  ("Set the output directory. Default: '.'.",
-                "-o", "--output"),
-        NO_OUTPUT("Do not create optimized class files.",
-                "-no-output"),
+        OUTDIR("Set the output directory for optimized files." +
+                "No files are generated without this option.",
+                "-o", "--outdir"),
         STATISTICS("Show statistics about optimizations.",
                 "--statistics"),
-        ATTRIBUTES("Optimize attributes.",
-                "--attributes"),
-        CODE    ("Optimize the code.",
-                "--code"),
-        NO_OPTIMIZATION("Do not apply any optimization method.",
-                "--no-optimization"),
         HELP    ("Show this message.",
                 "-h", "--help");
 
@@ -160,5 +171,4 @@ public class Application {
         }
 
     }
-
 }

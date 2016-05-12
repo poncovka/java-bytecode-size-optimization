@@ -14,6 +14,8 @@ import java.io.PrintWriter;
  */
 public class InsnUtils {
 
+    public static AbstractInsnNode IZERO = new InsnNode(Opcodes.ICONST_0);
+
     public static LabelNode getLabelNode(AbstractInsnNode i) {
         return ((JumpInsnNode)i).label;
     }
@@ -86,6 +88,69 @@ public class InsnUtils {
 
     public static boolean compareVariables(AbstractInsnNode i1, AbstractInsnNode i2) {
         return ((VarInsnNode) i1).var == ((VarInsnNode) i2).var;
+    }
+
+    public static boolean compareInt(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
+
+        int x = getIntValue(i1);
+        int y = getIntValue(i2);
+
+        switch (op.getOpcode()) {
+            case Opcodes.IF_ICMPEQ:
+                return x == y;
+            case Opcodes.IF_ICMPGE:
+                return x >= y;
+            case Opcodes.IF_ICMPGT:
+                return x > y;
+            case Opcodes.IF_ICMPLE:
+                return x <= y;
+            case Opcodes.IF_ICMPLT:
+                return x < y;
+            case Opcodes.IF_ICMPNE:
+                return x != y;
+            default:
+                throw new IllegalArgumentException("Unexpected opcode.");
+        }
+    }
+
+    public static int compareLong(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
+        return Long.compare(getLongValue(i1),getLongValue(i2));
+    }
+
+    public static int compareFloat(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
+
+        float x = getFloatValue(i1);
+        float y = getFloatValue(i2);
+
+        if (Float.isNaN(x) || Float.isNaN(y)) {
+
+            switch(op.getOpcode()) {
+                case Opcodes.FCMPG:
+                    return 1;
+                case Opcodes.FCMPL:
+                    return -1;
+            }
+        }
+
+        return Float.compare(x,y);
+    }
+
+    public static int compareDouble(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
+
+        double x = getDoubleValue(i1);
+        double y = getDoubleValue(i2);
+
+        if (Double.isNaN(x) || Double.isNaN(y)) {
+
+            switch(op.getOpcode()) {
+                case Opcodes.DCMPG:
+                    return 1;
+                case Opcodes.DCMPL:
+                    return -1;
+            }
+        }
+
+        return Double.compare(x,y);
     }
 
     public static int applyIntOperation(AbstractInsnNode op, AbstractInsnNode i) {
@@ -340,6 +405,9 @@ public class InsnUtils {
         }
         else if (Symbols.FLOAT.match(i1) && Symbols.FLOAT.match(i2)) {
             return compareFloat(i1, i2);
+        }
+        else if (Symbols.ALOAD.match(i1) && Symbols.ALOAD.match(i2)) {
+            return compareVariables(i1, i2);
         }
         else if (Symbols.ILOAD.match(i1) && Symbols.ILOAD.match(i2)) {
             return compareVariables(i1, i2);

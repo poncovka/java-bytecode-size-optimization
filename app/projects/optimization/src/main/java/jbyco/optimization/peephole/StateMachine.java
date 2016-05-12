@@ -3,6 +3,8 @@ package jbyco.optimization.peephole;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
 
+import java.util.Arrays;
+
 /**
  * Created by vendy on 2.5.16.
  */
@@ -74,6 +76,6 @@ public class StateMachine {
 
     @Override
     public String toString() {
-        return getName();
+        return getName() + Arrays.toString(pattern);
     }
 }
