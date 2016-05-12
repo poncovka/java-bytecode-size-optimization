@@ -791,6 +791,13 @@ public enum Symbols implements Symbol {
         }
     },
 
+    STRING {
+        @Override
+        public boolean match(AbstractInsnNode i) {
+            return LDC.match(i) && ((LdcInsnNode)i).cst instanceof String;
+        }
+    },
+
     ICONST {
         @Override
         public boolean match(AbstractInsnNode i) {
@@ -1004,6 +1011,14 @@ public enum Symbols implements Symbol {
                 default:
                     return false;
             }
+        }
+    },
+
+    X2Y {
+        @Override
+        public boolean match(AbstractInsnNode i) {
+            int opcode = i.getOpcode();
+            return Opcodes.I2L <= opcode && opcode <= Opcodes.I2S;
         }
     },
 

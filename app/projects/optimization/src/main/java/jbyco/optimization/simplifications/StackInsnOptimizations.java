@@ -7,10 +7,9 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 /**
- * Created by vendy on 11.5.16.
+ * A library with patterns and actions for stack instructions simplifications.
  */
 public class StackInsnOptimizations {
-
 
     // -------------------------------------------------------------------------------------------- nop
 
@@ -18,6 +17,30 @@ public class StackInsnOptimizations {
     public static boolean removeNop(InsnList list, AbstractInsnNode[] matched) {
         list.remove(matched[0]);
         return true;
+    }
+
+    // -------------------------------------------------------------------------------------------- dup
+
+    @Pattern({Symbols.VALUE_TYPE1 /*x*/, Symbols.VALUE_TYPE1 /*x*/}) /* => x; dup; */
+    public static boolean duplicateType1(InsnList list, AbstractInsnNode[] matched) {
+
+        if (InsnUtils.compareValueType1(matched[0], matched[1])) {
+            list.set(matched[1], new InsnNode(Opcodes.DUP));
+            return true;
+        }
+
+        return false;
+    }
+
+    @Pattern({Symbols.VALUE_TYPE2 /*x*/, Symbols.VALUE_TYPE2 /*x*/}) /* => x; dup2; */
+    public static boolean duplicateType2(InsnList list, AbstractInsnNode[] matched) {
+
+        if (InsnUtils.compareValueType2(matched[0], matched[1])) {
+            list.set(matched[1], new InsnNode(Opcodes.DUP2));
+            return true;
+        }
+
+        return false;
     }
 
     // -------------------------------------------------------------------------------------------- swap
@@ -118,65 +141,5 @@ public class StackInsnOptimizations {
             list.remove(matched[0]);
             return true;
         }
-    }
-
-    // -------------------------------------------------------------------------------------------- dup
-
-    @Pattern({Symbols.VALUE_TYPE1, Symbols.VALUE_TYPE1, Symbols.VALUE_TYPE1}) /* => INT x; DUP */
-    public static boolean dupx1(InsnList list, AbstractInsnNode[] matched) {
-
-        if (InsnUtils.compareInt(matched[0], matched[1])) {
-            list.set(matched[1], new InsnNode(Opcodes.DUP));
-            return true;
-        }
-
-        return false;
-    }
-
-    // -------------------------------------------------------------------------------------------- constant dup
-
-    @Pattern({Symbols.INT /*x*/, Symbols.INT /*x*/}) /* => INT x; DUP */
-    public static boolean duplicateInt(InsnList list, AbstractInsnNode[] matched) {
-
-        if (InsnUtils.compareInt(matched[0], matched[1])) {
-            list.set(matched[1], new InsnNode(Opcodes.DUP));
-            return true;
-        }
-
-        return false;
-    }
-
-    @Pattern({Symbols.LONG /*x*/, Symbols.LONG /*x*/}) /* => LONG x; DUP2 */
-    public static boolean duplicateLong(InsnList list, AbstractInsnNode[] matched) {
-
-        if (InsnUtils.compareLong(matched[0], matched[1])) {
-            list.set(matched[1], new InsnNode(Opcodes.DUP2));
-            return true;
-        }
-
-        return false;
-    }
-
-
-    @Pattern({Symbols.FLOAT /*x*/, Symbols.FLOAT /*x*/}) /* => FLOAT x; DUP */
-    public static boolean duplicateFloat(InsnList list, AbstractInsnNode[] matched) {
-
-        if (InsnUtils.compareFloat(matched[0], matched[1])) {
-            list.set(matched[1], new InsnNode(Opcodes.DUP));
-            return true;
-        }
-
-        return false;
-    }
-
-    @Pattern({Symbols.DOUBLE /*x*/, Symbols.DOUBLE /*x*/}) /* => DOUBLE x; DUP2 */
-    public static boolean duplicateDouble(InsnList list, AbstractInsnNode[] matched) {
-
-        if (InsnUtils.compareDouble(matched[0], matched[1])) {
-            list.set(matched[1], new InsnNode(Opcodes.DUP2));
-            return true;
-        }
-
-        return false;
     }
 }

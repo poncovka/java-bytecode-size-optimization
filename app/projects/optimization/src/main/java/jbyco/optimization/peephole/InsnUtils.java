@@ -14,7 +14,6 @@ import java.io.PrintWriter;
  */
 public class InsnUtils {
 
-
     public static LabelNode getLabelNode(AbstractInsnNode i) {
         return ((JumpInsnNode)i).label;
     }
@@ -329,6 +328,63 @@ public class InsnUtils {
         }
 
         return false;
+    }
+
+    public static boolean compareValueType1(AbstractInsnNode i1, AbstractInsnNode i2) {
+
+        if (Symbols.ACONST_NULL.match(i1) && Symbols.ACONST_NULL.match(i2)) {
+            return true;
+        }
+        else if (Symbols.INT.match(i1) && Symbols.INT.match(i2)) {
+            return compareInt(i1, i2);
+        }
+        else if (Symbols.FLOAT.match(i1) && Symbols.FLOAT.match(i2)) {
+            return compareFloat(i1, i2);
+        }
+        else if (Symbols.ILOAD.match(i1) && Symbols.ILOAD.match(i2)) {
+            return compareVariables(i1, i2);
+        }
+        else if (Symbols.FLOAD.match(i1) && Symbols.FLOAD.match(i2)) {
+            return compareVariables(i1, i2);
+        }
+        else {
+            return false;
+        }
+    }
+
+    public static boolean compareValueType2(AbstractInsnNode i1, AbstractInsnNode i2) {
+
+        if (Symbols.LONG.match(i1) && Symbols.LONG.match(i2)) {
+            return compareLong(i1, i2);
+        }
+        else if (Symbols.DOUBLE.match(i1) && Symbols.DOUBLE.match(i2)) {
+            return compareDouble(i1, i2);
+        }
+        else if (Symbols.LLOAD.match(i1) && Symbols.LLOAD.match(i2)) {
+            return compareVariables(i1, i2);
+        }
+        else if (Symbols.DLOAD.match(i1) && Symbols.DLOAD.match(i2)) {
+            return compareVariables(i1, i2);
+        }
+        else {
+            return false;
+        }
+    }
+
+    public static boolean isStringBuilderInit(AbstractInsnNode i) {
+        MethodInsnNode invoke = (MethodInsnNode)i;
+
+        return      invoke.owner.equals("java/lang/StringBuilder")
+                &&  invoke.name.equals("<init>")
+                &&  invoke.desc.equals("()V");
+    }
+
+    public static boolean isStringAppendMethod(AbstractInsnNode i) {
+        MethodInsnNode invoke = (MethodInsnNode)i;
+
+        return      invoke.owner.equals("java/lang/StringBuilder")
+                &&  invoke.name.equals("append")
+                &&  invoke.desc.equals("(Ljava/lang/String;)Ljava/lang/StringBuilder;");
     }
 
     public static void debug(AbstractInsnNode[] array) {
