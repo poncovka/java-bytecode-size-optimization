@@ -1,12 +1,11 @@
-package jbyco.optimization;
+package jbyco.optimization.reductions;
 
 import jbyco.lib.Utils;
-import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 /**
- * The method adapter
+ * The method adapters
  */
 public class ConstantNumbersSubstitution extends MethodVisitor {
 

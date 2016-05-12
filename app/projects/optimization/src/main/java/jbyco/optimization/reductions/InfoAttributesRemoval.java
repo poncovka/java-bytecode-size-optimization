@@ -1,9 +1,9 @@
-package jbyco.optimization;
+package jbyco.optimization.reductions;
 
 import org.objectweb.asm.*;
 
 /**
- * A class adapter for removing attributes with debugging information.
+ * A class adapters for removing attributes with debugging information.
  * <p>
  * Removed attributes are:
  * SourceFile - class

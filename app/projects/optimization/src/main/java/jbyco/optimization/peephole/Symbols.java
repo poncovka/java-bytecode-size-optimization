@@ -1058,7 +1058,40 @@ public enum Symbols implements Symbol {
                     || Symbols.LLOAD.match(i)
                     || Symbols.DLOAD.match(i);
         }
-    };
+    },
+
+    IF {
+        @Override
+        public boolean match(AbstractInsnNode i) {
+            int opcode = i.getOpcode();
+            return Opcodes.IFEQ <= opcode && opcode <= Opcodes.IFLE;
+        }
+    },
+
+    IF_ICMP {
+        @Override
+        public boolean match(AbstractInsnNode i) {
+            int opcode = i.getOpcode();
+            return Opcodes.IF_ICMPEQ <= opcode && opcode <= Opcodes.IF_ICMPLE;
+        }
+    },
+
+    IF_ACMP {
+        @Override
+        public boolean match(AbstractInsnNode i) {
+            int opcode = i.getOpcode();
+            return Opcodes.IF_ACMPEQ == opcode || opcode == Opcodes.IF_ACMPNE;
+        }
+    },
+
+    IF_CMP {
+        @Override
+        public boolean match(AbstractInsnNode i) {
+            return Symbols.IF_ICMP.match(i)
+                    || Symbols.IF_ACMP.match(i);
+        }
+    }
+    ;
 
     /**
      * The opcodes.

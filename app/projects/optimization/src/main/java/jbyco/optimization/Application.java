@@ -56,7 +56,7 @@ public class Application {
         }
 
         // create file optimizer
-        Optimizer optimizer = new BytecodeOptimizer();
+        Optimizer optimizer = new Optimizer();
 
         // create temporary directory
         Path workingDirectory = TemporaryFiles.createDirectory();
@@ -74,7 +74,7 @@ public class Application {
                     byte[] bytes = Utils.toByteArray(in);
                     in.close();
 
-                    // optimization the class file
+                    // simplifications the class file
                     bytes = optimizer.optimizeClassFile(bytes);
 
                     // recreate the file in a new path
@@ -101,6 +101,16 @@ public class Application {
 
         OUTPUT  ("Set the output directory. Default: '.'.",
                 "-o", "--output"),
+        NO_OUTPUT("Do not create optimized class files.",
+                "-no-output"),
+        STATISTICS("Show statistics about optimizations.",
+                "--statistics"),
+        ATTRIBUTES("Optimize attributes.",
+                "--attributes"),
+        CODE    ("Optimize the code.",
+                "--code"),
+        NO_OPTIMIZATION("Do not apply any optimization method.",
+                "--no-optimization"),
         HELP    ("Show this message.",
                 "-h", "--help");
 

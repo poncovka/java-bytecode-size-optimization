@@ -15,6 +15,22 @@ import java.io.PrintWriter;
 public class InsnUtils {
 
 
+    public static LabelNode getLabelNode(AbstractInsnNode i) {
+        return ((JumpInsnNode)i).label;
+    }
+
+    public static boolean isNaN(AbstractInsnNode i) {
+
+        if (i.getOpcode() == Opcodes.LDC) {
+            Object cst = ((LdcInsnNode)i).cst;
+
+            return (cst instanceof Float && ((Float)cst).isNaN())
+                    || (cst instanceof Double && ((Double)cst).isNaN());
+        }
+
+        return false;
+    }
+
     public static int getIntValue(AbstractInsnNode i) {
 
         if (Symbols.ICONST.match(i)) {
@@ -73,7 +89,7 @@ public class InsnUtils {
         return ((VarInsnNode) i1).var == ((VarInsnNode) i2).var;
     }
 
-    public static int getIntResult(AbstractInsnNode op, AbstractInsnNode i) {
+    public static int applyIntOperation(AbstractInsnNode op, AbstractInsnNode i) {
 
         int x = getIntValue(i);
 
@@ -86,7 +102,7 @@ public class InsnUtils {
 
     }
 
-    public static int getIntResult(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
+    public static int applyIntOperation(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
 
         int x = getIntValue(i1);
         int y = getIntValue(i2);
@@ -119,7 +135,7 @@ public class InsnUtils {
         }
     }
 
-    public static long getLongResult(AbstractInsnNode op, AbstractInsnNode i) {
+    public static long applyLongOperation(AbstractInsnNode op, AbstractInsnNode i) {
 
         long x = getLongValue(i);
 
@@ -132,7 +148,7 @@ public class InsnUtils {
 
     }
 
-    public static long getLongResult(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
+    public static long applyLongOperation(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
 
         long x = getLongValue(i1);
         long y = getLongValue(i2);
@@ -165,7 +181,7 @@ public class InsnUtils {
         }
     }
 
-    public static float getFloatResult(AbstractInsnNode op, AbstractInsnNode i) {
+    public static float applyFloatOperation(AbstractInsnNode op, AbstractInsnNode i) {
 
         float x = getFloatValue(i);
 
@@ -178,7 +194,7 @@ public class InsnUtils {
 
     }
 
-    public static float getFloatResult(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
+    public static float applyFloatOperation(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
 
         float x = getFloatValue(i1);
         float y = getFloatValue(i2);
@@ -199,7 +215,7 @@ public class InsnUtils {
         }
     }
 
-    public static double getDoubleResult(AbstractInsnNode op, AbstractInsnNode i) {
+    public static double applyDoubleOperation(AbstractInsnNode op, AbstractInsnNode i) {
 
         double x = getDoubleValue(i);
 
@@ -212,7 +228,7 @@ public class InsnUtils {
 
     }
 
-    public static double getDoubleResult(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
+    public static double applyDoubleOperation(AbstractInsnNode op, AbstractInsnNode i1, AbstractInsnNode i2) {
 
         double x = getDoubleValue(i1);
         double y = getDoubleValue(i2);
@@ -233,6 +249,87 @@ public class InsnUtils {
         }
     }
 
+    public static boolean isIntRightIdentity(AbstractInsnNode op, AbstractInsnNode i) {
+
+        int x = getIntValue(i);
+
+        switch (op.getOpcode()) {
+            case Opcodes.IADD:
+                return x == 0;
+            case Opcodes.ISUB:
+                return x == 0;
+            case Opcodes.IMUL:
+                return x == 1;
+            case Opcodes.IDIV:
+                return x == 1;
+            case Opcodes.ISHL:
+                return x == 0;
+            case Opcodes.ISHR:
+                return x == 0;
+            case Opcodes.IUSHR:
+                return x == 0;
+            case Opcodes.IAND:
+                return x == ~0;
+            case Opcodes.IOR:
+                return x == 0;
+        }
+
+        return false;
+    }
+
+    public static boolean isIntLeftIdentity(AbstractInsnNode op, AbstractInsnNode i) {
+
+        switch (op.getOpcode()) {
+            case Opcodes.IADD:
+            case Opcodes.IMUL:
+            case Opcodes.IAND:
+            case Opcodes.IOR:
+                return isIntRightIdentity(op, i);
+        }
+
+        return false;
+    }
+
+    public static boolean isLongRightIdentity(AbstractInsnNode op, AbstractInsnNode i) {
+
+        long x = getLongValue(i);
+
+        switch (op.getOpcode()) {
+            case Opcodes.LADD:
+                return x == 0L;
+            case Opcodes.LSUB:
+                return x == 0L;
+            case Opcodes.LMUL:
+                return x == 1L;
+            case Opcodes.LDIV:
+                return x == 1L;
+            case Opcodes.LSHL:
+                return x == 0L;
+            case Opcodes.LSHR:
+                return x == 0L;
+            case Opcodes.LUSHR:
+                return x == 0L;
+            case Opcodes.LAND:
+                return x == ~0L;
+            case Opcodes.LOR:
+                return x == 0L;
+        }
+
+        return false;
+    }
+
+    public static boolean isLongLeftIdentity(AbstractInsnNode op, AbstractInsnNode i) {
+
+        switch (op.getOpcode()) {
+            case Opcodes.LADD:
+            case Opcodes.LMUL:
+            case Opcodes.LAND:
+            case Opcodes.LOR:
+                return isLongRightIdentity(op, i);
+        }
+
+        return false;
+    }
 
     public static void debug(AbstractInsnNode[] array) {
         Printer printer = new Textifier();
