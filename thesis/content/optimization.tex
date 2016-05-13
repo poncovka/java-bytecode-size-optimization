@@ -119,43 +119,14 @@ Analýza užití lokálních proměnných a parametrů metod odhalila, že se s 
 \subsubsection{Vkládání metod}
 Pokud je volání metody z hlediska velikosti dražší než provedení těla metody, pak je vhodné toto volání nahradit instrukcemi z těla metody. Pokud se následně tato metoda nikde nevolá, je žádoucí její definici z příslušného \texttt{class} souboru zcela odstranit. Tato optimalizace opět zasahuje do struktury programu jako v případě přejmenování balíčků, tříd, metod a členských proměnných.
 
-\subsubsection{Optimalizace větví a skoků}
-% neobsahuje skoky, které lze rozhodnout z parametrů - většinou
-% LOAD VAR(0); LOAD VAR(0); IFEQ LABEL(0);
-% GOTO LABEL(0); GOTO LABEL(1);
-% switch
-% GOTO LABEL(0); LABEL(0); 
-% IFNULL LABEL(0); GOTO LABEL(1);
-%IFNE LABEL(0); GOTO LABEL(1);
-% LABEL(0); RETURN;
-% LABEL(0); GOTO LABEL(1);
-% výpočet společných podvýrazů před větvěním
-% přesun společného kódu před a za větvení
-
-
-%\begin{tpatterns}
-%  \code{iload 0; \\ L0; \\ ifeq 0;}
-%& \code{lookupswitch \\ \quad L0 X Y \\ \quad L1 \\ \quad L2; \\ IFEQ LABEL(0);}
-%& \desc{Dlouh7 nekolika 58dkov7 popis toho, co tam zrovna tak p2kn2 vid9me haloo.} \\
-%\end{tpatterns}
+%=========================================================================
+\subsubsection{Optimalizace práce se zásobníkem}
 
 \begin{tpatterns}
-
-% REMOVE INSTRUCTIONS
 
   \code{nop;}
 & \code{-}
 & \desc{Instrukce \texttt{nop} nemá žádný efekt. Lze ji proto odstranit.} \\
-
-  \code{iinc $i$ 0;}
-& \code{-}
-& \desc{Inkrementace lokální proměnné $i$ o nulu nemá žádný efekt.} \\
-
-  \code{swap; \\ return;}
-& \code{return;}
-& \desc{Pokud instrukce před \texttt{return} manipuluje se zásobníkem nebo lokálními proměnnými a nemá žádný vedlejší efekt, lze ji odstranit.} \\
-
-% DO ACTION
 
   \code{iconst\_0; \\ pop;}
 & \code{-}
@@ -165,17 +136,104 @@ Pokud je volání metody z hlediska velikosti dražší než provedení těla me
 & \code{iconst\_1; \\ iconst\_0;}
 & \desc{Pokud obě instrukce před \texttt{swap} vkládají na zásobník hodnoty o délce jedné jednotky hloubky zásobníku a nemají žádný vedlejší efekt, lze je prohodit a instrukci \texttt{swap} odebrat.} \\
 
+  \code{swap; \\ return;}
+& \code{return;}
+& \desc{Pokud instrukce před \texttt{return} manipuluje se zásobníkem nebo lokálními proměnnými a nemá žádný vedlejší efekt, lze ji odstranit.} \\
+
   \code{iconst\_0; \\ new $c$; \\ dup\_x1; \\ swap;}
 & \code{new $c$; \\ dup; \\ iconst\_0;}
 & \desc{Aplikace instrukcí \texttt{swap} a \texttt{dup\_x1}.} \\
 
-% MACHINE IDIOMATICS
+\end{tpatterns}
+
+%=========================================================================
+\subsubsection{Duplikace hodnot na zásobníku}
+
+\begin{tpatterns}
+
+  \code{bipush $x$; \\ bipush $x$;}
+& \code{bipush $x$; \\ dup;}
+& \desc{Pro duplikaci konstantních hodnot lze použít speciální instrukci \texttt{dup}.} \\
+
+  \code{iload $x$; \\ iload $x$;}
+& \code{iload $x$; \\ dup;}
+& \desc{Dvojí načtení hodnoty z téže lokální proměnné lze nahradit duplikací hodnoty.} \\
+
+  \code{istore $x$; \\ iload $x$;}
+& \code{dup; \\ istore $x$;}
+& \desc{Místo uložení hodnoty do lokální proměnné a opětovné načtení hodnoty z téže proměnné lze hodnotu na zásobníku duplikovat a kopii uložit do proměnné.} \\
+
+\end{tpatterns}
+
+%=========================================================================
+\subsubsection{Substituce číselných konstant}
+
+Číselné konstanty lze vkládat na zásobník více způsoby. Pro některé hodnoty existují krátké specializované instrukce, zatímco jiné hodnoty je nutné vyjádřit pomocí položky v tabulce konstant. Je tedy žádoucí každou instrukci pro vložení číselné konstanty nahradit co nejkratší alternativou. Například tříbajtovou instrukci \texttt{sipush 0} lze nahradit jednobajtovou instrukcí \texttt{iconst\_0}, jak je uvedeno v tabulce \ref{tab:substitution}.
+
+Jednotlivé číselné datové typy jsou v instrukční sadě různě podporované. Například pro hodnotu 3 typu \texttt{int} existuje specializovaná jednobajtová instrukce \texttt{iconst\_3}, ale pro hodnotu 3,0 typu \texttt{double} je třeba použít tříbajtovou instrukci \texttt{ldc2\_w} a devítibajtovou položku v tabulce symbolů. Někdy proto může být vhodnější použít kratší instrukci s jiným typem a výsledek přetypovat, jak ukazuje tabulka \ref{tab:substitution}. Tuto metodu nelze aplikovat současně s metodou zjednodušení algebraických výrazů, neboť by se zápis instrukcí opět zjednodušil. Je ji proto vhodné aplikovat jako poslední krok optimalizace.
+
+\begin{table}[ht]
+\begin{tpatterns}
+
+  \code{sipush 0;}
+& \code{iconst\_0;}
+& \desc{Instrukce pro vkládání číselných proměnných lze někdy nahradit kratšími instrukcemi.} \\
+
+  \code{ldc2\_w 3.0;}
+& \code{iconst\_3; \\ i2d;}
+& \desc{Drahé instrukce pro vkládání číselným konstant lze nahradit kratšími instrukcemi pro jiný typ a přetypováním.} \\
+
+  \code{ldc2\_w NaN;}
+& \code{dconst\_0; \\ dup2; \\ ddiv;}
+& \desc{Instrukci pro vložení konstanty \texttt{NaN} lze nahradit instrukcemi pro dělení nulou s plovoucí řádovou čárkou. Ušetří se tak jedna položka v tabulce konstant.} \\
+
+\end{tpatterns}
+
+\caption{Příklady substitucí číselných konstant.}
+\label{tab:substitution}
+\end{table}
+
+%=========================================================================
+\subsubsection{Zjednodušení algebraických výrazů}
+
+% TODO přetypování?
+
+Některé sekvence instrukcí popisující výpočet algebraických výrazů lze zjednodušit nebo zcela nahradit hodnotou daného výrazu. Tato zjednodušení vychází z vlastností matematických operací a specifikace instrukcí. Příklady této optimalizace jsou uvedené v tabulce  \ref{tab:algebra}.
+
+\begin{table}[ht]
+\begin{tpatterns}
+
+  \code{iinc $i$ 0;}
+& \code{-}
+& \desc{Inkrementace lokální proměnné $i$ o nulu nemá žádný efekt.} \\
+
+  \code{iconst\_0; \\ iadd;}
+& \code{-}
+& \desc{Přičtení nuly nemá žádný efekt. Instrukce lze proto smazat. Obdobně pro \texttt{ishr}, \texttt{ishl}, \texttt{iushr} a instrukce pro typ \texttt{long}.} \\
+
+  \code{ldc NaN; \\ fadd;}
+& \code{pop; \\ ldc NaN;}
+& \desc{Výsledkem součtu s hodnotou \texttt{NaN} je \texttt{NaN}. Obdobně pro typ \texttt{double}.} \\
+
+  \code{ldc $x$; \\ ldc $y$; \\ iadd;}
+& \code{ldc $x+y$;}
+& \desc{Jsou-li operandy matematické operace číselné konstanty, pak lze určit výsledek operace. Instrukce je pak možné nahradit tímto výsledkem.} \\
 
   \code{iload $x$; \\ bipush $i$; \\ iadd; \\ istore $x$;}
 & \code{iinc $x$ $i$;}
 & \desc{Užití specializované instrukce \texttt{iinc}.} \\
 
-% JUMPS
+\end{tpatterns}
+\caption{Příklady zjednodušení algebraických výrazů.}
+\label{tab:algebra}
+\end{table}
+
+%=========================================================================
+\subsubsection{Optimalizace skoků}
+
+V rámci kódu každé metody lze upravit některé instrukce tak, 
+
+\begin{tpatterns}
 
   \code{goto $l$;\\ $l$: \dots}
 & \code{$l$: \dots}
@@ -185,17 +243,6 @@ Pokud je volání metody z hlediska velikosti dražší než provedení těla me
 & \code{goto $l_0$; \\ $l_1$: \dots}
 & \desc{Pokud instrukce bezprostředně následující za \texttt{goto} není cílem skoku z nějaké instrukce, případně počátkem bloku pro zpracování výjimky, pak ji lze odstranit, neboť se nikdy neprovede. Totéž platí pro instrukce pro návrat z metody.} \\
 
-  \code{lookupswitch $l$;}
-& \code{goto $l$;}
-& \desc{Pokud je tabulka dvojic v instrukci \texttt{lookupswitch} prázdná, pak lze tuto instrukci nahradit skokem na výchozí adresu. } \\
-
-\end{tpatterns}
-
-
-\begin{tpatterns}
-
-% TODO další lookupswitch
-
   \code{goto $l$; \\ \dots \\ $l$:return;}
 & \code{return; \\ \dots \\ $l$:return;}
 & \desc{Nepodmíněný skok na instrukci pro návrat z metody lze nahradit instrukcí pro návrat z metody.} \\
@@ -203,6 +250,17 @@ Pokud je volání metody z hlediska velikosti dražší než provedení těla me
   \code{goto $l_0$; \\ \dots \\ $l_0$: goto $l_1$;}
 & \code{goto $l_1$; \\ \dots \\ $l_0$: goto $l_1$;}
 & \desc{Skok na instrukci skoku lze nahradit přímým skokem na cílovou instrukci.} \\
+
+\end{tpatterns}
+
+%=========================================================================
+\subsubsection{Optimalizace větvení}
+
+\begin{tpatterns}
+
+  \code{lookupswitch $l$;}
+& \code{goto $l$;}
+& \desc{Pokud je tabulka dvojic v instrukci \texttt{lookupswitch} prázdná, pak lze tuto instrukci nahradit skokem na výchozí adresu. } \\
 
   \code{dup; \\ if\_icmpeq $l$;}
 & \code{pop; \\ goto $l$;}
@@ -220,234 +278,22 @@ Pokud je volání metody z hlediska velikosti dražší než provedení těla me
 & \code{goto $l$;}
 & \desc{Pro referenci na \texttt{null} je výsledkem porovnání s \texttt{null} vždy pravda. Obdobně pro \texttt{ifnonnull}.} \\
 
-% TODO append , init, append const
-% TODO objects
-
-  \code{iconst\_0; \\ iadd;}
-& \code{-}
-& \desc{Přičtení nuly nemá žádný efekt. Instrukce lze proto smazat. Obdobně pro \texttt{ishr}, \texttt{ishl}, \texttt{iushr} a instrukce pro typ \texttt{long}.} \\
-
-  \code{ldc NaN; \\ fadd;}
-& \code{pop; \\ ldc NaN;}
-& \desc{Výsledkem součtu s hodnotou \texttt{NaN} je \texttt{NaN}. Obdobně pro typ \texttt{double}.} \\
-
-  \code{ldc $x$; \\ ldc $y$; \\ iadd;}
-& \code{ldc $x+y$;}
-& \desc{Jsou-li operandy matematické operace číselné konstanty, pak lze určit výsledek operace. Instrukce je pak možné nahradit tímto výsledkem.} \\
-
-  \code{bipush $x$; \\ bipush $x$;}
-& \code{bipush $x$; \\ dup;}
-& \desc{Pro duplikaci konstantních hodnot lze použít speciální instrukci \texttt{dup}.} \\
-
-  \code{iload $x$; \\ iload $x$;}
-& \code{iload $x$; \\ dup;}
-& \desc{Dvojí načtení hodnoty z téže lokální proměnné lze nahradit duplikací hodnoty.} \\
-
-  \code{istore $x$; \\ iload $x$;}
-& \code{dup; \\ istore $x$;}
-& \desc{Místo uložení hodnoty do lokální proměnné a opětovné načtení hodnoty z téže proměnné lze hodnotu na zásobníku duplikovat a kopii uložit do proměnné.} \\
-
-% TODO další
-
-  \code{sipush 0;}
-& \code{iconst\_0;}
-& \desc{Instrukce pro vkládání číselných proměnných lze někdy nahradit kratšími instrukcemi.} \\
-
-  \code{ldc 3.0;}
-& \code{iconst\_3; \\ i2d;}
-& \desc{Drahé instrukce pro vkládání číselným proměnných lze nahradit kratšími instrukcemi pro jiný typ a instrukcemi pro přetypování.} \\
-
-  \code{ldc NaN;}
-& \code{dconst\_0; \\ dup2; \\ ddiv;}
-& \desc{Instrukci pro vložení konstanty \texttt{NaN} lze nahradit instrukcemi pro operaci $0,0/0,0$. Ušetří se tak jedna položka v tabulce konstant.} \\
-
-  \code{}
-& \code{}
-& \desc{} \\
-
-  \code{}
-& \code{}
-& \desc{} \\
-
-  \code{}
-& \code{}
-& \desc{} \\
-
-  \code{}
-& \code{}
-& \desc{} \\
-
 
 \end{tpatterns}
 
-\begin{itemize}
-\item Nahrazení instrukcí LOOKUPSWICH a TABLESWICH za sekvenci IF. Nahrazení je výhodné, jen pokud nejsou skoky příliš velké.
-\begin{itemize}
-\item LOOKUPSWITCH LABEL(0) I I LABEL(1) LABEL(2); 
-\item LOOKUPSWITCH LABEL(0) I LABEL(1); 
-\item LOOKUPSWITCH LABEL(0); 
-\item TABLESWITCH I I LABEL(0) LABEL(1) LABEL(1) LABEL(1); 
-\item TABLESWITCH I I LABEL(0) LABEL(1); 
-\end{itemize}
-
-\item Odstranění zbytečných skoků:
-\begin{itemize}
-\item GOTO LABEL(0); LABEL(0); 
-\end{itemize}
-
-\item Odstranění skoků na skoky.
-\begin{itemize}
-\item LABEL(0); GOTO LABEL(1);
-\end{itemize}
-
-\item Odstranění zbytečných porovnávání.
-\begin{itemize}
-\item LOAD VAR(0); LOAD VAR(0); IFEQ LABEL(0);
-\item LOAD VAR(0); LOAD VAR(0); IFNE LABEL(0);
-\item IF LABEL(0); GOTO LABEL(0);
-\item GOTO LABEL(0); ... ; LABEL(0); RETURN;
-\item CONST; CONST; IF LABEL(0); - 0 výskytů
-\item CONST null; IFNULL LABEL(0); - 0 výskytů
-\item LABEL(0); GOTO LABEL(0);  - 0 výskytů
-\end{itemize}
-
-\item Odstranění instrukcí mezi GOTO a nejbližším návěštím.
-\begin{itemize}
-\item GOTO LABEL(0); GOTO LABEL(1);
-\end{itemize}
-
-\item Odstranění instrukcí mezi RETURN a nejbližším návěštím.
-\begin{itemize}
-\item RETURN; CONST I;
-\item RETURN; CONST null;
-\item RETURN; GOTO LABEL(0);
-\item RETURN; NOP;
-\end{itemize}
-
-\end{itemize}
-
-\subsubsection{Nahrazení číselých konstant a zjednodušení algebraických operací}
-% nahrazení LDC
-% ze sčítání na inc
-% CONST I(0); SHR;
-% CONST I(0); ADD;
-% použít existující konstanty a přetypování?
-
-\begin{itemize}
-\item Pro číselné konstanty používat co nejkratší varianty instrukcí.
-
-\item Pokud je to výhodné, pak lze konstantu nahradit kratším zápisem jiného typu a přetypovat.
-\begin{itemize}
-\item LDC I(0); $\rightarrow$ ICONST\_0;
-\item LDC F(3.0); $\rightarrow$	ICONST\_3; i2f;
-\item LDC L(31); $\rightarrow$	BIPUSH I(31); i2l;
-\item LDC D(-1.0); $\rightarrow$ ICONST\_m1; i2d;
-\item LDC D(NaN); $\rightarrow$	DCONST\_0; DUP2; DDIV;
-\end{itemize}
-
-\item Provedení operací, které nemají žádný efekt, je zbytečné a instrukce lze odstranit.
-\begin{itemize}
-\item CONST I(0); ADD;
-\item CONST I(0); SHL;
-\item CONST I(0); SHR;
-\end{itemize}
-
-\item Kde to lze je výhodnější použít specializovanou operaci pro inkrementaci.
-\begin{itemize}
-\item LOAD VAR(0); CONST I(0); ADD; STORE VAR(0); $\rightarrow$ INC VAR(0) I(0);
-\end{itemize}
-
-\end{itemize}
-
-\subsubsection{Optimalizace práce se zásobníkem}
-% *, pop, *, return, nop, dup
-% duplikace stejných hodnot pomocí dup
-% LOAD VAR; NEW OBJECT; DUP_X1; SWAP;
-% POP2; RETURN;
-% LOAD VAR; LOAD this; SWAP;
-% PUTSTATIC OBJECT(0) FIELD(0); GETSTATIC OBJECT(0) FIELD(0); 
-% STORE VAR(0); LOAD VAR(0); POP; 
-% STORE VAR(0); LOAD VAR(0); RETURN; 
-% STORE VAR(0); LOAD VAR(0); 
-
-\begin{itemize}
-\item Odstranění instrukcí NOP.
-
-\item Maximalizace využití instrukce DUP ve všech formách.
-\begin{itemize}
-\item CONST I(0); CONST I(0); $\rightarrow$ CONST I(0); DUP;
-\item LOAD VAR(0); LOAD VAR(0); $\rightarrow$ LOAD VAR(0); DUP;
-\item STORE VAR(0); LOAD VAR(0); $\rightarrow$ DUP; STORE VAR(0);
-\item PUTSTATIC OBJECT(0) FIELD(0); GETSTATIC OBJECT(0) FIELD(0); $\rightarrow$ DUP; PUTSTATIC OBJECT(0) FIELD(0);
-\item LOAD VAR(0); LOAD VAR(1); LOAD VAR(0); $\rightarrow$ LOAD VAR(1); LOAD VAR(0); DUP\_X;
-\item LOAD VAR(0); LOAD VAR(1); LOAD VAR(0); LOAD VAR(1); $\rightarrow$ LOAD VAR(0); LOAD VAR(1); DUP2;
-\end{itemize}
-
-\item Provedení instrukcí POP.
-\begin{itemize}
-\item CONST null; POP;
-\item LOAD VAR; POP;
-\item GETFIELD OBJECT FIELD; POP; $\rightarrow$ POP;
-\item GETSTATIC OBJECT FIELD; POP; $\rightarrow$ POP;
-\end{itemize}
-
-\item Provedení instrukce SWAP.
-\begin{itemize}
-\item LOAD VAR; LOAD this; SWAP; $\rightarrow$ LOAD this; LOAD VAR;
-\item LOAD PAR; NEW OBJECT; DUP\_X1; SWAP; $\rightarrow$ NEW OBJECT; DUP; LOAD PAR;
-\end{itemize}
-
-\item Odstranění instrukcí pro manipulaci se zásobníkem před instrukcí RETURN, která nic nevrací.
-\begin{itemize}
-\item POP; RETURN;
-\item STORE VAR(0); LOAD VAR(0); RETURN; 
-\end{itemize}
-
-\end{itemize}
-
-
+%=========================================================================
 \subsubsection{Optimalizace konkatenace řetězců}
-% konkatenace dvou řetězcových konstant před append
-% pr8zdný řetězec
-% Volání bezparametrické metody.
-% String builder, append
 
-\begin{itemize}
-\item Nejčastěji volanou metodou je append třídy StringBuilder s parametrem String.
-\item Append prázdného řetězce je zbytečná operace.
-\item Využití parametrického konstruktoru třídy StringBuilder. Ušetří se jedno append.
-\item Opakované volání append pro řetězcové konstanty lze sloučit do jednoho volání pro jejich konkatenaci.
-\item Tisk prázného řetězce je zbytečná operace.
-\end{itemize}
-
-\subsubsection{Optimalizace práce s objekty}
-% CONST null; CHECKCAST ARRAY;
-% CHECKCAST OBJECT(0); CHECKCAST OBJECT(0); 
-% CONST null; ATHROW;
-
-\begin{itemize}
-\item CONST null; CHECKCAST ARRAY;
-\item CHECKCAST OBJECT(0); CHECKCAST OBJECT(0); 
-\item CONST null; ATHROW;
-\end{itemize}
-
-\subsubsection{Optimalizace bajtkódu}
-% copy propagration
-% constant folding and constant propagation
-% algebraic simplification and reduction
-% flow of control optimization
-% dead code elimination - never executed and does nothing useful
-% loop unrolling - spíše ne
-
-\begin{itemize}
-\item copy propagration
-\item constant folding and constant propagation
-\item algebraic simplification and reduction
-\item flow of control optimization
-\item dead code elimination - never executed and does nothing useful
-\item loop unrolling - spíše ne
-\end{itemize}
-
+\begin{tpatterns}
+\end{tpatterns}
 
 %=========================================================================
+\subsubsection{Optimalizace práce s objekty}
 
+\begin{tpatterns}
+\end{tpatterns}
+
+%=========================================================================
+\subsubsection{Optimalizace bajtkódu}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
