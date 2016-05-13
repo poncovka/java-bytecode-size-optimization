@@ -107,26 +107,26 @@ public class Runner {
     }
 
     public String getActionName(Method method) {
-        return    method.getDeclaringClass().getCanonicalName()
+        return    method.getDeclaringClass().getSimpleName()
                 + "."
                 + method.getName();
     }
 
     public void findAndReplace(ClassNode cn) {
-        //System.err.println(">>> Class:" + cn.name);
+        System.err.println(">>> Class:" + cn.name);
         for (Object mn : cn.methods) {
             findAndReplace(((MethodNode)mn));
         }
     }
 
     public void findAndReplace(MethodNode mn) {
-        //System.err.println(">>> Method:" + mn.name);
+        System.err.println(">>> Method:" + mn.name);
         findAndReplace(mn.instructions);
     }
 
     public void findAndReplace(InsnList list) {
-        //System.err.println(">>> Instructions:");
-        InsnUtils.debug(list);
+        System.err.println(">>> Instructions:");
+        //InsnUtils.debug(list);
 
         // iterate over the list while there is is a change
         boolean change = true;
@@ -203,16 +203,16 @@ public class Runner {
             stats.addPepphole(fsm.toString());
         }
 
-        /*
+
         if (result) {
             System.err.println(">>> Action: " + fsm);
             System.err.println(">>> Matched:");
             InsnUtils.debug(fsm.getMatchedInput());
-            System.err.println(">>> Result:");
-            InsnUtils.debug(list);
+            //System.err.println(">>> Result:");
+            //InsnUtils.debug(list);
             System.err.println();
         }
-        */
+
 
         // return the result
         return result;

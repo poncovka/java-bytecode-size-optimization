@@ -39,7 +39,7 @@ public class DuplicationReduction {
             Symbols.VALUE_TYPE1 /*x*/}) /* => y;z;x;dup_x2 */
     public static boolean reduceWithDupX2Form1(InsnList list, AbstractInsnNode[] matched) {
 
-        if (InsnUtils.compareValueType1(matched[0], matched[2])) {
+        if (InsnUtils.compareValueType1(matched[0], matched[3])) {
             list.remove(matched[0]);
             list.insert(matched[3], new InsnNode(Opcodes.DUP_X2));
             return true;
@@ -69,7 +69,7 @@ public class DuplicationReduction {
             Symbols.VALUE_TYPE1 /*x*/,
             Symbols.DUP,
             Symbols.VALUE_TYPE1 /*y*/,
-            Symbols.DUP_X1}) /* => x;y;dup2  */
+            Symbols.DUP_X1}) /* => x;y;x;y => x;y;dup2  */
     public static boolean reduceWithDup2(InsnList list, AbstractInsnNode[] matched) {
         list.remove(matched[1]);
         list.set(matched[3], new InsnNode(Opcodes.DUP2));
@@ -83,10 +83,10 @@ public class DuplicationReduction {
             Symbols.VALUE_TYPE1 /*y*/,
             Symbols.DUP_X1,
             Symbols.VALUE_TYPE1 /*z*/,
-            Symbols.DUP_X2}) /* => x;y;z;dup2_x1  */
+            Symbols.DUP_X2}) /* y;z;x;y;z => x;y;z;dup2_x1  */
     public static boolean reduceWithDup2X1Form1(InsnList list, AbstractInsnNode[] matched) {
         list.remove(matched[2]);
-        list.set(matched[3], new InsnNode(Opcodes.DUP2_X1));
+        list.set(matched[4], new InsnNode(Opcodes.DUP2_X1));
         return true;
     }
 

@@ -6,7 +6,8 @@ import org.objectweb.asm.tree.InsnList;
 import java.util.Arrays;
 
 /**
- * Created by vendy on 2.5.16.
+ * A representation of the finite state machine.
+ * Pattern is matched in the reversed order.
  */
 public class StateMachine {
 
@@ -15,7 +16,6 @@ public class StateMachine {
     Action action;
 
     int state;
-    int finalState;
     AbstractInsnNode[] matched;
 
     public StateMachine(String name, Action action, Symbols[] pattern) {
@@ -26,9 +26,8 @@ public class StateMachine {
         this.action = action;
 
         // init the state
-        this.state = 0;
-        this.finalState = pattern.length;
-        this.matched = new AbstractInsnNode[finalState];
+        this.state = pattern.length - 1;
+        this.matched = new AbstractInsnNode[pattern.length];
     }
 
     public String getName() { return name; }
@@ -46,7 +45,7 @@ public class StateMachine {
     }
 
     public boolean checkInput(AbstractInsnNode i) {
-        return 0 <= state && state < finalState && pattern[state].match(i);
+        return 0 <= state && state < pattern.length && pattern[state].match(i);
     }
 
     public boolean readInput(AbstractInsnNode i) {
@@ -57,7 +56,7 @@ public class StateMachine {
             // store the matched instruction
             matched[state] = i;
             // go to the next state
-            state++;
+            state--;
             // continue to read
             return true;
         }
@@ -67,7 +66,7 @@ public class StateMachine {
     }
 
     public boolean inFinalState() {
-        return state >= finalState;
+        return state < 0;
     }
 
     public boolean applyAction(InsnList list) {

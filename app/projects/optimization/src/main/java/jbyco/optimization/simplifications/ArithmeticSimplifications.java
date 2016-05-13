@@ -25,7 +25,7 @@ public class ArithmeticSimplifications {
     }
 
     @Pattern({Symbols.IINC /*x i*/, Symbols.IINC /*x j*/}) /* => LOAD x; LDC i+j; IADD; STORE x; */
-    public static boolean simplifyIncInc(InsnList list, AbstractInsnNode[] matched) {
+    public static boolean joinIncIncToAdd(InsnList list, AbstractInsnNode[] matched) {
 
         IincInsnNode n1 = (IincInsnNode) matched[0];
         IincInsnNode n2 = (IincInsnNode) matched[1];
@@ -66,8 +66,8 @@ public class ArithmeticSimplifications {
 
     // -------------------------------------------------------------------------------------------- x * 0 = 0
 
-    @Pattern({Symbols.INT /*0*/, Symbols.IMUL}) /* => 0 */
-    @Pattern({Symbols.INT /*0*/, Symbols.IAND}) /* => 0 */
+    @Pattern({Symbols.INT /*0*/, Symbols.IMUL}) /* => POP; 0 */
+    @Pattern({Symbols.INT /*0*/, Symbols.IAND}) /* => POP; 0 */
     public static boolean simplifyIntXOp0(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.getIntValue(matched[0]) == 0) {
@@ -79,8 +79,8 @@ public class ArithmeticSimplifications {
         return false;
     }
 
-    @Pattern({Symbols.LONG /*0*/, Symbols.LMUL}) /* => 0 */
-    @Pattern({Symbols.LONG /*0*/, Symbols.LAND}) /* => 0 */
+    @Pattern({Symbols.LONG /*0*/, Symbols.LMUL}) /* => POP2; 0 */
+    @Pattern({Symbols.LONG /*0*/, Symbols.LAND}) /* => POP2; 0 */
     public static boolean simplifyLongXOp0(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.getLongValue(matched[0]) == 0L) {
@@ -120,7 +120,7 @@ public class ArithmeticSimplifications {
 
     // -------------------------------------------------------------------------------------------- x or ~0 = ~0
 
-    @Pattern({Symbols.INT /*~0*/, Symbols.IOR}) /* => ~0 */
+    @Pattern({Symbols.INT /*~0*/, Symbols.IOR}) /* => POP; ~0 */
     public static boolean simplifyIntXOrNot0(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.getIntValue(matched[0]) == ~0) {
@@ -132,7 +132,7 @@ public class ArithmeticSimplifications {
         return false;
     }
 
-    @Pattern({Symbols.LONG /*~0*/, Symbols.LOR}) /* => ~0 */
+    @Pattern({Symbols.LONG /*~0*/, Symbols.LOR}) /* => POP2; ~0 */
     public static boolean simplifyLongXOrNot0(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.getLongValue(matched[0]) == ~0L) {
@@ -170,7 +170,7 @@ public class ArithmeticSimplifications {
 
     // -------------------------------------------------------------------------------------------- x % 1 = 0
 
-    @Pattern({Symbols.INT /*1*/, Symbols.IREM}) /* => ~0 */
+    @Pattern({Symbols.INT /*1*/, Symbols.IREM}) /* => POP; ~0 */
     public static boolean simplifyIntXRem1(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.getIntValue(matched[0]) == 1) {
@@ -182,7 +182,7 @@ public class ArithmeticSimplifications {
         return false;
     }
 
-    @Pattern({Symbols.LONG /*1*/, Symbols.LREM}) /* => ~0 */
+    @Pattern({Symbols.LONG /*1*/, Symbols.LREM}) /* => POP2; ~0 */
     public static boolean simplifyLongXRem1(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.getLongValue(matched[0]) == 1L) {
@@ -197,19 +197,19 @@ public class ArithmeticSimplifications {
 
     // -------------------------------------------------------------------------------------------- x op x = 0
 
-    @Pattern({Symbols.DUP, Symbols.ISUB}) /* => 0 */
-    @Pattern({Symbols.DUP, Symbols.IXOR}) /* => 0 */
+    @Pattern({Symbols.DUP, Symbols.ISUB}) /* => POP;0 */
+    @Pattern({Symbols.DUP, Symbols.IXOR}) /* => POP;0 */
     public static boolean simplifyIntXOpXIs0(InsnList list, AbstractInsnNode[] matched) {
-        list.set(matched[0], new InsnNode(Opcodes.ICONST_0));
-        list.remove(matched[1]);
+        list.set(matched[0], new InsnNode(Opcodes.POP));
+        list.set(matched[1], new InsnNode(Opcodes.ICONST_0));
         return true;
     }
 
-    @Pattern({Symbols.DUP2, Symbols.LSUB}) /* => 0 */
-    @Pattern({Symbols.DUP2, Symbols.LXOR}) /* => 0 */
+    @Pattern({Symbols.DUP2, Symbols.LSUB}) /* => POP2; 0 */
+    @Pattern({Symbols.DUP2, Symbols.LXOR}) /* => POP2; 0 */
     public static boolean simplifyLongXOpXIs0(InsnList list, AbstractInsnNode[] matched) {
-        list.set(matched[0], new InsnNode(Opcodes.LCONST_0));
-        list.remove(matched[1]);
+        list.set(matched[0], new InsnNode(Opcodes.POP2));
+        list.set(matched[1], new InsnNode(Opcodes.LCONST_0));
         return true;
     }
 

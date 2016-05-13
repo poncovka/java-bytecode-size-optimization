@@ -3,7 +3,7 @@ package jbyco.optimization.simplifications;
 import jbyco.optimization.peephole.InsnUtils;
 import jbyco.optimization.peephole.Pattern;
 import jbyco.optimization.peephole.Symbols;
-import jdk.internal.org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.LdcInsnNode;
@@ -22,16 +22,24 @@ public class ConversionsSimplifications {
         switch (matched[1].getOpcode()) {
             case Opcodes.I2B:
                 y = new LdcInsnNode(new Integer((byte)x));
+                break;
             case Opcodes.I2C:
                 y = new LdcInsnNode(new Integer((char)x));
+                break;
             case Opcodes.I2S:
                 y = new LdcInsnNode(new Integer((short)x));
+                break;
             case Opcodes.I2F:
                 y = new LdcInsnNode(new Float((float)x));
+                break;
             case Opcodes.I2L:
                 y = new LdcInsnNode(new Long((long)x));
+                break;
             case Opcodes.I2D:
                 y = new LdcInsnNode(new Double((double)x));
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected opcode.");
         }
 
         list.set(matched[0], y);
@@ -48,10 +56,15 @@ public class ConversionsSimplifications {
         switch (matched[1].getOpcode()) {
             case Opcodes.L2I:
                 y = new LdcInsnNode(new Integer((int) x));
+                break;
             case Opcodes.L2F:
                 y = new LdcInsnNode(new Float((float)x));
+                break;
             case Opcodes.L2D:
                 y = new LdcInsnNode(new Double((double)x));
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected opcode.");
         }
 
         list.set(matched[0], y);
@@ -68,10 +81,15 @@ public class ConversionsSimplifications {
         switch (matched[1].getOpcode()) {
             case Opcodes.F2I:
                 y = new LdcInsnNode(new Integer((int) x));
+                break;
             case Opcodes.F2L:
                 y = new LdcInsnNode(new Long((long)x));
+                break;
             case Opcodes.F2D:
                 y = new LdcInsnNode(new Double((double)x));
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected opcode.");
         }
 
         list.set(matched[0], y);
@@ -89,10 +107,15 @@ public class ConversionsSimplifications {
         switch (matched[1].getOpcode()) {
             case Opcodes.D2I:
                 y = new LdcInsnNode(new Integer((int) x));
+                break;
             case Opcodes.D2F:
                 y = new LdcInsnNode(new Float((float)x));
+                break;
             case Opcodes.D2L:
                 y = new LdcInsnNode(new Long((long)x));
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected opcode.");
         }
 
         list.set(matched[0], y);

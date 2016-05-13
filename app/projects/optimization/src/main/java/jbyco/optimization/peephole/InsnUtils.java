@@ -96,16 +96,22 @@ public class InsnUtils {
         int y = getIntValue(i2);
 
         switch (op.getOpcode()) {
+            case Opcodes.IFEQ:
             case Opcodes.IF_ICMPEQ:
                 return x == y;
+            case Opcodes.IFGE:
             case Opcodes.IF_ICMPGE:
                 return x >= y;
+            case Opcodes.IFGT:
             case Opcodes.IF_ICMPGT:
                 return x > y;
+            case Opcodes.IFLE:
             case Opcodes.IF_ICMPLE:
                 return x <= y;
+            case Opcodes.IFLT:
             case Opcodes.IF_ICMPLT:
                 return x < y;
+            case Opcodes.IFNE:
             case Opcodes.IF_ICMPNE:
                 return x != y;
             default:

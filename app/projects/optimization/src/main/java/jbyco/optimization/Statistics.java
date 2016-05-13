@@ -11,8 +11,8 @@ import java.util.*;
 public class Statistics {
 
     Map<String, Integer> peephole;
-    int sizeBefore;
-    int sizeAfter;
+    long sizeBefore;
+    long sizeAfter;
 
     public Statistics() {
         this.peephole = new HashMap<>();
@@ -42,12 +42,12 @@ public class Statistics {
 
         // print peephole optimizations
         Map<String, Integer> peephole = new TreeMap<>(this.peephole);
-        String format = "%-40s%-20s%\n";
-        out.printf(format, "METHOD", "COUNT");
+        String format = "%-20s%-40s\n";
+        out.printf(format, "COUNT", "METHOD");
 
         for (String key : peephole.keySet()) {
             int count = peephole.get(key);
-            out.printf(format, key, count);
+            out.printf(format, Integer.toString(count), key);
         }
     }
 
@@ -55,10 +55,10 @@ public class Statistics {
 
         // print sizes
         String format = "%-20s%-20s\n";
-        out.printf(format, "Size before:", sizeBefore);
-        out.printf(format, "Size after:", sizeAfter);
-        out.printf(format, "Difference in bytes:", sizeBefore - sizeAfter);
-        out.printf(format, "Difference in percent:", Utils.intDivToString((sizeBefore - sizeAfter) * 100, sizeBefore));
+        out.printf(format, "Size before:", Long.toString(sizeBefore));
+        out.printf(format, "Size after:", Long.toString(sizeAfter));
+        out.printf(format, "Diff in bytes:", Long.toString(sizeBefore - sizeAfter));
+        out.printf(format, "Diff in percent:", Utils.longDivToString((sizeBefore - sizeAfter) * 100L, sizeBefore) + "%"); // TODO long?
 
     }
 }

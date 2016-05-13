@@ -74,7 +74,7 @@ public class Optimizer {
         reader.accept(cv, ClassReader.SKIP_DEBUG /*|ClassReader.SKIP_FRAMES*/);
 
         // apply peephole optimizations runner
-        phase1runner.findAndReplace(node);
+        //phase1runner.findAndReplace(node);
 
         // return the node
         return node;
@@ -107,7 +107,7 @@ public class Optimizer {
     public ClassNode phase2(ClassNode input) {
 
         // apply peephole optimizations
-        phase2runner.findAndReplace(input);
+        //phase2runner.findAndReplace(input);
 
         // return the node
         return input;
@@ -124,7 +124,7 @@ public class Optimizer {
     public byte[] phase3(ClassNode input) {
 
         // apply peephole optimizations
-        phase3runner.findAndReplace(input);
+        //phase3runner.findAndReplace(input);
 
         // TODO optimize constants, optimize jumps, calculate size, repeat
 
@@ -136,7 +136,7 @@ public class Optimizer {
             @Override
             public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
                 MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-                mv = new ConstantNumbersSubstitution(mv);
+                //mv = new ConstantNumbersSubstitution(mv);
                 return mv;
             }
 

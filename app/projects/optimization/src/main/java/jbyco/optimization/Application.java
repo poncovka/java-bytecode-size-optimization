@@ -107,7 +107,9 @@ public class Application {
 
         // print statistics
         if (statistics != null) {
-            statistics.write(new PrintWriter(System.out));
+            PrintWriter writer = new PrintWriter(System.out);
+            statistics.write(writer);
+            writer.close();
         }
 
     }
