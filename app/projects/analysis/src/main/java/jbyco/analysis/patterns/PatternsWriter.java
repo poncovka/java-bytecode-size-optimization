@@ -3,6 +3,7 @@ package jbyco.analysis.patterns;
 import jbyco.analysis.patterns.instructions.AbstractInstruction;
 import jbyco.analysis.patterns.tree.Node;
 import jbyco.analysis.patterns.tree.Tree;
+import jbyco.lib.Utils;
 
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
@@ -30,9 +31,9 @@ public class PatternsWriter {
     Tree<AbstractInstruction> graph;
 
     /**
-     * The delimiter between instructions.
+     * The number of processed instructions.
      */
-    String delimiter;
+    long total;
 
     /**
      * The minimal frequency of the pattern.
@@ -43,6 +44,12 @@ public class PatternsWriter {
      * The number of wild cards in a pattern.
      */
     int wildcards;
+
+
+    /**
+     * The delimiter between instructions.
+     */
+    String delimiter;
 
     /**
      * The stack of {@link StackItem}.
@@ -67,16 +74,18 @@ public class PatternsWriter {
      * Initializes the patterns writes.
      *
      * @param graph     the graph of instruction sequences
-     * @param delimiter the delimiter between instructions
+     * @param total     the number of processed instructions
      * @param min       the minimal frequency of a pattern
      * @param wildcards the number of wild cards in a pattern
+     * @param delimiter the delimiter between instructions
      */
-    private void init(Tree<AbstractInstruction> graph, String delimiter, int min, int wildcards) {
+    private void init(Tree<AbstractInstruction> graph, long total, int min, int wildcards, String delimiter) {
 
         this.graph = graph;
-        this.delimiter = delimiter;
+        this.total = total;
         this.min = min;
         this.wildcards = wildcards;
+        this.delimiter = delimiter;
 
         this.stack = new ArrayDeque<>();
         this.stack.push(new StackItem(this.graph.getRoot(), 0, 0));
@@ -86,14 +95,17 @@ public class PatternsWriter {
      * Initializes the patterns writer and write the patterns from a graph to the output.
      *
      * @param graph     the graph of instruction sequences
-     * @param delimiter the delimiter between instructions
+     * @param total     the number of processed instructions
      * @param min       the minimal frequency of a pattern
      * @param wildcards the number of wild cards in a pattern
+     * @param delimiter the delimiter between instructions
      */
-    public void write(Tree<AbstractInstruction> graph, String delimiter, int min, int wildcards) {
+    public void write(Tree<AbstractInstruction> graph, long total, int min, int wildcards, String delimiter) {
 
         // init
-        init(graph, delimiter, min, wildcards);
+        init(graph, total, min, wildcards, delimiter);
+
+        out.printf("%s\t%s\t%s\t%s\n", "LEN", "FREQ", "REL", "PATTERN");
 
         // process stack
         while (!stack.isEmpty()) {
@@ -127,22 +139,26 @@ public class PatternsWriter {
      */
     private void writePath() {
 
-        // print frequency
-        out.printf("%s\t", stack.getFirst().node.getCount());
+        StackItem item = stack.getFirst();
 
         // print depth
-        out.printf("%s\t", stack.getFirst().depth);
+        out.printf("%s\t", item.depth);
+
+        // print frequency
+        out.printf("%s\t", item.node.getCount());
+
+        // print relative frequency
+        out.printf("%s\t", Utils.doubleDivToString(item.node.getCount() * item.depth * 100, total, "#0.00000"));
 
         // for all nodes in a stack
         Iterator<StackItem> iterator = stack.descendingIterator();
         while (iterator.hasNext()) {
 
             // print items in nodes
-            StackItem item = iterator.next();
+            StackItem next = iterator.next();
 
-            if (!isRoot(item)) {
-                Node<AbstractInstruction> node = item.node;
-                out.printf("%s%s", getString(node), delimiter);
+            if (!isRoot(next)) {
+                out.printf("%s%s", getString(next.node), delimiter);
             }
         }
 

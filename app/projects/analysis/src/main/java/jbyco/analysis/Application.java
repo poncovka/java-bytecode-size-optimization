@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * Application is the main class of the jbyco package.
- * It reads command line options and run one of the tools.
+ * The main class for running the bytecode analysis.
+ * It reads command line options and runs one of the tools.
  */
 public class Application {
 
@@ -70,22 +70,22 @@ public class Application {
     enum Option implements AbstractOption {
 
         /**
-         * The option to analysis size.
+         * The option to analyze size.
          */
         ANALYZE_SIZE("Print sizes of items in classfiles.",
-                "--analysis-size"),
+                "--size"),
 
         /**
-         * The option to analysis variables.
+         * The option to analyze variables.
          */
         ANALYZE_VARIABLES("Print usage of local variables and parameters.",
-                "--analysis-variables"),
+                "--variables"),
 
         /**
-         * The option to analysis patterns.
+         * The option to analyze patterns.
          */
         ANALYZE_PATTERNS("Print frequent instruction sequencies.",
-                "--analysis-patterns"),
+                "--patterns"),
 
         /**
          * The option to get statistics.
@@ -119,7 +119,7 @@ public class Application {
          * @param description the description of the option
          * @param names       the names of the option
          */
-        private Option(String description, String... names) {
+        Option(String description, String... names) {
             this.description = description;
             this.names = names;
         }

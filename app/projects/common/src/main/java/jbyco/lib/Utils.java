@@ -15,33 +15,38 @@ import java.util.Locale;
 public class Utils {
 
     /**
-     * Convert division of two integers to the string.
+     * Convert division of two longs to the string.
      *
      * @param x the x
      * @param y the y
      * @return the string
      */
-    public static String intDivToString(int x, int y) {
-        return (y == 0) ? "0" : Integer.toString(x / y);
+    public static String longDivToString(long x, long y) {
+        return (y == 0L) ? "0" : Long.toString(x / y);
     }
 
     /**
-     * Convert division of two doubles to the string.
+     * Convert double division of two integers to the string.
      *
      * @param x the x
      * @param y the y
+     * @param f the decimal format
      * @return the string
      */
-    public static String doubleDivToString(int x, int y) {
+    public static String doubleDivToString(long x, long y, String f) {
 
         // set format
-        DecimalFormat format = new DecimalFormat("#.###");
+        DecimalFormat format = new DecimalFormat(f);
 
         // set format symbols
         format.setDecimalFormatSymbols(new DecimalFormatSymbols(Locale.US));
 
         // return string
         return (y == 0) ? "0" : format.format(x * 1.0 / y);
+    }
+
+    public static String doubleDivToString(long x, long y) {
+        return doubleDivToString(x, y, "#.###");
     }
 
     /**

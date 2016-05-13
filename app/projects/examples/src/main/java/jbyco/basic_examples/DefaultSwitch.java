@@ -1,4 +1,4 @@
-package jbyco.example;
+package jbyco.basic_examples;
 
 /**
  * Created by vendy on 6.5.16.

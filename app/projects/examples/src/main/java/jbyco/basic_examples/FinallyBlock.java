@@ -1,6 +1,9 @@
-package jbyco.example;
+package jbyco.basic_examples;
 
-public class TryCatchBlock {
+/**
+ * Created by vendy on 3.5.16.
+ */
+public class FinallyBlock {
 
     public void function() {
 
@@ -9,8 +12,9 @@ public class TryCatchBlock {
             int a = 1 / 0;
         } catch (RuntimeException e) {
             System.out.println("catch");
+        } finally {
+            System.out.println("finally");
         }
 
     }
-
 }

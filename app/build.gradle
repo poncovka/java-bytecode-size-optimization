@@ -23,30 +23,14 @@ subprojects {
         testCompile 'junit:junit:4.12'
     }
 
-    clean {
-        delete 'build'
+    task collectBinaries(type: Copy) {
+        into "${this.buildDir}/application/jbyco/"
     }
 }
 
-task collectDistributions(type: Sync, dependsOn: subprojects.collect() { it.tasks.getByName('build') }) {
-    from subprojects.collect { it.file('build/distributions') }
-    into "${buildDir}/distributions"
-}
-
-task collectScripts(type: Sync, dependsOn: subprojects.collect() { it.tasks.getByName('build') }) {
-    from subprojects.collect { it.file('build/scripts') }
-    into "$buildDir/install/jbyco/bin"
-}
-
-task collectDependencies(type: Sync, dependsOn: subprojects.collect() { it.tasks.getByName('build') }) {
-    from subprojects.collect { it.configurations.runtime }
-    from subprojects.collect { it.file('build/libs') }
-    into "$buildDir/install/jbyco/lib"
-}
-
 // builds the project
-task build {
-    dependsOn(['collectScripts', 'collectDependencies', 'collectDistributions'])
+task buildApplication {
+    dependsOn(['collectBinaries'])
 }
 
 // clean the project

@@ -10,3 +10,8 @@
 //mainClassName = "jbyco."
 //dependencies {}
 archivesBaseName = "jbyco-examples"
+
+collectBinaries {
+    from(tasks.compileJava.outputs) {into 'examples'}
+}
+

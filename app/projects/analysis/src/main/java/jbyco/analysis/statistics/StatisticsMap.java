@@ -65,7 +65,7 @@ public class StatisticsMap {
             out.printf(format,
                     key,
                     item.total,
-                    Utils.intDivToString(item.total, item.count)
+                    Utils.longDivToString(item.total, item.count)
             );
         }
     }

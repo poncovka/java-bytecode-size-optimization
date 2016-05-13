@@ -2,10 +2,10 @@
 
 # Author: Vendula Poncova
 # Date: 14.4.2016
-# Process results of analysis created by tools jbyco and analyze.
+# Process results of analysis created by tools jbyca and analyze.
 #
 # Usage: 
-#   ./jbyco-process input output max
+#   ./jbyca-postprocessing input output max
 #
 # Parameters:
 #   input   A file or a directory of .class and .jar files.
@@ -16,7 +16,7 @@
 
 # include files
 dir=$( cd $(dirname $0) ; pwd -P )
-. "${dir}/jbyco-process-lib"
+. "${dir}/jbyca-postprocessing-lib"
 
 # process parameters
 in=$1

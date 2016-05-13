@@ -25,6 +25,23 @@ dependencies {
 
 }
 
+distributions {
+    main {
+        baseName = archivesBaseName
+        contents {
+            from('src/main/sh') { into 'tools' }
+        }
+    }
+}
+
+collectBinaries {
+    from(tasks.startScripts.getOutputs()) {into 'bin'}
+    from(tasks.jar.getOutputs()) {into 'lib'}
+    from(configurations.runtime) {into 'lib'}
+    from('src/main/sh') {into 'tools'}
+}
+
+
 run {
     // Run with arguments: gradle run -Dappargs="arg1 arg2 arg3"
     args System.getProperty("appargs", "").split()

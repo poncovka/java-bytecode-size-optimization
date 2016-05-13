@@ -2,26 +2,13 @@
 
 # Author: Vendula Poncova
 # Date: 14.4.2016
-# Library of functions for jbyco-process.
+# Library of functions for jbyca-postprocessing.
 #
 # Usage: 
-#   source jbyco-process-lib
-
-add_relative_frequency() {
-  awk -F "\t" '
-  {
-    if(NR == 1) {
-      total=int($1); 
-    }
-    else {
-      printf("%.5f\t", $1/total*100); 
-      print $0
-    }
-  }'
-};
+#   source jbyca-postprocessing-lib
 
 sort_cls() {
-  sort -k 3,3n -k 1,1rg -k 2,2rn -k 4,4
+  sort -k 1,1n -k 3,3rg -k 2,2rn -k 4,4
 };
 
 unique_patterns() {
@@ -29,7 +16,7 @@ unique_patterns() {
 };
 
 cut_patterns() {
-  awk -F "\t" -v max="$1" 'counter[$3]++ < max'
+  awk -F "\t" -v max="$1" 'counter[$1]++ < max'
 };
 
 skip_no_parameters() {
@@ -109,8 +96,7 @@ generate_basic_cls() {
     output=$out/$(basename $input '.out')'.cls'
     
     # generate output
-    cat $input | \
-    add_relative_frequency | \
+    tail -n +2 $input | \
     sort_cls > $output
     
     # remove file if empty

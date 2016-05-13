@@ -1,4 +1,4 @@
-package jbyco.example;
+package jbyco.basic_examples;
 
 public class Plus {
 

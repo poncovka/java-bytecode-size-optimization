@@ -70,7 +70,7 @@ public class SizeMap {
             out.printf(format,
                     key,
                     item.size,
-                    Utils.intDivToString(item.size, item.count),
+                    Utils.longDivToString(item.size, item.count),
                     Utils.doubleDivToString(item.size, file.size)
             );
         }

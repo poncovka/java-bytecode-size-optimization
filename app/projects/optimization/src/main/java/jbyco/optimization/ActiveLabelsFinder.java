@@ -1,4 +1,4 @@
-package jbyco.analysis.patterns.labels;
+package jbyco.optimization;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -90,6 +90,8 @@ public class ActiveLabelsFinder extends MethodVisitor {
      */
     @Override
     public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
+        add(start);
+        add(end);
         add(handler);
     }
 

@@ -5,7 +5,6 @@ import jbyco.analysis.patterns.instructions.AbstractInstruction;
 import jbyco.analysis.patterns.instructions.Abstractor;
 import jbyco.analysis.patterns.instructions.Cache;
 import jbyco.analysis.patterns.labels.AbstractLabelFactory;
-import jbyco.analysis.patterns.labels.ActiveLabelsFinder;
 import jbyco.analysis.patterns.labels.RelativeLabelFactory;
 import jbyco.analysis.patterns.operations.AbstractOperationFactory;
 import jbyco.analysis.patterns.operations.GeneralOperationFactory;
@@ -104,9 +103,9 @@ public class PatternsAnalyzer implements Analyzer {
     int pruningThreshold = 0;
 
     /**
-     * The number of processed sequenced.
+     * The number of processed instructions.
      */
-    long numseq = 0;
+    long numbefOfInsn = 0;
 
     /**
      * The factory for operations' abstraction.
@@ -122,11 +121,6 @@ public class PatternsAnalyzer implements Analyzer {
      * The factory for labels' abstraction.
      */
     AbstractLabelFactory labels;
-
-    /**
-     * The class for finding active labels.
-     */
-    ActiveLabelsFinder activeLabels;
 
     /**
      * Instantiates a new patterns analyzer.
@@ -287,7 +281,7 @@ public class PatternsAnalyzer implements Analyzer {
                     if (progress) {
                         System.err.printf(
                                 "Processed %s%%, pruned %d times.\r",
-                                Utils.intDivToString(++counter * 100, total),
+                                Utils.longDivToString(++counter * 100, total),
                                 analyzer.pruningThreshold
                         );
                     }
@@ -378,16 +372,14 @@ public class PatternsAnalyzer implements Analyzer {
         begin = new Label();
         end = new Label();
 
-        // find all active labels
-        activeLabels = new ActiveLabelsFinder();
-        method.accept(activeLabels);
-        activeLabels.add(begin);
-        activeLabels.add(end);
-
-        // process instructions
         InsnList list = method.instructions;
         list.insert(new LabelNode(begin));
         list.add(new LabelNode(end));
+
+        // update total size
+        numbefOfInsn += list.size();
+
+        // process instructions
         processInstructions(list);
     }
 
@@ -417,15 +409,15 @@ public class PatternsAnalyzer implements Analyzer {
         for (int i = 0; i < list.size(); i++) {
 
             // get the sequence from the list
-            Collection<AbstractInsnNode> sequence = getSequence(list, i, MAX_LENGTH);
+            Collection<AbstractInsnNode> nodes= getSequence(list, i, MAX_LENGTH);
 
             // check the sequence
-            if (sequence == null) {
+            if (nodes.isEmpty()) {
                 continue;
             }
 
             // add the sequence to the graph
-            addSequence(sequence);
+            addSequence(nodes);
         }
     }
 
@@ -445,7 +437,7 @@ public class PatternsAnalyzer implements Analyzer {
             Collection<AbstractInsnNode> nodes = getSequence(list, i, MAX_LENGTH);
 
             // check the length of the sequence
-            if (nodes == null) {
+            if (nodes.isEmpty()) {
                 continue;
             }
 
@@ -484,16 +476,6 @@ public class PatternsAnalyzer implements Analyzer {
             // get the node, list uses cache -> constant time operation
             AbstractInsnNode node = list.get(i);
 
-            // check first node
-            if (i == index && !isFirstNode(node)) {
-                return null;
-            }
-
-            // ignore non active node
-            if (!isActiveNode(node)) {
-                continue;
-            }
-
             // add node to the sequence
             sequence.add(node);
             l++;
@@ -501,35 +483,6 @@ public class PatternsAnalyzer implements Analyzer {
 
         // return new sequence
         return sequence;
-    }
-
-    /**
-     * Checks if is node can be the first node in a sequence.
-     *
-     * @param node the node
-     * @return true, if the node can be the first node in a sequence
-     */
-    public boolean isFirstNode(AbstractInsnNode node) {
-        // any active node
-        return isActiveNode(node);
-    }
-
-    /**
-     * Checks if is the node is active.
-     * Active node is an active label node or any other node.
-     *
-     * @param node the node
-     * @return true, if the node is active
-     */
-    protected boolean isActiveNode(AbstractInsnNode node) {
-
-        // only LabelNode with active label is active
-        if (node instanceof LabelNode) {
-            return activeLabels.isActive(((LabelNode) node).getLabel());
-        }
-
-        // or any other node
-        return true;
     }
 
     /**
@@ -551,9 +504,6 @@ public class PatternsAnalyzer implements Analyzer {
 
         // add cached sequence to the graph
         builder.addPath(sequence);
-
-        // update counter
-        numseq += nodes.size();
     }
 
     /**
@@ -661,8 +611,6 @@ public class PatternsAnalyzer implements Analyzer {
         writeResults(out, ";");
     }
 
-    ///////////////////////////////////////////////////////////////// MAIN
-
     /**
      * Write results.
      *
@@ -671,12 +619,12 @@ public class PatternsAnalyzer implements Analyzer {
      */
     public void writeResults(PrintWriter out, String delimiter) {
 
-        // print total number of sequences
-        out.printf("%s\t%s\t%s\n", numseq, 0, "TOTAL");
+        // print total number of processed instructions
+        //out.printf("%s\t%s\t%s\n", numbefOfInsn, 0, "NUMBER_OF_INSTRUCTIONS");
 
         // print patterns
         PatternsWriter writer = new PatternsWriter(out);
-        writer.write(graph, delimiter, MIN_FREQUENCY, WILDCARDS);
+        writer.write(graph, numbefOfInsn, MIN_FREQUENCY, WILDCARDS, delimiter);
     }
 
     /**

@@ -2,12 +2,12 @@
 
 # Author: Vendula Poncova
 # Date: 14.4.2016
-# Run analysis of class files with jbyco.
+# Run analysis of class files with jbyca.
 # It is recommended to reset the JVM maximum memory size: 
 #    export JAVA_OPTS='-Xmx2g'
 #
 # Usage: 
-#   ./jbyco-analyze input output
+#   ./jbyca-experiment input output
 #
 # Parameters:
 #   input   A file or a directory of .class and .jar files.
@@ -17,9 +17,9 @@
 
 export JAVA_OPTS='-Xmx2g'
 
-# define jbyco
+# define jbyca
 dir=$( cd $(dirname $0) ; pwd -P )
-jbyco="${dir}/jbyco"
+jbyca="${dir}/jbyca"
 
 # get parameters
 input=$1 
@@ -53,7 +53,7 @@ analyze_patterns() {
   freq=10
 
   # prepare args
-  args="--analyze-patterns --min-frequency $freq --max-length $len -w $wi -$oi -$pi $input"
+  args="--patterns --min-frequency $freq --max-length $len -w $wi -$oi -$pi $input"
 
   # prepare output
   name="${output}/patterns_${oi}_${pi}_${wi}_${len}"
@@ -62,7 +62,7 @@ analyze_patterns() {
   echo "Generating file ${name}.out." 1>&2
 
   # run analysis
-  { $jbyco $args 1>$name.out 2>&3 ;} 3>&1 | tee -a ${name}.err 1>&2
+  { $jbyca $args 1>$name.out 2>&3 ;} 3>&1 | tee -a ${name}.err 1>&2
 
 };
 
@@ -75,7 +75,7 @@ analyze_size() {
   echo "Generating file ${name}.out." 1>&2
   
   # run analysis
-  $jbyco --analyze-size $input >${name}.out
+  $jbyca --size $input >${name}.out
 };
 
 analyze_variables() {
@@ -87,7 +87,7 @@ analyze_variables() {
   echo "Generating file ${name}.out." 1>&2
 
   # run analysis
-  $jbyco --analyze-variables $input >${name}.out
+  $jbyca --variables $input >${name}.out
 };
 
 analyze_statistics() {
@@ -99,7 +99,7 @@ analyze_statistics() {
   echo "Generating file ${name}.out." 1>&2
 
   # run analysis
-  $jbyco --statistics $input >${name}.out
+  $jbyca --statistics $input >${name}.out
 };
 
 #---------------------------------------------------------- main
