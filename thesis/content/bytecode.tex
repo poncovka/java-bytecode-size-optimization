@@ -10,7 +10,7 @@ V této kapitole popisuji základní charakteristiky JVM a formát jeho instruk�
 
 O JVM lze  hovořit z~hlediska abstraktní specifikace nebo konkrétní implementace. Konkrétní implementace je závislá na daném systému a hardwaru, ale jednotná interpretace \texttt{class} souborů napříč platformami je zajištěna dodržením specifikace a platformově nezávislým formátem \texttt{class} souborů. Vzhledem k~zaměření práce se v~této kapitole zabývám abstraktní specifikací JVM dle dokumentu \cite{Lindholm:JVM}. 
 
-\subsubsection{Datové typy a hodnoty}\label{JVMTypes}
+\subsection{Datové typy a hodnoty}\label{JVMTypes}
 
 Datové typy a hodnoty podporované JVM jsou znázorněné na obrázku \ref{figTypes}. Celá čísla jsou reprezentovaná datovými typy \texttt{byte} o~délce 8 bitů, \texttt{short} o~délce 16 bitů, \texttt{int} o~délce 32 bitů nebo \texttt{long} o~délce 64 bitů. Pro čísla s~plovoucí čárkou jsou definovány typy \texttt{float} o~32 bitech a \texttt{double} o~64 bitech. Typ \texttt{boolean} reprezentuje pravdivostní hodnoty pravda a nepravda. Typ \texttt{returnAddress} reprezentuje ukazatel na instrukci v~instrukčním souboru.
 
@@ -26,7 +26,7 @@ Typ \texttt{reference} označuje referenční datový typ a reprezentuje referen
 Instrukční sada JVM je omezená a nenabízí u~všech instrukcí podporu pro všechny datové typy. Celá čísla jsou primárně reprezentovaná datovými typy \texttt{int} a \texttt{long} a případně přetypovaná na jeden z~typů \texttt{byte}, \texttt{short} či \texttt{char}. Pro datový typ \texttt{boolean} existuje jen podpora pro přetypování a pro vytvoření pole hodnot typu \texttt{boolean}. Pro výpočet logických výrazů se používá typ \texttt{int} s~hodnotami 0 a 1.
 
 
-\subsubsection{Paměťové oblasti}\label{JVMData}
+\subsection{Paměťové oblasti}\label{JVMData}
 
 JVM pracuje s~několika typy paměťových oblastí. Velikosti těchto oblastí mohou být pevně dané, nebo se mohou měnit dynamicky podle potřeby. Při spuštění JVM vzniká halda a oblast metod. Halda je paměť určená pro alokaci instancí tříd a polí. Alokovanou paměť nelze dealokovat explicitně. Haldu automaticky spravuje tzv. \textit{garbage collector}. Oblast metod slouží k~ukládání kompilovaného kódu. Pro každou načtenou třídu se do této paměti ukládají struktury definující tuto třídu. Jednou z~těchto struktur je tzv. \textit{run-time constant pool}. Jedná se o~tabulku konstant z~\texttt{class} souboru, kde jsou symbolické reference na třídy, metody a členské proměnné nahrazeny konkrétními referencemi. Více se o~tabulce konstant zmiňuje kapitola \ref{FormatConstants}. 
 
@@ -40,7 +40,7 @@ Nejmenší jednotka, se kterou pracuje operační zásobník, je 32-bitová hodn
 Lokální proměnná v~poli lokálních proměnných je 32-bitová hodnota. Proměnnou lze adresovat pomocí indexu do pole, kde pole je indexováno od nuly. Lokální proměnná může být typu \texttt{byte}, \texttt{short}, \texttt{int}, \texttt{char}, \texttt{float}, \texttt{boolean}, \texttt{reference} nebo \texttt{returnAddress}. Hodnoty typu \texttt{long} a \texttt{double} jsou uchovávané pomocí dvojice lokálních proměnných. V~tom případě k~adresaci slouží nižší z~indexů a na větší index se nesmí přistupovat. 
 
 
-\subsubsection{Kontrola instrukčního souboru}\label{JVMVerification}
+\subsection{Kontrola instrukčního souboru}\label{JVMVerification}
 
 Při načítání \texttt{class} souboru je ověřeno správné formátování tak, jak je popsáno v~kapitole \ref{Format}. Jsou zkontrolovány první čtyři bajty souboru, předdefinované atributy musí být správné délky, názvy a typy tříd, rozhraní, metod a proměnných musí být validní, indexy do tabulky konstant musí adresovat správný typ položky. Dále jsou kladena jistá omezení na kód metod. Mimo jiné, argumenty instrukcí musí mít správný typ a musí být správného počtu, integrita hodnot typu \texttt{long} a \texttt{double} nemůže být nikdy narušena, k~hodnotě lokální proměnné se nesmí přistupovat před inicializací proměnné, nesmí dojít k~načtení hodnoty z~prázdného zásobníku a všechny metody musí byt ukončené některou z \texttt{return} instrukcí. Součástí verifikace těchto omezení je typová kontrola nebo typová inference. Díky kontrole instrukčního souboru se omezení nemusí kontrolovat za běhu programu.
 
@@ -206,7 +206,6 @@ Informace o~zpracování výjimek jsou dostupné v~tabulce výjimek \N{exception
   \end{tabular}
 \end{figure}
 
-\pagebreak
 \subsection{Atributy}\label{FormatAttributes}
 
 Reprezentovaná třída, případně rozhraní, metody, členské proměnné a i některé atributy mají definovaný seznam atributů. Seznam se skládá z~tabulky atributů \N{attributes} o~\N{attributes\_count} položkách. Typ atributu je daný odkazem \N{name\_ref} na název atributu, délka atributu bez prvních šesti bajtů je daná hodnotou \N{attribute\_length}. Další informace, které atribut nese v~položce \N{info}, se liší podle typu atributu.

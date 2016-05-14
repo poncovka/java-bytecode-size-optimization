@@ -12,7 +12,7 @@ V této kapitole analyzuji obsah vybraného vzorku \texttt{class} souborů a na 
 
 Pomocí nástroje \texttt{jbyco} jsem získala data reprezentující vybraný vzorek testovacích souborů a tato data následně zpracovala a vyhodnotila. Zkoumala jsem velikosti položek v~\texttt{class} souborech, užití lokálních proměnných a parametrů metod a typické sekvence instrukcí. Testovací vzorek jsem vytvořila z~\texttt{jar} souborů stažených z~\texttt{http://mvnrepository.com}. Z~populárních kategorií jsem vybrala nejčastěji stahované soubory. Zvolený vzorek se skládal z 95 souborů o celkové velikosti 102,4 MB a obsahoval 59 230 \texttt{class} souborů.
 
-\subsubsection{Velikost položek v souboru}
+\subsection{Velikost položek v souboru}
 
 Typický \texttt{class} soubor z velkého vzorku obsahuje v průměru 117 konstant v tabulce konstant, 2 členské proměnné, 8 metod, 163 instrukcí a 29 atributů. Ze zkoumání celkové velikosti těchto položek vyplynulo, že konstanty tvoří 64\% z celkové velikosti všech souborů, členské proměnné 1\%, metody 2\% a instrukce 10\%.
 %Součet velikostí všech atributů ku celkové velikosti souborů tvoří 47\%, ale tato hodnota je nic nevypovídající, neboť atributy mohou být součástí jiných atributů a jejich velikost je tedy započítána vícekrát. 
@@ -27,7 +27,7 @@ Zkoumání instrukcí z hlediska jejich velikosti ukázalo, že prvních pět ne
 % TODO tabulka informativních atributů
 % TODO tabulka nejčastějších instrukcí
 
-\subsubsection{Užití lokálních proměnných a parametrů metody}
+\subsection{Užití lokálních proměnných a parametrů metody}
 
 Data popisující užití parametrů a lokálních proměnných jsou znázorněna v grafech \ref{params} a \ref{vars}. Z dat vyplývá, že z lokálních proměnných obsahujících argumenty metody se tyto hodnoty načtou průměrně jedenkrát a dále se s nimi nepracuje. S nižším indexem proměnné počet načítání roste až k hodnotě 2,5 pro index 0. V tomto indexu se u nestatických metod předává reference na aktuální objekt (\texttt{this}). S lokálními proměnnými, které neslouží k předávání parametrů, se průměrně provádí 4,2 operací načítání, 1,8 operací vkládání a 0,3 operací inkrementace.
 
@@ -44,6 +44,8 @@ Data popisující užití parametrů a lokálních proměnných jsou znázorněn
 \end{figure}
 
 % TODO vzory
+\subsection{Typické sekvence instrukcí}
+
 \subsubsection{Typické operace}
 
 Z dat pro sekvence instrukcí délky jedna vyplývá, že 15,80\% instrukcí tvoří instrukce pro volání metod objektu. Dalšími významnými instrukcemi jsou instrukce pro načtení hodnot z proměnných: čtení z parametru metody 10,41\%, čtení z lokální proměnné 5,64\% a čtení reference na aktuální objekt 9,06\%. Na druhou stranu instrukcí pro ukládání hodnot do proměnných je výrazně méně: uložení do lokální proměnné 2,85\%, uložení do parametru metody 1,40\% a v 49 případech byla hodnota uložena do reference na \texttt{this}. To poukazuje opakované načítání neměnících se hodnot. Obdobně instrukce pro načtení a uložení hodnoty z členské proměnné tvoří 4,53\% a 1,70\%. Pro statické členské proměnné je to 1,16\% a 0,30\%. 
@@ -58,6 +60,7 @@ Ze zkoumání konkrétních parametrů instrukcí vyplývá, že nejčastější
 
 \subsubsection{Typická těla metod}
 % begin - end
+
 
 \subsubsection{Podmíněné a nepodmíněné skoky}
 % neobsahuje skoky, které lze rozhodnout z parametrů - většinou
@@ -105,23 +108,35 @@ Ze zkoumání konkrétních parametrů instrukcí vyplývá, že nejčastější
 
 Výsledky analýzy \texttt{class} souborů jsem uplatnila při návrhu metod pro optimalizaci jejich velikosti. Inspirovala jsem se optimalizacemi, které navrhl Vašek \cite{TODO} nebo které popisuje Aho \cite{TODO}.
 
-\subsubsection{Odstranění zbytečných atributů}
-V kapitole \ref{TODO} jsou mezi informativní atributy zařazeny ty, které poskytují informace vhodné například pro ladění programů. Jsou to atributy \texttt{SourceFile}, \texttt{SourceDebugExtension}, \texttt{LineNumberTable}, \texttt{LocalVariableTable}, \texttt{LocalVariableTypeTable} a \texttt{Deprecated}.  Z analýzy vyplynulo, že informativní atributy tvoří 14\% z celkové velikosti zpracovaných \texttt{class} souborů. Vzhledem k tomu, že atributy nejsou důležité pro správnou interpretaci souboru, je žádoucí je ze souboru odstranit.
+\subsection{Optimalizace velikosti souboru}
 
 \subsubsection{Přejmenování balíčků, tříd, metod a členských proměnných}
 Více než polovinu z celkové velikosti souborů tvoří řetězce. Mezi tyto řetězce patří mimo jiné řetězcové konstanty, názvy atributů, tříd, metod, proměnných a popisy typů. Součástí popisu typu pak mohou být opět názvy tříd. Jako vhodnou optimalizací se v této oblasti proto nabízí přejmenování balíčků, tříd, metod a členských proměnných za použití co nejkratších názvů. Taková optimalizace ale představuje velký zásah do struktury programu, který nemusí být vždy žádoucí. Je třeba zvážit dva případy. Pokud program slouží jako knihovna, ze které lze importovat balíčky a třídy, pak je třeba zachovat všechny veřejně dostupné názvy. Pokud je program konečnou aplikací zabalenou do \texttt{jar} souboru, pak je možné přejmenovat všechny entity včetně názvu třídy u položky \texttt{Main-Class} v manifestu \texttt{jar} souboru.
 
+\subsubsection{Odstranění zbytečných atributů}
+V kapitole \ref{TODO} jsou mezi informativní atributy zařazeny ty, které poskytují informace vhodné například pro ladění programů. Jsou to atributy \texttt{SourceFile}, \texttt{SourceDebugExtension}, \texttt{LineNumberTable}, \texttt{LocalVariableTable}, \texttt{LocalVariableTypeTable} a \texttt{Deprecated}.  Z analýzy vyplynulo, že informativní atributy tvoří 14\% z celkové velikosti zpracovaných \texttt{class} souborů. Vzhledem k tomu, že atributy nejsou důležité pro správnou interpretaci souboru, je žádoucí je ze souboru odstranit.
+
+%\subsubsection{Vkládání method}
+%Pokud je volání metody z hlediska velikosti dražší než provedení těla metody, pak je vhodné toto volání nahradit instrukcemi z těla metody. Pokud se následně tato metoda nikde nevolá, je žádoucí její definici z příslušného \texttt{class} souboru zcela odstranit. Tato optimalizace opět zasahuje do struktury programu jako v případě přejmenování balíčků, tříd, metod a členských proměnných.
+
+% TODO popsat vkládání členských proměnných, odstranění
+
 % ZMĚNA OD 9.5.2016
+\subsection{Optimalizace velikosti kódu}
+
+% zmínit další možné optimalizace, rozsah optimalizací
 
 \subsubsection{Realokace lokálních proměnných}
 Analýza užití lokálních proměnných a parametrů metod odhalila, že se s tímto paměťovým prostorem nepracuje optimálně. K úspornějšímu užívání proměnných nabádá i specifikace \cite{Lindholm:JVM}. Proměnné lze realokovat a recyklovat tak, aby se častěji pracovalo s nižšími indexy proměnných. Nižší indexy pak umožňují používat kratší varianty instrukcí pro práci s proměnnými. Nejvíce užívanými indexy by proto měly být hodnoty 0 až 3, pro které existují specializované jednobajtové instrukce \texttt{load} a \texttt{store}. 
 
-\subsubsection{Vkládání metod}
-Pokud je volání metody z hlediska velikosti dražší než provedení těla metody, pak je vhodné toto volání nahradit instrukcemi z těla metody. Pokud se následně tato metoda nikde nevolá, je žádoucí její definici z příslušného \texttt{class} souboru zcela odstranit. Tato optimalizace opět zasahuje do struktury programu jako v případě přejmenování balíčků, tříd, metod a členských proměnných.
-
 %=========================================================================
 \subsubsection{Optimalizace práce se zásobníkem}
 
+V některých sekvencích instrukcí lze instrukce pro práci se zásobníkem aplikovat na jiné instrukce. Například, je-li na zásobník vložena hodnota, která je v dalším kroku ze zásobníku zase odebrána, je možné instrukce pro vložení a odebrání hodnoty ze sekvence odstranit, pokud nemají vedlejší efekt. Výjimkou je instrukce pro duplikaci, která umožňuje zkrátit zápis sekvence instrukcí pro vložení více hodnot na zásobník. Je tedy výhodnější vyhledat dvojice instrukcí pro vložení shodných konstantních hodnot a jednu instrukci z dvojice nahradit instrukcí pro duplikaci. Konkrétní příklady jsou uvedené v tabulce \ref{tab:stack}.
+
+% TODO manipulace se zásobníkem před návratem z metody
+
+\begin{table}[ht]
 \begin{tpatterns}
 
   \code{nop;}
@@ -130,47 +145,101 @@ Pokud je volání metody z hlediska velikosti dražší než provedení těla me
 
   \code{iconst\_0; \\ pop;}
 & \code{-}
-& \desc{Pokud instrukce před \texttt{pop} vkládá na zásobník hodnotu o délce jedné jednotky hloubky zásobníku a nemá žádný vedlejší efekt, lze obě instrukce odstranit. Obdobně pro \texttt{pop2.}} \\
+& \desc{Pokud instrukce před \texttt{pop} vkládá na zásobník hodnotu o délce jedné jednotky hloubky zásobníku a nemá žádný vedlejší efekt, lze obě instrukce odstranit. Obdobně pro \texttt{pop2}.} \\
 
   \code{iconst\_0; \\ iconst\_1; \\ swap;}
 & \code{iconst\_1; \\ iconst\_0;}
 & \desc{Pokud obě instrukce před \texttt{swap} vkládají na zásobník hodnoty o délce jedné jednotky hloubky zásobníku a nemají žádný vedlejší efekt, lze je prohodit a instrukci \texttt{swap} odebrat.} \\
 
-  \code{swap; \\ return;}
-& \code{return;}
-& \desc{Pokud instrukce před \texttt{return} manipuluje se zásobníkem nebo lokálními proměnnými a nemá žádný vedlejší efekt, lze ji odstranit.} \\
+  \code{bipush $x$; \\ bipush $x$;}
+& \code{bipush $x$; \\ dup;}
+& \desc{Pro duplikaci konstantních hodnot lze použít speciální instrukci \texttt{dup}.} \\
 
   \code{iconst\_0; \\ new $c$; \\ dup\_x1; \\ swap;}
 & \code{new $c$; \\ dup; \\ iconst\_0;}
 & \desc{Aplikace instrukcí \texttt{swap} a \texttt{dup\_x1}.} \\
 
+  \code{swap; \\ return;}
+& \code{return;}
+& \desc{Pokud instrukce před \texttt{return} manipuluje se zásobníkem nebo lokálními proměnnými a nemá žádný vedlejší efekt, lze ji odstranit.} \\
+
 \end{tpatterns}
+\caption{Příklady optimalizace práce se zásobníkem.}
+\label{tab:stack}
+\end{table}
 
 %=========================================================================
-\subsubsection{Duplikace hodnot na zásobníku}
+\subsubsection{Optimalizace práce s lokálními proměnnými}
 
+Sekvence instrukcí, ve kterých se manipuluje jen s jednou lokální proměnnou, lze v některých případech nahradit kratšími sekvencemi. Ukázky těchto náhrad jsou uvedené v tabulce \ref{tab:variables}.
+
+\begin{table}[ht]
 \begin{tpatterns}
-
-  \code{bipush $x$; \\ bipush $x$;}
-& \code{bipush $x$; \\ dup;}
-& \desc{Pro duplikaci konstantních hodnot lze použít speciální instrukci \texttt{dup}.} \\
 
   \code{iload $x$; \\ iload $x$;}
 & \code{iload $x$; \\ dup;}
-& \desc{Dvojí načtení hodnoty z téže lokální proměnné lze nahradit duplikací hodnoty.} \\
+& \desc{Dvojí načtení hodnoty z téže lokální proměnné lze nahradit duplikací načtené hodnoty.} \\
+
+  \code{iload $x$; \\ istore $x$;}
+& \code{-}
+& \desc{Z lokální proměnné se načte hodnota a ihned se uloží do téže lokální proměnné. Taková operace nemá žádný efekt.} \\
 
   \code{istore $x$; \\ iload $x$;}
 & \code{dup; \\ istore $x$;}
-& \desc{Místo uložení hodnoty do lokální proměnné a opětovné načtení hodnoty z téže proměnné lze hodnotu na zásobníku duplikovat a kopii uložit do proměnné.} \\
+& \desc{Hodnota se uloží do lokální proměnné a ihned se z ní načte. Kratší alternativou je hodnotu na zásobníku duplikovat a kopii uložit do proměnné.} \\
+
+  \code{istore $x$; \\ istore $x$;}
+& \code{dup; \\ istore $x$;}
+& \desc{Do téže lokální proměnné se dvakrát ukládá nějaká hodnota. První uložená hodnota je ihned přepsána druhou hodnotou, proto je zbytečné ji do proměnné vůbec ukládat.} \\
+
+
+\end{tpatterns}
+\caption{Příklady optimalizace práce s lokálními proměnnými.}
+\label{tab:variables}
+\end{table}
+
+%=========================================================================
+\subsubsection{Zjednodušení algebraických výrazů} % OK
+
+Některé sekvence instrukcí popisující výpočet algebraických výrazů lze zjednodušit nebo zcela nahradit hodnotou daného výrazu. Tato zjednodušení vychází z vlastností matematických operací a specifikace instrukcí. Jedná se například o celočíselné sčítání s nulou, rozdíl dvou shodných čísel či matematická operace se speciální hodnotou \texttt{NaN}. Konkrétní příklady jsou uvedené v tabulce  \ref{tab:algebra}.
+
+\begin{table}[ht]
+\begin{tpatterns}
+
+  \code{iconst\_0; \\ iadd;}
+& \code{-}
+& \desc{Přičtení nuly nemá žádný efekt. Instrukce lze proto smazat. Obdobně pro \texttt{ishr}, \texttt{ishl}, \texttt{iushr} a instrukce pro typ \texttt{long}.} \\
+
+  \code{ldc NaN; \\ fadd;}
+& \code{pop; \\ ldc NaN;}
+& \desc{Výsledkem součtu s hodnotou \texttt{NaN} je \texttt{NaN}. Obdobně pro typ \texttt{double}.} \\
+
+  \code{ldc $x$; \\ ldc $y$; \\ iadd;}
+& \code{ldc $x+y$;}
+& \desc{Jsou-li operandy matematické operace číselné konstanty, pak lze určit výsledek operace. Instrukce je pak možné nahradit tímto výsledkem.} \\
+
+  \code{iinc $i$ 0;}
+& \code{-}
+& \desc{Inkrementace lokální proměnné $i$ o nulu nemá žádný efekt.} \\
+
+  \code{iload $x$; \\ bipush $i$; \\ iadd; \\ istore $x$;}
+& \code{iinc $x$ $i$;}
+& \desc{Užití specializované instrukce \texttt{iinc}. Obdobně lze nahradit operaci \texttt{isub}.} \\
 
 \end{tpatterns}
 
+\caption{Příklady zjednodušení algebraických výrazů.}
+\label{tab:algebra}
+\end{table}
+
+
 %=========================================================================
-\subsubsection{Substituce číselných konstant}
+\subsubsection{Substituce číselných konstant} % TODO doplnit info o metodě přetypování
 
-Číselné konstanty lze vkládat na zásobník více způsoby. Pro některé hodnoty existují krátké specializované instrukce, zatímco jiné hodnoty je nutné vyjádřit pomocí položky v tabulce konstant. Je tedy žádoucí každou instrukci pro vložení číselné konstanty nahradit co nejkratší alternativou. Například tříbajtovou instrukci \texttt{sipush 0} lze nahradit jednobajtovou instrukcí \texttt{iconst\_0}, jak je uvedeno v tabulce \ref{tab:substitution}.
+Číselné konstanty lze vkládat na zásobník více způsoby. Pro některé hodnoty existují krátké specializované instrukce, zatímco jiné hodnoty je nutné vyjádřit pomocí položky v tabulce konstant. Je tedy žádoucí každou instrukci pro vložení číselné konstanty nahradit co nejkratší alternativou. Například tříbajtovou instrukci \texttt{sipush 0} lze nahradit jednobajtovou instrukcí \texttt{iconst\_0}.
 
-Jednotlivé číselné datové typy jsou v instrukční sadě různě podporované. Například pro hodnotu 3 typu \texttt{int} existuje specializovaná jednobajtová instrukce \texttt{iconst\_3}, ale pro hodnotu 3,0 typu \texttt{double} je třeba použít tříbajtovou instrukci \texttt{ldc2\_w} a devítibajtovou položku v tabulce symbolů. Někdy proto může být vhodnější použít kratší instrukci s jiným typem a výsledek přetypovat, jak ukazuje tabulka \ref{tab:substitution}. Tuto metodu nelze aplikovat současně s metodou zjednodušení algebraických výrazů, neboť by se zápis instrukcí opět zjednodušil. Je ji proto vhodné aplikovat jako poslední krok optimalizace.
+Jednotlivé číselné datové typy jsou v instrukční sadě různě podporované. Například pro hodnotu 3 typu \texttt{int} existuje specializovaná jednobajtová instrukce \texttt{iconst\_3}, ale pro hodnotu 3,0 typu \texttt{double} je třeba použít tříbajtovou instrukci \texttt{ldc2\_w} a devítibajtovou položku v tabulce symbolů. Někdy proto může být vhodnější použít kratší instrukci s jiným typem a výsledek přetypovat, jak je ukázáno v tabulce \ref{tab:substitution}. Tuto substituci nelze aplikovat před metodou 
+zjednodušení algebraických výrazů, neboť by se zápis instrukcí opět zjednodušil. Současně by substituce mohla bránit nalezení některých jiných vzorů. Je ji proto vhodné provést až jako poslední krok optimalizace.
 
 \begin{table}[ht]
 \begin{tpatterns}
@@ -193,107 +262,100 @@ Jednotlivé číselné datové typy jsou v instrukční sadě různě podporovan
 \label{tab:substitution}
 \end{table}
 
-%=========================================================================
-\subsubsection{Zjednodušení algebraických výrazů}
-
-% TODO přetypování?
-
-Některé sekvence instrukcí popisující výpočet algebraických výrazů lze zjednodušit nebo zcela nahradit hodnotou daného výrazu. Tato zjednodušení vychází z vlastností matematických operací a specifikace instrukcí. Příklady této optimalizace jsou uvedené v tabulce  \ref{tab:algebra}.
-
-\begin{table}[ht]
-\begin{tpatterns}
-
-  \code{iinc $i$ 0;}
-& \code{-}
-& \desc{Inkrementace lokální proměnné $i$ o nulu nemá žádný efekt.} \\
-
-  \code{iconst\_0; \\ iadd;}
-& \code{-}
-& \desc{Přičtení nuly nemá žádný efekt. Instrukce lze proto smazat. Obdobně pro \texttt{ishr}, \texttt{ishl}, \texttt{iushr} a instrukce pro typ \texttt{long}.} \\
-
-  \code{ldc NaN; \\ fadd;}
-& \code{pop; \\ ldc NaN;}
-& \desc{Výsledkem součtu s hodnotou \texttt{NaN} je \texttt{NaN}. Obdobně pro typ \texttt{double}.} \\
-
-  \code{ldc $x$; \\ ldc $y$; \\ iadd;}
-& \code{ldc $x+y$;}
-& \desc{Jsou-li operandy matematické operace číselné konstanty, pak lze určit výsledek operace. Instrukce je pak možné nahradit tímto výsledkem.} \\
-
-  \code{iload $x$; \\ bipush $i$; \\ iadd; \\ istore $x$;}
-& \code{iinc $x$ $i$;}
-& \desc{Užití specializované instrukce \texttt{iinc}.} \\
-
-\end{tpatterns}
-\caption{Příklady zjednodušení algebraických výrazů.}
-\label{tab:algebra}
-\end{table}
-
-%=========================================================================
-\subsubsection{Optimalizace skoků}
-
-V rámci kódu každé metody lze upravit některé instrukce tak, 
-
-\begin{tpatterns}
-
-  \code{goto $l$;\\ $l$: \dots}
-& \code{$l$: \dots}
-& \desc{Nepodmíněný skok na bezprostředně následující instrukci lze odstranit, neboť je takový skok zbytečný.} \\
-
-  \code{goto $l_0$; \\ iconst\_0 \\ $l_1$: \dots}
-& \code{goto $l_0$; \\ $l_1$: \dots}
-& \desc{Pokud instrukce bezprostředně následující za \texttt{goto} není cílem skoku z nějaké instrukce, případně počátkem bloku pro zpracování výjimky, pak ji lze odstranit, neboť se nikdy neprovede. Totéž platí pro instrukce pro návrat z metody.} \\
-
-  \code{goto $l$; \\ \dots \\ $l$:return;}
-& \code{return; \\ \dots \\ $l$:return;}
-& \desc{Nepodmíněný skok na instrukci pro návrat z metody lze nahradit instrukcí pro návrat z metody.} \\
-
-  \code{goto $l_0$; \\ \dots \\ $l_0$: goto $l_1$;}
-& \code{goto $l_1$; \\ \dots \\ $l_0$: goto $l_1$;}
-& \desc{Skok na instrukci skoku lze nahradit přímým skokem na cílovou instrukci.} \\
-
-\end{tpatterns}
-
-%=========================================================================
-\subsubsection{Optimalizace větvení}
-
-\begin{tpatterns}
-
-  \code{lookupswitch $l$;}
-& \code{goto $l$;}
-& \desc{Pokud je tabulka dvojic v instrukci \texttt{lookupswitch} prázdná, pak lze tuto instrukci nahradit skokem na výchozí adresu. } \\
-
-  \code{dup; \\ if\_icmpeq $l$;}
-& \code{pop; \\ goto $l$;}
-& \desc{Duplikovaná číselná hodnota je rovna své kopii. Výsledkem porovnání je proto pravda. Obdobně pro \texttt{if\_icmple} a \texttt{if\_icmpge}.} \\
-
-  \code{dup; \\ if\_icmpne $l$;}
-& \code{pop;}
-& \desc{Duplikovaná číselná hodnota je rovna své kopii. Výsledkem porovnání je proto nepravda. Obdobně pro \texttt{if\_icmplt} a \texttt{if\_icmpgt}.} \\
-
-  \code{if\_icmpeq $l$; \\ goto $l$;}
-& \code{pop2; \\ goto $l$; }
-& \desc{V případě rovnosti i nerovnosti hodnot se skáče na stejnou adresu. Porovnávání hodnot je proto zbytečné.} \\
-
-  \code{aconst\_null; \\ ifnull $l$;}
-& \code{goto $l$;}
-& \desc{Pro referenci na \texttt{null} je výsledkem porovnání s \texttt{null} vždy pravda. Obdobně pro \texttt{ifnonnull}.} \\
-
-
-\end{tpatterns}
 
 %=========================================================================
 \subsubsection{Optimalizace konkatenace řetězců}
 
+\ref{tab:concatenation}
+
+\begin{table}[ht]
 \begin{tpatterns}
 \end{tpatterns}
+\caption{Příklady optimalizace konkatenace řetězců.}
+\label{tab:concatenation}
+\end{table}
+
+end{table}
 
 %=========================================================================
 \subsubsection{Optimalizace práce s objekty}
 
+\begin{table}[ht]
 \begin{tpatterns}
 \end{tpatterns}
+\caption{Příklady optimalizace práce s objekty.}
+\label{tab:objects}
+\end{table}
+
 
 %=========================================================================
-\subsubsection{Optimalizace bajtkódu}
+\subsubsection{Optimalizace podmíněných a nepodmíněných skoků} % lookupswitch
+
+V rámci optimalizací podmíněných a nepodmíněných skoků je možné zjednodušit řízení toku programu. Toho lze dosáhnout eliminací zbytečných skoků a detekcí a odstraněním nedosažitelného kódu. Za nedosažitelný kód lze považovat instrukce, které se při běhu programu nemohou nikdy provést. 
+
+\begin{table}[ht]
+\begin{tpatterns}
+
+  \code{goto $l$;\\ $l$: \dots}
+& \code{$l$: \dots}
+& \desc{Nepodmíněný skok na bezprostředně následující instrukci lze odstranit.} \\
+
+  \code{goto $l_0$; \\ iconst\_0 \\ $l_1$: \dots}
+& \code{goto $l_0$; \\ $l_1$: \dots}
+& \desc{Pokud instrukce bezprostředně následující za \texttt{goto} není cílem skoku z nějaké instrukce, případně počátkem bloku pro zpracování výjimky, pak je nedosažitelná a ji lze odstranit. Totéž platí pro instrukce pro návrat z metody.} \\
+
+  \code{goto $l_0$; \\ \dots \\ $l_0$: goto $l_1$;}
+& \code{goto $l_1$; \\ \dots \\ $l_0$: goto $l_1$;}
+& \desc{Skok na instrukci nepodmíněného skoku lze nahradit přímým skokem na cílovou instrukci. Pokud po této úpravě bude  instrukce pro meziskok nedosažitelná, lze ji odstranit. Metodu lze aplikovat i na podmíněné skoky, pokud výsledná relativní adresa nebude příliš velká.} \\
+
+  \code{goto $l$; \\ \dots \\ $l$:return;}
+& \code{return; \\ \dots \\ $l$:return;}
+& \desc{Nepodmíněný skok na instrukci pro návrat z metody lze nahradit kratší instrukcí pro návrat z metody.} \\
+
+\end{tpatterns}
+
+\caption{Příklady optimalizace nepodmíněných skoků.}
+\label{tab:jumps}
+\end{table}
+
+Příkladem zbytečného skoku je skok na bezprostředně následující instrukci. Také podmíněný skok, který při splnění i nesplnění podmínky skáče na stejnou adresu, je zbytečný a může být odstraněn. Příkladem nedosažitelného kódu je instrukce, která bezprostředně následuje za instrukcí nepodmíněného skoku nebo instrukcí pro návrat z metody a není cílovou instrukcí nějakého skoku. Podmíněné skoky lze odstranit pokud známe výsledek podmínky nebo nahradit kratší instrukcí. Další optimalizační metody jsou uvedené v tabulkách \ref{tab:jumps} a \ref{tab:branches}.
+
+\begin{table}[ht]
+\begin{tpatterns}
+
+  \code{iconst\_1; \\ ifgt $l$;}
+& \code{goto $l$;}
+& \desc{Pokud je možné vyhodnotit výsledek porovnání a výsledkem je pravda, pak lze instrukci pro podmíněný skok nahradit instrukcí pro nepodmíněný skok.} \\
+
+  \code{iconst\_1; \\ iflt $l$;}
+& \code{-}
+& \desc{Pokud je možné vyhodnotit výsledek porovnání a výsledkem je nepravda, pak lze instrukci pro podmíněný skok odstranit.} \\
+
+  \code{dup; \\ if\_icmpeq $l$;}
+& \code{pop; \\ goto $l$;}
+& \desc{Duplikovaná číselná hodnota je rovna své kopii. Výsledkem porovnání na rovnost je proto pravda. Lze aplikovat na všechny instrukce pro rovnost a nerovnost.} \\
+
+  \code{ifeq $l$;\\ $l$: \dots}
+& \code{pop; \\ $l$: \dots}
+& \desc{Podmíněný skok na bezprostředně následující instrukci lze odstranit.} \\
+
+  \code{ifeq $l$; \\ goto $l$;}
+& \code{pop; \\ goto $l$; }
+& \desc{Nezáleží na výsledku porovnání, neboť se v obou případech skáče na shodnou adresu. Podmíněný skok lze proto odstranit.} \\
+
+  \code{iconst\_0; \\ if\_icmpge $l$;}
+& \code{ifge $l$;}
+& \desc{Instrukci pro porovnání hodnoty typu \texttt{int} s nulou lze nahradit kratší variantou instrukce.} \\
+
+  \code{lookupswitch $l$;}
+& \code{pop; \\ goto $l$;}
+& \desc{Pokud je tabulka dvojic v instrukci \texttt{lookupswitch} prázdná, pak lze tuto instrukci nahradit skokem na výchozí adresu. } \\
+
+\end{tpatterns}
+
+\caption{Příklady optimalizace podmíněných skoků.}
+\label{tab:branches}
+\end{table}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
