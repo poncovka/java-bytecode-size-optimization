@@ -51,17 +51,25 @@
 \newcommand{\N}[1]{\textit{#1}}
 \newcommand{\T}[1]{\texttt{#1}}
 
-\newenvironment{tpatterns}
-{
+\newenvironment{texamples} {
+  \newcommand{\code}[1]{\texttt{\makecell*[tp{3.5cm}]{##1}}}
+  \newcommand{\desc}[1]{\makecell*[tp{9cm}]{##1}}
+  \begin{center}
+  \begin{tabular}{ r  l  l } \hline
+  \textbf{Výskyt} & \textbf{Sekvence} & \textbf{Popis sekvence} \\\hline
+} {
+  \hline
+  \end{tabular}
+  \end{center}
+}
+
+\newenvironment{tpatterns} {
   \newcommand{\code}[1]{\texttt{\makecell*[tp{3.5cm}]{##1}}}
   \newcommand{\desc}[1]{\makecell*[tp{6.7cm}]{##1}}
-
   \begin{center}
   \begin{tabular}{l  l  l } \hline
   \textbf{Vzor} & \textbf{Náhrada} & \textbf{Popis optimalizace} \\\hline
-  
-}
-{
+} {
   \hline
   \end{tabular}
   \end{center}
