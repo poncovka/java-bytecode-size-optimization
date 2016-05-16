@@ -1,31 +1,21 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Optimalizace velikosti bajtkódu}\label{Tool}
 
-% TODO 
-% *
 V této kapitole analyzuji obsah vybraného vzorku \texttt{class} souborů a na základě zjištěných poznatků navrhuji metody pro optimalizaci jejich velikosti. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Analýza bajtkódu}\label{Analysis}
 
-% Popis způsobu analýzy rozsáhlého vzorku testovacích dat, prezentace výsledků a zhodnocení.
-
 Pomocí nástroje \texttt{jbyco} jsem získala data reprezentující vybraný vzorek testovacích souborů a tato data následně zpracovala a vyhodnotila. Zkoumala jsem velikosti položek v~\texttt{class} souborech, užití lokálních proměnných a parametrů metod a typické sekvence instrukcí. Testovací vzorek jsem vytvořila z~\texttt{jar} souborů stažených z~\texttt{http://mvnrepository.com}. Z~populárních kategorií jsem vybrala nejčastěji stahované soubory. Zvolený vzorek se skládal z 95 souborů o celkové velikosti 102,4 MB a obsahoval 59 230 \texttt{class} souborů.
 
 \subsection{Velikost položek v souboru}
 
-Typický \texttt{class} soubor z velkého vzorku obsahuje v průměru 117 konstant v tabulce konstant, 2 členské proměnné, 8 metod, 163 instrukcí a 29 atributů. Ze zkoumání celkové velikosti těchto položek vyplynulo, že konstanty tvoří 64\% z celkové velikosti všech souborů, členské proměnné 1\%, metody 2\% a instrukce 10\%.
-%Součet velikostí všech atributů ku celkové velikosti souborů tvoří 47\%, ale tato hodnota je nic nevypovídající, neboť atributy mohou být součástí jiných atributů a jejich velikost je tedy započítána vícekrát. 
-Nejvýznamnější atributy jsou pak \texttt{Code} s velikostí 30\%, informativní atributy s velikostí 14\% a \texttt{StackMapTable} s velikostí 2\%.
+Typický \texttt{class} soubor z velkého vzorku obsahuje v průměru 117 konstant v tabulce konstant, 2 členské proměnné, 8 metod, 163 instrukcí a 29 atributů. Ze zkoumání celkové velikosti těchto položek vyplynulo, že konstanty tvoří 64\% z celkové velikosti všech souborů, struktury pro členské proměnné 1\%, struktury pro metody 2\% a samotné instrukce 10\%.
+Nejvýznamnějšími atributy jsou pak \texttt{Code} s velikostí 30\%, informativní atributy s velikostí 14\% a \texttt{StackMapTable} s velikostí 2\%. Velikosti atributů vychází z délek atributů a velikosti konstant z tabulky konstant v nich nejsou zahrnuty.
 
 Při bližším pohledu na velikosti konstant se ukázalo, že 89\% z celkové velikosti konstant je tvořen pouze konstantami typu \textit{constant\_utf8}. Tedy konstantami popisujícími řetězce v souboru. Z těchto řetězců pak 61\% obsahuje názvy tříd, metod a členských proměnných a popisy jejich typů. Konstanty popisující číselné a řetězcové hodnoty tvoří 1\% z celkové velikosti konstant a zbývající konstanty pro popisy tříd, metod a proměnných tvoří 10\%.
 
 Zkoumání instrukcí z hlediska jejich velikosti ukázalo, že prvních pět nejobjemnějších instrukcí tvoří 40\% z celkové velikosti instrukcí. Jsou to instrukce pro volání metod, načtení hodnoty z členské proměnné a načtení reference na objekt z lokální proměnné s indexem 0. Na této pozici se často vyskytuje reference na aktuální objekt. Z instrukcí s proměnnou délkou má instrukce \texttt{tableswitch} v průměru velikost 107 B a instrukce \texttt{lookupswitch} velikost 43 B.
-
-% TODO tabulka celkových velikostí
-% TODO tabulka řetězců
-% TODO tabulka informativních atributů
-% TODO tabulka nejčastějších instrukcí
 
 \subsection{Užití lokálních proměnných a parametrů metody}
 
@@ -62,27 +52,28 @@ Za zmínku dále stojí instrukce \texttt{swap} s 2 315 výskyty, \texttt{nop} s
 Nejčastěji načítanými typy konstant jsou \texttt{int} 5,87\%, řetězec 2,44\%, reference na \texttt{null} 0,61\%, \texttt{double} 0,24\% a \texttt{long} 0,24\%.
 Ze zkoumání konkrétních parametrů instrukcí pak vyplývá, že typickými konstantními hodnotami typu \texttt{int} jsou 0, 1, 2, 3, 4, -1, 8, 5, 6, 10, 7, 16 a 255. Pro typ \texttt{long} jsou to hodnoty 0, 1, -1, pro typ \texttt{double} 0, 1 a pro typ \texttt{float} 0, 1, 0,75 a 2. Typickou řetězcovou konstantou je prázdný řetězec. 
 
-Nejčastěji volanou metodou je metoda \texttt{append} třídy \texttt{java.lang.StringBuilder} pro připojení řetězce. Následují metody \texttt{toString} a \texttt{<init>} téže třídy. Metoda \texttt{<init>} třídy \texttt{java.lang.Object} je až čtvrtá v pořadí. Dále se nejčastěji pracuje s metodami a objekty tříd \texttt{java.lang.StringBuffer}, \texttt{java.util.Iterator} a \texttt{java.lang.String}.
+Nejčastější volanou metodou je metoda \texttt{append} třídy \texttt{java.lang.StringBuilder} pro připojení řetězce. Následují metody \texttt{toString} a \texttt{<init>} téže třídy. Metoda \texttt{<init>} třídy \texttt{java.lang.Object} je až čtvrtá v pořadí. Dále se nejčastěji pracuje s metodami a objekty tříd \texttt{java.lang.StringBuffer}, \texttt{java.util.Iterator} a \texttt{java.lang.String}.
+
+Typické je jednorozměrné pole typu \texttt{java.lang.Object}, \texttt{java.lang.String} nebo \texttt{byte}. Největší nalezená dimenze vícerozměrného pole byla 3. Typickými konstantními počty prvků v poli jsou hodnoty 0, 1, 2, 3. Nejčastěji se pracuje s nultým prvkem pole.
 
 \subsubsection{Typická těla metod}
 
 Celkem 39 317 ze 504 741 zkoumaných metod bylo abstraktních nebo byly metodami rozhraní. Dalších 5 687 metod obsahovalo pouze instrukci pro návrat z metody. Metody nejčastěji slouží k získání hodnoty z členské proměnné aktuálního objektu, volání metody aktuálního objektu a získání konstantní hodnoty. Ze zkoumání metod s konkrétními operačními kódy a parametry vyplývá, že 6 431 metod jsou implicitními konstruktory. Dalších 2 880 metod vrací hodnotu 0 typu \texttt{int} a 2 261 metod vrací hodnotu 1 typu \texttt{int}. Ve 1 474 případech pak metoda pouze vyvolá výjimku \texttt{UnsupportedOperationException}.
 
+
 \subsubsection{Zajímavé sekvence instrukcí}
+
+%\begin{table}%[ht]
+%\begin{texamples}
+%& \code{} 
+%& \desc{} \\
+%\end{texamples}
+%\caption{}
+%\label{tab:examples:x}
+%\end{table}
 
 Z výstupů analýzy typických sekvencí instrukcí jsem vybrala některé zajímavé sekvence, ze kterých lze vycházet při návrhu metod pro optimalizaci velikosti bajtkódu. 
 Například vybrané sekvence pro práci se zásobníkem z tabulky \ref{tab:examples:stack} poukazují na instrukce, které lze snadno odstranit, a na nedostatečné používání specializovaných instrukcí pro manipulaci se zásobníkem.
-
-\begin{table}%[ht]
-\begin{texamples}
-%& \code{} 
-%& \desc{} \\
-\end{texamples}
-
-\caption{}
-\label{tab:examples:x}
-\end{table}
-
 
 \begin{table}%[ht]
 \begin{texamples}
@@ -123,6 +114,63 @@ Například vybrané sekvence pro práci se zásobníkem z tabulky \ref{tab:exam
 \end{table}
 
 
+Z tabulky \ref{tab:examples:numbers} vyplývá, že po vkládání číselných konstant se nemusí používat nejkratší varianty instrukcí. Dále je možné zjednodušit některé algebraické operace na základě jejich vlastností, ale žádné operace nad konstantními hodnotami v bajtkódu nalezeny nebyly. Stejně tak nebyly nalezeny žádné zjednodušitelné konverze hodnot.
+
+\begin{table}%[ht]
+\begin{texamples}
+
+1913
+& \code{ldc 0;} 
+& \desc{Použití zbytečně veliké instrukce.} \\
+
+476
+& \code{iconst\_0;\\ iadd} 
+& \desc{Celočíselné sčítání s nulou.} \\
+
+387
+& \code{l2i; \\ i2b;} 
+& \desc{Tuto sekvenci konverzí nelze nahradit jednou instrukcí. Sekvence, které by bylo možné nahradit, nalezeny nebyly.} \\
+
+291
+& \code{iload $var$; \\ iconst\_$i$; \\ iadd; \\ istore $var$;} 
+& \desc{Pro inkrementaci lokální proměnné existuje speciální instrukce \texttt{iinc}.} \\
+
+48
+& \code{iconst\_0;\\ ishl} 
+& \desc{Posuv doleva o nula pozic.} \\
+
+\end{texamples}
+\caption{Sekvence instrukcí s číselnými hodnotami a operacemi nad nimi.}
+\label{tab:examples:numbers}
+\end{table}
+
+Zajímavé sekvence instrukcí pracujících s objekty jsou uvedené v tabulce \ref{tab:examples:objects}. Vhledem k tomu, že se s objekty manipuluje prostřednictvím konkrétních členských proměnných a metod, tak se operace nad nimi špatně zobecňují.
+
+\begin{table}%[ht]
+\begin{texamples}
+
+1841
+& \code{checkcast $type$; \\ checkcast $type$;} 
+& \desc{Dvakrát se kontroluje, zda je ten stejný objekt toho stejného typu.} \\
+
+598
+& \code{putstatic $class$ $field$; \\ getstatic $class$ $field$;} 
+& \desc{Uložení hodnoty do statické členské proměnné dané třídy a opětovné získání této hodnoty.} \\
+
+282
+& \code{aconst\_null; \\ checkcast $type$;} 
+& \desc{Kontrola, zda reference na \texttt{null} je daného typu.} \\
+
+0
+& \code{multianewarray 0 $type$;} 
+& \desc{Instrukce pro vytvoření nularozměrného pole objektů nebyla nalezena. } \\
+
+\end{texamples}
+\caption{Sekvence instrukcí pracujících s objekty.}
+\label{tab:examples:objects}
+\end{table}
+
+
 Sekvence s instrukcemi pro podmíněné i nepodmíněné skoky jsou uvedené v tabulce \ref{tab:examples:jumps}. Sekvence ilustrují některé zbytečné operace, které se v bajtkódu vyskytovaly. Na druhou stranu, bajtkód neobsahoval žádné snadno rozhodnutelné podmíněné skoky. 
 
 \begin{table}%[ht]
@@ -157,35 +205,11 @@ Sekvence s instrukcemi pro podmíněné i nepodmíněné skoky jsou uvedené v t
 & \code{if\_cmpne $l$; \\ goto $l$;} 
 & \desc{Při splnění i nesplnění podmínky se skáče na stejnou adresu.} \\
 
-%& \code{} 
-%& \desc{} \\
 \end{texamples}
 
 \caption{Sekvence instrukcí s podmíněnými a nepodmíněnými skoky.}
 \label{tab:examples:jumps}
 \end{table}
-
-
-
-\subsubsection{Číselné konstanty a operace nad nimi}
-% nahrazení LDC
-% ze sčítání na inc
-% CONST I(0); SHR;
-% CONST I(0); ADD;
-
-
-
-\subsubsection{Práce s řetězci}
-% konkatenace dvou řetězcových konstant před append
-% pr8zdný řetězec
-% Volání bezparametrické metody.
-% String builder, append
-
-
-\subsubsection{Práce s objekty}
-% CONST null; CHECKCAST ARRAY;
-% CHECKCAST OBJECT(0); CHECKCAST OBJECT(0); 
-% CONST null; ATHROW;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Metody pro optimalizaci velikosti bajtkódu}\label{Analysis}
