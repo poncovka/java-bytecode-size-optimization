@@ -30,9 +30,9 @@ public class ClassTransformer {
     }
 
     /**
-     * Transform the given class node.
+     * Transform the given class frame.
      *
-     * @param cn the class node
+     * @param cn the class frame
      */
     public void transform(ClassNode cn) {
         if (ct != null) {

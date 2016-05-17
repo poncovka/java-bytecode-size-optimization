@@ -1,6 +1,7 @@
 package jbyco.optimization;
 
 import jbyco.optimization.expansion.DuplicationExpansion;
+import jbyco.optimization.jump.JumpTransformer;
 import jbyco.optimization.reductions.ConstantNumbersSubstitution;
 import jbyco.optimization.reductions.DuplicationReduction;
 import jbyco.optimization.reductions.InfoAttributesRemoval;
@@ -22,9 +23,9 @@ import java.util.List;
  */
 public class Optimizer {
 
-    Runner phase1runner;
-    Runner phase2runner;
-    Runner phase3runner;
+    PeepholeRunner phase1runner;
+    PeepholeRunner phase2runner;
+    PeepholeRunner phase3runner;
     Statistics stats;
 
     public Optimizer() {
@@ -44,7 +45,7 @@ public class Optimizer {
             stats.addSizeBefore(input.length);
         }
 
-        // create class node
+        // create class frame
         ClassNode result1 = phase1(input);
 
         // peephole
@@ -79,22 +80,22 @@ public class Optimizer {
         phase1runner.setStatistics(stats);
         phase1runner.findAndReplace(node);
 
-        // return the node
+        // return the frame
         return node;
     }
 
-    public Runner getPhase1Runner() {
-        Runner runner = new Runner();
+    public PeepholeRunner getPhase1Runner() {
+        PeepholeRunner runner = new PeepholeRunner();
         runner.loadPatterns(
                 DuplicationExpansion.class
         );
         return runner;
     }
 
-    public Runner getPhase2Runner() {
+    public PeepholeRunner getPhase2Runner() {
         // from specific to general
         // duplication simplifications are last
-        Runner runner = new Runner();
+        PeepholeRunner runner = new PeepholeRunner();
         runner.loadPatterns(
                 ObjectSimplifications.class,
                 StringAppendSimplifications.class,
@@ -117,7 +118,9 @@ public class Optimizer {
             @Override
             public void transform(ClassNode cn) {
 
-                MethodTransformer mt = new JumpReductions(stats);
+                JumpTransformer mt = new JumpTransformer();
+                mt.setStatistics(stats);
+
                 for (MethodNode mn : (List<MethodNode>)cn.methods) {
                     mt.transform(mn);
                 }
@@ -126,12 +129,12 @@ public class Optimizer {
 
         transformer.transform(input);
 
-        // return the node
+        // return the frame
         return input;
     }
 
-    public Runner getPhase3Runner() {
-        Runner runner = new Runner();
+    public PeepholeRunner getPhase3Runner() {
+        PeepholeRunner runner = new PeepholeRunner();
         runner.loadPatterns(
                 DuplicationReduction.class
         );

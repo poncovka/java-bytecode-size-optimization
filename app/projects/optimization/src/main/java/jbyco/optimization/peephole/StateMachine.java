@@ -13,12 +13,12 @@ public class StateMachine {
 
     String name;
     Symbols[] pattern;
-    Action action;
+    PeepholeAction action;
 
     int state;
     AbstractInsnNode[] matched;
 
-    public StateMachine(String name, Action action, Symbols[] pattern) {
+    public StateMachine(String name, PeepholeAction action, Symbols[] pattern) {
 
         // set the simplifications
         this.name = name;
@@ -32,7 +32,7 @@ public class StateMachine {
 
     public String getName() { return name; }
 
-    public Action getAction() {
+    public PeepholeAction getAction() {
         return action;
     }
 

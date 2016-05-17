@@ -29,13 +29,13 @@ import java.util.*;
  * The method returns true if the list of instructions was modified, else false.
  *
  */
-public class Runner {
+public class PeepholeRunner {
 
     Collection<StateMachine> loaded;
     Collection<StateMachine> running;
     Statistics stats;
 
-    public Runner() {
+    public PeepholeRunner() {
         loaded = new LinkedList<>();
         init();
     }
@@ -75,7 +75,7 @@ public class Runner {
         if (patterns.length > 0) {
 
             // get an action and its name
-            Action action = loadAction(method);
+            PeepholeAction action = loadAction(method);
             String name = getActionName(method);
 
             // for every pattern add a new state machine
@@ -87,19 +87,19 @@ public class Runner {
         }
     }
 
-    public Action loadAction(Method method) {
+    public PeepholeAction loadAction(Method method) {
 
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         MethodHandle handle = null;
-        Action action = null;
+        PeepholeAction action = null;
 
         try {
 
             handle = lookup.unreflect(method);
-            action = (Action) LambdaMetafactory.metafactory(
+            action = (PeepholeAction) LambdaMetafactory.metafactory(
                     lookup,
                     "replace",
-                    MethodType.methodType(Action.class),
+                    MethodType.methodType(PeepholeAction.class),
                     handle.type(),
                     handle,
                     handle.type()
@@ -148,11 +148,11 @@ public class Runner {
             init();
 
             // iterate over instructions of the list
-            // the list is iterated from the last to the first node!
+            // the list is iterated from the last to the first frame!
             AbstractInsnNode node = list.getLast();
             while (!restart && node != null) {
 
-                // get the state node
+                // get the state frame
                 AbstractInsnNode next = node.getPrevious();
 
                 // iterate over all loaded machines
@@ -188,7 +188,7 @@ public class Runner {
                     }
                 }
 
-                // process the state node
+                // process the state frame
                 node = next;
             }
         }

@@ -7,6 +7,6 @@ import org.objectweb.asm.tree.InsnList;
  * Created by vendy on 11.5.16.
  */
 @FunctionalInterface
-public interface Action {
+public interface PeepholeAction {
     public boolean replace(InsnList list, AbstractInsnNode[] matched);
 }

@@ -30,9 +30,9 @@ public class MethodTransformer {
     }
 
     /**
-     * Transform the given method node.
+     * Transform the given method frame.
      *
-     * @param mn the method node
+     * @param mn the method frame
      */
     public void transform(MethodNode mn) {
         if (mt != null) {

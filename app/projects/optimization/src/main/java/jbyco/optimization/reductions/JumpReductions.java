@@ -1,8 +1,7 @@
 package jbyco.optimization.reductions;
 
 import jbyco.optimization.Statistics;
-import jbyco.optimization.jump.LabelNodeInfo;
-import jbyco.optimization.jump.LabelNodesCollector;
+import jbyco.optimization.jump.*;
 import jbyco.optimization.transformation.MethodTransformer;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
@@ -16,86 +15,52 @@ import java.util.Map;
  */
 public class JumpReductions extends MethodTransformer {
 
-    // TODO join LABELS: LABEL, LABEL -> LABEL
-    // remove unused labels
-    // remove frames withount labels
-
     // TODO SWITCH - implement class for switch optimizations, the absolute label values are neccessary, POP!!!
     // TODO LABEL x, GOTO y - implement class for jump optimizations
     // TODO GOTO x, ...., LABEL x, iRETURN
 
+    public static boolean removeUselessFrame(InsnList list, FrameNode frame, FrameNodeInfo info, Map<LabelNode, LabelNodeInfo> labels) {
 
-    Statistics stats;
+        boolean change = false;
 
-    public JumpReductions(Statistics stats) {
-        this.stats = stats;
-    }
+        // frame can be removed
+        if (info.label == null && info.labels.isEmpty()) {
+            list.remove(frame);
+            change = true;
+        }
+        // labels in the frame are only in this frame
+        else {
+            boolean inFrame = true;
+            for (LabelNode label : info.labels) {
 
-    public JumpReductions(MethodTransformer mt, Statistics stats) {
-        super(mt);
-        this.stats = stats;
-    }
-
-    private Map<LabelNode, LabelNodeInfo> collectLabelNodes(MethodNode mn) {
-        LabelNodesCollector collector = new LabelNodesCollector();
-        return collector.collect(mn);
-    }
-
-    @Override
-    public void transform(MethodNode mn) {
-
-        InsnList list = mn.instructions;
-
-        //replaceLookupswitch(list, node, labels);
-        //replaceTableswitch(list, node, labels);
-        //removeUselessFrames(method, labels);
-
-        boolean change = true;
-        while(change) {
-
-            // every optimization can compromise the validity of info
-            Map<LabelNode, LabelNodeInfo> labels = collectLabelNodes(mn);
-            Iterator<LabelNodeInfo> i = labels.values().iterator();
-            change = false;
-
-            while (!change && i.hasNext()) {
-
-                LabelNodeInfo info = i.next();
-
-                change = replaceGotoWithReturn(list, info.label, info);
-                if (change) {
-                    if (stats != null) {
-                        stats.addPepphole("replaceGotoWithReturn");
-                    }
-                    break;
-                }
-
-                change = removeDoubleJumps(list, info.label, info);
-                if (change) {
-                    if (stats != null) {
-                        stats.addPepphole("removeDoubleJumps");
-                    }
-                    break;
-                }
-
-                change = joinLabels(list, info.label, info);
-                if (change) {
-                    if (stats != null) {
-                        stats.addPepphole("joinLabels");
-                    }
+                if (!labels.get(label).isOnlyInFrame(frame)) {
+                    inFrame = false;
                     break;
                 }
             }
-        }
 
-        super.transform(mn);
+            if (inFrame) {
+                list.remove(frame);
+                change = true;
+            }
+        }
+        return change;
     }
 
-    public boolean joinLabels(InsnList list, LabelNode label, LabelNodeInfo info) {
+    public static boolean removeUselessLabel(InsnList list, LabelNode label, LabelNodeInfo info) {
+        if (!info.isUsefull()) {
+            list.remove(label);
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean joinLabels(InsnList list, LabelNode label, LabelNodeInfo info) {
         boolean change = false;
 
         // label labels label
-        if (info.insn.getType() == AbstractInsnNode.LABEL) {
+        if (info.insn != null && info.insn.getType() == AbstractInsnNode.LABEL) {
 
             // get target label
             LabelNode target = ((LabelNode)info.insn);
@@ -105,24 +70,16 @@ public class JumpReductions extends MethodTransformer {
                 change = replaceLabel(node, label, target);
             }
 
-            for (TryCatchBlockNode block : info.handledTryCatchBlocks) {
-                block.handler = target;
-                change = true;
+            for (TryCatchBlockNode block : info.tryCatchBlocks) {
+                change = replaceLabel(block, label, target);
             }
 
-            for (TryCatchBlockNode block : info.startedTryCatchBlocks) {
-                block.start = target;
-                change = true;
+            for (LocalVariableAnnotationNode node : info.annotations) {
+                change = replaceLabel(node, label, target);
             }
 
-            for (TryCatchBlockNode block : info.endedTryCatchBlocks) {
-                block.end = target;
-                change = true;
-            }
-
-            if (info.frame != null) {
-                list.remove(info.frame);
-                change = true;
+            for (FrameNode frame : info.frames) {
+                change = replaceLabel(frame, label, target);
             }
 
         }
@@ -130,11 +87,35 @@ public class JumpReductions extends MethodTransformer {
         return change;
     }
 
-    public boolean removeDoubleJumps(InsnList list, LabelNode label, LabelNodeInfo info) {
+    public static boolean replaceGotoWithReturn(InsnList list, LabelNode label, LabelNodeInfo info) {
+
+        // has labeled instruction?
+        if (info.insn != null) {
+
+            // is labeled instruction return?
+            int opcode = info.insn.getOpcode();
+            if (Opcodes.IRETURN <= opcode && opcode <= Opcodes.RETURN) {
+
+                // find goto instruction that jumps to this label
+                for (AbstractInsnNode node : info.jumps) {
+
+                    // replace goto with return instruction
+                    if (node.getOpcode() == Opcodes.GOTO) {
+                        list.set(node, info.insn.clone(null));
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean removeDoubleJumps(InsnList list, LabelNode label, LabelNodeInfo info) {
         boolean change = false;
 
         // is labeled instruction goto?
-        if (info.insn.getOpcode() == Opcodes.GOTO) {
+        if (info.insn != null && info.insn.getOpcode() == Opcodes.GOTO) {
 
             // get target of this instruction
             LabelNode target = ((JumpInsnNode)info.insn).label;
@@ -147,7 +128,72 @@ public class JumpReductions extends MethodTransformer {
         return change;
     }
 
-    private boolean replaceLabel(AbstractInsnNode node, LabelNode label, LabelNode target) {
+    private static boolean replaceLabel(FrameNode frame, LabelNode label, LabelNode target) {
+
+        boolean change = false;
+        ListIterator<Object> i = frame.local.listIterator();
+        while(i.hasNext()) {
+
+            Object object = i.next();
+            if (object instanceof LabelNode) {
+
+                if (((LabelNode)object).equals(label)) {
+                    i.set(target);
+                    change = true;
+                }
+            }
+        }
+
+        return change;
+    }
+
+    private static boolean replaceLabel(LocalVariableAnnotationNode node, LabelNode label, LabelNode target) {
+
+        boolean change = false;
+        ListIterator<LabelNode> i;
+
+        i = node.start.listIterator();
+        while(i.hasNext()) {
+            if (i.next().equals(label)) {
+                i.set(target);
+                change = true;
+            }
+        }
+
+        i = node.end.listIterator();
+        while(i.hasNext()) {
+            if (i.next().equals(label)) {
+                i.set(target);
+                change = true;
+            }
+        }
+
+        return change;
+    }
+
+    private static boolean replaceLabel(TryCatchBlockNode node, LabelNode label, LabelNode target) {
+
+        boolean change = false;
+
+        if (node.handler.equals(label)) {
+            node.handler = target;
+            change = true;
+        }
+
+        if (node.start.equals(label)) {
+            node.start = target;
+            change = true;
+        }
+
+        if (node.end.equals(label)) {
+            node.end = target;
+            change = true;
+        }
+
+        return change;
+    }
+
+    private static boolean replaceLabel(AbstractInsnNode node, LabelNode label, LabelNode target) {
 
         int type = node.getType();
         boolean change = false;
@@ -195,25 +241,4 @@ public class JumpReductions extends MethodTransformer {
 
         return change;
     }
-
-    public boolean replaceGotoWithReturn(InsnList list, LabelNode label, LabelNodeInfo info) {
-
-        // is labeled instruction return?
-        int opcode = info.insn.getOpcode();
-        if (Opcodes.IRETURN <= opcode && opcode <= Opcodes.RETURN) {
-
-            // find goto instruction that jumps to this label
-            for (AbstractInsnNode node : info.jumps) {
-
-                // replace goto with return instruction
-                if (node.getOpcode() == Opcodes.GOTO) {
-                    list.set(node, info.insn.clone(null));
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
 }

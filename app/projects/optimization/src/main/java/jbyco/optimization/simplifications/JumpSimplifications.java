@@ -6,6 +6,11 @@ import jbyco.optimization.peephole.Symbols;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.TreeMap;
+
 /**
  * A library of patterns and actions to optimize jumps, labels and comparisons.
  */
@@ -46,11 +51,11 @@ public class JumpSimplifications {
         return false;
     }
 
-    @Pattern({Symbols.LABEL, Symbols.FRAME, Symbols.LABEL}) /* => LABEL, LABEL */
-    public static boolean removeFrame(InsnList list, AbstractInsnNode[] matched) {
-        list.remove(matched[1]);
-        return true;
-    }
+    //@Pattern({Symbols.LABEL, Symbols.FRAME, Symbols.LABEL}) /* => LABEL, LABEL */
+    //public static boolean removeFrame(InsnList list, AbstractInsnNode[] matched) {
+    //    list.remove(matched[1]);
+    //    return true;
+    //}
 
     @Pattern({Symbols.GOTO, Symbols.NOTLABEL})      /* => GOTO */
     @Pattern({Symbols.RETURN, Symbols.NOTLABEL})    /* => RETURN */
@@ -64,10 +69,10 @@ public class JumpSimplifications {
         return true;
     }
 
-    // -------------------------------------------------------------------------------------------- default lookupswitch
+    // -------------------------------------------------------------------------------------------- lookupswitch
 
     @Pattern({Symbols.LOOKUPSWITCH /* default */}) /* => POP; GOTO default */
-    public static boolean removeLookupswitch(InsnList list, AbstractInsnNode[] matched) {
+    public static boolean removeLookupSwitch(InsnList list, AbstractInsnNode[] matched) {
 
         LookupSwitchInsnNode i = ((LookupSwitchInsnNode) matched[0]);
 
@@ -79,6 +84,161 @@ public class JumpSimplifications {
 
         return false;
     }
+
+    @Pattern({Symbols.LOOKUPSWITCH /* l l l l */}) /* => POP; */
+    public static boolean removeLookupSwitchWithSameLabels(InsnList list, AbstractInsnNode[] matched) {
+
+        LookupSwitchInsnNode i = ((LookupSwitchInsnNode) matched[0]);
+
+        boolean sameLabels = true;
+        for (LabelNode label : (List<LabelNode>)i.labels) {
+
+            if (!label.equals(i.dflt)) {
+                sameLabels = false;
+                break;
+            }
+        }
+
+        if (sameLabels) {
+            list.set(matched[0], new InsnNode(Opcodes.POP));
+            return true;
+        }
+
+        return false;
+    }
+
+    @Pattern({Symbols.LOOKUPSWITCH /* i i+1 i+2 */}) /* => TABLESWITCH */
+    public static boolean replaceLookupSwitchWithTableSwitch(InsnList list, AbstractInsnNode[] matched) {
+
+        LookupSwitchInsnNode lookup = ((LookupSwitchInsnNode) matched[0]);
+        int size = lookup.labels.size();
+
+        if (size >= 2) {
+
+            // create dictionary of keys and labels
+            TreeMap<Integer, LabelNode> dictionary = new TreeMap<>();
+
+            for (int i = 0; i < size; i++) {
+                dictionary.put((int)lookup.keys.get(i), (LabelNode)lookup.labels.get(i));
+            }
+
+            int min = dictionary.firstKey();
+            int max = dictionary.lastKey();
+
+            // can be lookupswitch optimized?
+            if (2 * (long)size > 2 + ((long)max - (long)min + 1)) {
+
+                LabelNode[] labels = new LabelNode[max - min + 1];
+
+                // set labels
+                for (Integer key : dictionary.keySet()) {
+                    labels[key - min] = dictionary.get(key);
+                }
+
+                // set default labels
+                for (int i = 0; i < labels.length; i++) {
+                    if (labels[i] == null) {
+                        labels[i] = lookup.dflt;
+                    }
+                }
+
+                // replace lookup with table
+                TableSwitchInsnNode table = new TableSwitchInsnNode(min, max, lookup.dflt, labels);
+                list.set(lookup, table);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    // -------------------------------------------------------------------------------------------- tableswitch
+
+    @Pattern({Symbols.TABLESWITCH /* i1 i2 l l l l l l */}) /* => POP; */
+    public static boolean removeTableSwitchWithSameLabels(InsnList list, AbstractInsnNode[] matched) {
+
+        TableSwitchInsnNode i = ((TableSwitchInsnNode) matched[0]);
+
+        boolean sameLabels = true;
+        for (LabelNode label : (List<LabelNode>)i.labels) {
+
+            if (!label.equals(i.dflt)) {
+                sameLabels = false;
+                break;
+            }
+        }
+
+        if (sameLabels) {
+            list.set(matched[0], new InsnNode(Opcodes.POP));
+            return true;
+        }
+
+        return false;
+    }
+
+    @Pattern({Symbols.TABLESWITCH /* i i l0 l */}) /* => LDC i; IF_ICMPEQ l; GOTO l0; */
+    public static boolean replaceTableSwitchWhereMinEqMax(InsnList list, AbstractInsnNode[] matched) {
+
+        TableSwitchInsnNode i = ((TableSwitchInsnNode) matched[0]);
+
+        if (i.min == i.max) {
+
+            int value = i.min;
+            LabelNode trueLabel = (LabelNode)i.labels.get(0);
+            LabelNode falseLabel = i.dflt;
+
+            list.insertBefore(matched[0], new LdcInsnNode(new Integer(value)));
+            list.insertBefore(matched[0], new JumpInsnNode(Opcodes.IF_ICMPEQ, trueLabel));
+            list.set(matched[0], new JumpInsnNode(Opcodes.GOTO, falseLabel));
+            return true;
+        }
+
+        return false;
+    }
+
+    @Pattern({Symbols.TABLESWITCH /* i1 i2 l0 l l l l l */}) /* => rewritten with IF */
+    public static boolean replaceTableSwitchWithSameNonDefLabels(InsnList list, AbstractInsnNode[] matched) {
+
+        TableSwitchInsnNode i = ((TableSwitchInsnNode) matched[0]);
+
+        if (i.labels.size() >= 2) {
+
+            LabelNode first = (LabelNode) i.labels.get(0);
+
+            boolean sameLabels = true;
+            for (LabelNode label : (List<LabelNode>) i.labels) {
+
+                if (!label.equals(first)) {
+                    sameLabels = false;
+                    break;
+                }
+            }
+
+            if (sameLabels) {
+
+                InsnList sublist = new InsnList();
+                sublist.add(new InsnNode(Opcodes.DUP));
+                sublist.add(new LdcInsnNode(new Integer(i.min)));
+                LabelNode dflt2 = new LabelNode();
+                sublist.add(new JumpInsnNode(Opcodes.IF_ICMPLT, dflt2));
+                sublist.add(new LdcInsnNode(new Integer(i.max)));
+                sublist.add(new JumpInsnNode(Opcodes.IF_ICMPGT, i.dflt));
+                sublist.add(new JumpInsnNode(Opcodes.GOTO, first));
+                sublist.add(dflt2);
+                sublist.add(new InsnNode(Opcodes.POP));
+                sublist.add(new JumpInsnNode(Opcodes.GOTO, i.dflt));
+
+                list.insert(i, sublist);
+                list.remove(i);
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
 
     // -------------------------------------------------------------------------------------------- use smaller instructions
 

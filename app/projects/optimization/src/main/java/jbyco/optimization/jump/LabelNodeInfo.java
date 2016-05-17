@@ -1,10 +1,9 @@
 package jbyco.optimization.jump;
 
-import org.objectweb.asm.Label;
 import org.objectweb.asm.tree.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 
 /**
@@ -16,41 +15,56 @@ public class LabelNodeInfo {
     public FrameNode frame;
     public AbstractInsnNode insn;
 
+    public Collection<FrameNode> frames;
     public Collection<AbstractInsnNode> jumps;
-    public Collection<TryCatchBlockNode> startedTryCatchBlocks;
-    public Collection<TryCatchBlockNode> endedTryCatchBlocks;
-    public Collection<TryCatchBlockNode> handledTryCatchBlocks;
+    public Collection<TryCatchBlockNode> tryCatchBlocks;
+    public Collection<LocalVariableAnnotationNode> annotations;
 
     public LabelNodeInfo(LabelNode label) {
 
-        // set the label node
+        // set the label frame
         this.label = label;
 
         // init
-        this.jumps = new LinkedList<>();
-        this.startedTryCatchBlocks = new LinkedList<>();
-        this.endedTryCatchBlocks = new LinkedList<>();
-        this.handledTryCatchBlocks = new LinkedList<>();
+        this.jumps = new ArrayList<>();
+        this.frames = new ArrayList<>();
+        this.tryCatchBlocks = new ArrayList<>();
+        this.annotations = new ArrayList<>();
+    }
+
+    public void addFrame(FrameNode frame) {
+        frames.add(frame);
     }
 
     public void addJump(AbstractInsnNode jump) {
         jumps.add(jump);
     }
-    public void addStartedTryCatchBlock(TryCatchBlockNode block) {
-        startedTryCatchBlocks.add(block);
+
+    public void addTryCatchBlock(TryCatchBlockNode block) {
+        tryCatchBlocks.add(block);
     }
-    public void addEndedTryCatchBlock(TryCatchBlockNode block) {
-        endedTryCatchBlocks.add(block);
-    }
-    public void addHandledTryCatchBlock(TryCatchBlockNode block) {
-        handledTryCatchBlocks.add(block);
+
+    public void addAnnotation(LocalVariableAnnotationNode node) {
+        annotations.add(node);
     }
 
     public boolean isUsefull() {
         return     !jumps.isEmpty()
-                || !startedTryCatchBlocks.isEmpty()
-                || !endedTryCatchBlocks.isEmpty()
-                || !handledTryCatchBlocks.isEmpty();
+                || !frames.isEmpty()
+                || !tryCatchBlocks.isEmpty()
+                || !annotations.isEmpty();
+    }
+
+    public boolean isOnlyInFrame(FrameNode frame) {
+        return     frames.size() == 1
+                && frames.contains(frame)
+                && jumps.isEmpty()
+                && tryCatchBlocks.isEmpty()
+                && annotations.isEmpty();
+    }
+
+    public boolean isCompletedLabeling() {
+        return insn != null;
     }
 
 }
