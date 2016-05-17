@@ -8,10 +8,7 @@ import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
-import org.apache.bcel.generic.Instruction;
-import org.apache.bcel.generic.LoadInstruction;
-import org.apache.bcel.generic.LocalVariableInstruction;
-import org.apache.bcel.generic.StoreInstruction;
+import org.apache.bcel.generic.*;
 import org.apache.bcel.util.ByteSequence;
 
 import java.io.IOException;
@@ -107,14 +104,18 @@ public class VariablesAnalyzer implements Analyzer {
             Code code = m.getCode();
             if (code != null) {
 
-                // get number of parameters
-                int nparams = m.getArgumentTypes().length + (m.isStatic() ? 0 : 1);
+                // get total number of variables
+                int nlocals = code.getMaxLocals();
 
-                // get number of local variables
-                int nvars = code.getMaxLocals();
+                // get number of parameters
+                int nparams = m.isStatic() ? 0 : 1;
+
+                for (Type type : m.getArgumentTypes()) {
+                    nparams += type.getSize();
+                }
 
                 // add method
-                map.addMethod(nparams, nvars);
+                map.addMethod(nparams, nlocals);
 
                 // read bytecode
                 ByteSequence seq = new ByteSequence(code.getCode());

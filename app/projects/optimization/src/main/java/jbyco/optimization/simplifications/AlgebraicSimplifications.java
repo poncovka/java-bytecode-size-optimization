@@ -7,9 +7,9 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 /**
- * A library of patterns and simplifications for arithmetic simplifications.
+ * A library of patterns and simplifications for algebraic simplifications.
  */
-public class ArithmeticSimplifications {
+public class AlgebraicSimplifications {
 
     // -------------------------------------------------------------------------------------------- iinc
 
@@ -42,7 +42,8 @@ public class ArithmeticSimplifications {
     }
 
     @Pattern({Symbols.ILOAD /*x*/, Symbols.INT /*i*/, Symbols.IADD, Symbols.ISTORE /*x*/}) /* => IINC x i */
-    public static boolean replaceAddWithInc(InsnList list, AbstractInsnNode[] matched) {
+    @Pattern({Symbols.ILOAD /*x*/, Symbols.INT /*i*/, Symbols.ISUB, Symbols.ISTORE /*x*/}) /* => IINC x -i */
+    public static boolean replaceOpWithInc(InsnList list, AbstractInsnNode[] matched) {
 
         int var = ((VarInsnNode) matched[0]).var;
         int var2 = ((VarInsnNode) matched[3]).var;
@@ -50,6 +51,10 @@ public class ArithmeticSimplifications {
         if (var == var2) {
 
             int value = InsnUtils.getIntValue(matched[1]);
+
+            if (Symbols.ISUB.match(matched[2])) {
+                value = -value;
+            }
 
             if (Short.MIN_VALUE <= value && value <= Short.MAX_VALUE) {
 

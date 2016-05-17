@@ -16,6 +16,13 @@ public class ObjectSimplifications {
         return true;
     }
 
+    @Pattern({Symbols.ACONST_NULL, Symbols.INSTANCEOF}) /* => 0 */
+    public static boolean removeNullInstanceof(InsnList list, AbstractInsnNode[] matched) {
+        list.remove(matched[0]);
+        list.set(matched[1], new InsnNode(Opcodes.ICONST_0));
+        return true;
+    }
+
     @Pattern({Symbols.CHECKCAST /*t*/, Symbols.CHECKCAST /*t*/}) /* => checkcast */
     public static boolean removeCheckcast(InsnList list, AbstractInsnNode[] matched) {
 

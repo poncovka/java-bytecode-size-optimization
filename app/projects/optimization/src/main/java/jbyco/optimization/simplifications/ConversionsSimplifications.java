@@ -125,17 +125,24 @@ public class ConversionsSimplifications {
 
     @Pattern({Symbols.I2L, Symbols.L2I}) /* => nothing */
     @Pattern({Symbols.F2D, Symbols.D2F}) /* => nothing */
-    public static boolean removeConversion(InsnList list, AbstractInsnNode[] matched) {
+    public static boolean removeConversionSequence(InsnList list, AbstractInsnNode[] matched) {
         list.remove(matched[0]);
         list.remove(matched[1]);
         return true;
     }
 
     @Pattern({Symbols.I2B, Symbols.I2B}) /* => i2b */
+    @Pattern({Symbols.I2B, Symbols.I2S}) /* => i2b */
     @Pattern({Symbols.I2C, Symbols.I2C}) /* => i2c */
-    @Pattern({Symbols.I2S, Symbols.I2S}) /* => i2c */
-    public static boolean simplifyConversion(InsnList list, AbstractInsnNode[] matched) {
+    @Pattern({Symbols.I2S, Symbols.I2S}) /* => i2s */
+    public static boolean simplifyConversionSequence(InsnList list, AbstractInsnNode[] matched) {
         list.remove(matched[1]);
+        return true;
+    }
+
+    @Pattern({Symbols.I2S, Symbols.I2B}) /* => i2b */
+    public static boolean simplifyConversionSequence2(InsnList list, AbstractInsnNode[] matched) {
+        list.remove(matched[0]);
         return true;
     }
 }

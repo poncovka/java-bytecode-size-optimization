@@ -11,8 +11,9 @@ import org.objectweb.asm.tree.*;
  */
 public class StringAppendSimplifications {
 
-    @Pattern({Symbols.INVOKESPECIAL/*init*/, Symbols.STRING/*s*/, Symbols.INVOKEVIRTUAL/*append*/}) /* => nothing */
-    public static boolean initStringBuilder(InsnList list, AbstractInsnNode[] matched) {
+    @Pattern({Symbols.INVOKESPECIAL/*init*/, Symbols.ALOAD/*s*/, Symbols.INVOKEVIRTUAL/*append*/}) /* => init(s) */
+    @Pattern({Symbols.INVOKESPECIAL/*init*/, Symbols.STRING/*s*/, Symbols.INVOKEVIRTUAL/*append*/}) /* => init(s) */
+    public static boolean replaceInitStringBuilder(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.isStringBuilderInit(matched[0])
                 && InsnUtils.isStringAppendMethod(matched[2])) {
@@ -20,15 +21,26 @@ public class StringAppendSimplifications {
             list.remove(matched[1]);
             list.remove(matched[2]);
             list.insertBefore(matched[0], matched[1]);
-            list.set(matched[0],
-                    new MethodInsnNode(
-                            Opcodes.INVOKESPECIAL,
-                            "java/lang/StringBuilder",
-                            "<init>",
-                            "(Ljava/lang/String;)V",
-                            false
-                    )
-            );
+            list.set(matched[0], InsnUtils.getStringBuilderInit());
+            return true;
+        }
+
+        return false;
+    }
+
+    @Pattern({Symbols.STRING/*s1*/,Symbols.INVOKESPECIAL/*init*/, Symbols.STRING/*s2*/, Symbols.INVOKEVIRTUAL/*append*/}) /* => init(s1+s2) */
+    public static boolean replaceInitStringBuilder2(InsnList list, AbstractInsnNode[] matched) {
+
+        if (InsnUtils.isStringBuilderInitString(matched[1])
+                && InsnUtils.isStringAppendMethod(matched[3])) {
+
+            String s1 = (String) ((LdcInsnNode)matched[0]).cst;
+            String s2 = (String) ((LdcInsnNode)matched[2]).cst;
+
+            list.set(matched[0], new LdcInsnNode(new String(s1+s2)));
+            list.set(matched[1], InsnUtils.getStringBuilderInit());
+            list.remove(matched[2]);
+            list.remove(matched[3]);
             return true;
         }
 

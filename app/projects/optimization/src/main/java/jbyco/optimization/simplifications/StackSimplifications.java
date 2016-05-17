@@ -70,24 +70,33 @@ public class StackSimplifications {
         return true;
     }
 
-    // -------------------------------------------------------------------------------------------- variables
+    // -------------------------------------------------------------------------------------------- dup
+    // -------------------------------------------------------------------------------------------- load x, load x
 
-    @Pattern({Symbols.ALOAD /*x*/, Symbols.ASTORE /*x*/}) /* => nothing */
-    @Pattern({Symbols.ILOAD /*x*/, Symbols.ISTORE /*x*/}) /* => nothing */
-    @Pattern({Symbols.ILOAD /*x*/, Symbols.ISTORE /*x*/}) /* => nothing */
-    @Pattern({Symbols.FLOAD /*x*/, Symbols.FSTORE /*x*/}) /* => nothing */
-    @Pattern({Symbols.LLOAD /*x*/, Symbols.LSTORE /*x*/}) /* => nothing */
-    @Pattern({Symbols.DLOAD /*x*/, Symbols.DSTORE /*x*/}) /* => nothing */
-    public static boolean removeLoadStore(InsnList list, AbstractInsnNode[] matched) {
+    @Pattern({Symbols.VALUE_TYPE1 /*x*/, Symbols.VALUE_TYPE1 /*x*/}) /* => x; dup; */
+    public static boolean simplifyDuplicationType1(InsnList list, AbstractInsnNode[] matched) {
 
-        if (InsnUtils.compareVariables(matched[0], matched[1])) {
-            list.remove(matched[0]);
-            list.remove(matched[1]);
+        if (InsnUtils.compareValueType1(matched[0], matched[1])) {
+            list.set(matched[1], new InsnNode(Opcodes.DUP));
             return true;
         }
 
         return false;
     }
+
+    @Pattern({Symbols.VALUE_TYPE2 /*x*/, Symbols.VALUE_TYPE2 /*x*/}) /* => x; dup2; */
+    public static boolean simplifyDuplicationType2(InsnList list, AbstractInsnNode[] matched) {
+
+        if (InsnUtils.compareValueType2(matched[0], matched[1])) {
+            list.set(matched[1], new InsnNode(Opcodes.DUP2));
+            return true;
+        }
+
+        return false;
+    }
+
+    // -------------------------------------------------------------------------------------------- variables
+
 
     @Pattern({Symbols.ASTORE /*x*/, Symbols.ASTORE /*x*/}) /* => POP;  STORE x */
     @Pattern({Symbols.ISTORE /*x*/, Symbols.ISTORE /*x*/}) /* => POP;  STORE x */
@@ -108,6 +117,50 @@ public class StackSimplifications {
 
         if (InsnUtils.compareVariables(matched[0], matched[1])) {
             list.set(matched[0], new InsnNode(Opcodes.POP2));
+            return true;
+        }
+
+        return false;
+    }
+
+    @Pattern({Symbols.ASTORE /*x*/, Symbols.ALOAD /*x*/}) /* => DUP; ISTORE x */
+    @Pattern({Symbols.ISTORE /*x*/, Symbols.ILOAD /*x*/}) /* => DUP; ISTORE x */
+    @Pattern({Symbols.FSTORE /*x*/, Symbols.FLOAD /*x*/}) /* => DUP; FSTORE x */
+    public static boolean simplifyStoreLoadType1(InsnList list, AbstractInsnNode[] matched) {
+
+        if (InsnUtils.compareVariables(matched[0], matched[1])) {
+            list.insertBefore(matched[0], new InsnNode(Opcodes.DUP));
+            list.remove(matched[1]);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Pattern({Symbols.LSTORE /*x*/, Symbols.LLOAD /*x*/}) /* => DUP2; LSTORE x */
+    @Pattern({Symbols.DSTORE /*x*/, Symbols.DLOAD /*x*/}) /* => DUP2; DSTORE x */
+    public static boolean simplifyStoreLoadType2(InsnList list, AbstractInsnNode[] matched) {
+
+        if (InsnUtils.compareVariables(matched[0], matched[1])) {
+            list.insertBefore(matched[0], new InsnNode(Opcodes.DUP2));
+            list.remove(matched[1]);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Pattern({Symbols.ALOAD /*x*/, Symbols.ASTORE /*x*/}) /* => nothing */
+    @Pattern({Symbols.ILOAD /*x*/, Symbols.ISTORE /*x*/}) /* => nothing */
+    @Pattern({Symbols.ILOAD /*x*/, Symbols.ISTORE /*x*/}) /* => nothing */
+    @Pattern({Symbols.FLOAD /*x*/, Symbols.FSTORE /*x*/}) /* => nothing */
+    @Pattern({Symbols.LLOAD /*x*/, Symbols.LSTORE /*x*/}) /* => nothing */
+    @Pattern({Symbols.DLOAD /*x*/, Symbols.DSTORE /*x*/}) /* => nothing */
+    public static boolean removeLoadStore(InsnList list, AbstractInsnNode[] matched) {
+
+        if (InsnUtils.compareVariables(matched[0], matched[1])) {
+            list.remove(matched[0]);
+            list.remove(matched[1]);
             return true;
         }
 

@@ -19,7 +19,7 @@ export JAVA_OPTS='-Xmx2g'
 
 # define jbyca
 dir=$( cd $(dirname $0) ; pwd -P )
-jbyca="${dir}/jbyca"
+jbyca="${dir}/../bin/jbyca"
 
 # get parameters
 input=$1 
@@ -78,6 +78,18 @@ analyze_size() {
   $jbyca --size $input >${name}.out
 };
 
+analyze_maximums() {
+
+  # prepare output
+  name="${output}/maxs"
+
+  # print info
+  echo "Generating file ${name}.out." 1>&2
+
+  # run analysis
+  $jbyca --maximums $input >${name}.out
+};
+
 analyze_variables() {
 
   # prepare output
@@ -105,6 +117,7 @@ analyze_statistics() {
 #---------------------------------------------------------- main
 
 analyze_size
+analyze_maximums
 analyze_variables
 analyze_statistics
 

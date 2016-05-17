@@ -5,12 +5,17 @@ import jbyco.optimization.reductions.ConstantNumbersSubstitution;
 import jbyco.optimization.reductions.DuplicationReduction;
 import jbyco.optimization.reductions.InfoAttributesRemoval;
 import jbyco.optimization.peephole.*;
+import jbyco.optimization.reductions.JumpReductions;
 import jbyco.optimization.simplifications.*;
+import jbyco.optimization.transformation.ClassTransformer;
+import jbyco.optimization.transformation.MethodTransformer;
 import org.objectweb.asm.*;
+import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by vendy on 3.5.16.
@@ -30,9 +35,6 @@ public class Optimizer {
 
     public void setStatistics(Statistics stats) {
         this.stats = stats;
-        this.phase1runner.setStatistics(stats);
-        this.phase2runner.setStatistics(stats);
-        this.phase3runner.setStatistics(stats);
     }
 
     public byte[] optimizeClassFile(byte[] input) throws IOException {
@@ -71,10 +73,11 @@ public class Optimizer {
 
         // process input
         ClassReader reader = new ClassReader(input);
-        reader.accept(cv, ClassReader.SKIP_DEBUG /*|ClassReader.SKIP_FRAMES*/);
+        reader.accept(cv, ClassReader.SKIP_DEBUG | ClassReader.EXPAND_FRAMES /*|ClassReader.SKIP_FRAMES*/);
 
         // apply peephole optimizations runner
-        //phase1runner.findAndReplace(node);
+        phase1runner.setStatistics(stats);
+        phase1runner.findAndReplace(node);
 
         // return the node
         return node;
@@ -96,10 +99,9 @@ public class Optimizer {
                 ObjectSimplifications.class,
                 StringAppendSimplifications.class,
                 ConversionsSimplifications.class,
-                ArithmeticSimplifications.class,
+                AlgebraicSimplifications.class,
                 JumpSimplifications.class,
-                StackSimplifications.class,
-                DuplicationSimplifications.class
+                StackSimplifications.class
         );
         return runner;
     }
@@ -107,7 +109,22 @@ public class Optimizer {
     public ClassNode phase2(ClassNode input) {
 
         // apply peephole optimizations
-        //phase2runner.findAndReplace(input);
+        phase2runner.setStatistics(stats);
+        phase2runner.findAndReplace(input);
+
+        // apply jump optimizations
+        ClassTransformer transformer = new ClassTransformer() {
+            @Override
+            public void transform(ClassNode cn) {
+
+                MethodTransformer mt = new JumpReductions(stats);
+                for (MethodNode mn : (List<MethodNode>)cn.methods) {
+                    mt.transform(mn);
+                }
+            }
+        };
+
+        transformer.transform(input);
 
         // return the node
         return input;
@@ -124,19 +141,19 @@ public class Optimizer {
     public byte[] phase3(ClassNode input) {
 
         // apply peephole optimizations
-        //phase3runner.findAndReplace(input);
-
-        // TODO optimize constants, optimize jumps, calculate size, repeat
+        phase3runner.setStatistics(stats);
+        phase3runner.findAndReplace(input);
 
         // create the chain of visitors
-        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS /*|ClassWriter.COMPUTE_FRAMES*/);
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor cv = writer;
         cv = new ClassVisitor(Opcodes.ASM5, cv) {
 
             @Override
             public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
                 MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-                //mv = new ConstantNumbersSubstitution(mv);
+                mv = new ConstantNumbersSubstitution(mv);
+                mv = new LocalVariablesSorter(access, desc, mv);
                 return mv;
             }
 

@@ -1,6 +1,7 @@
 package jbyco.optimization.peephole;
 
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FrameNode;
 import org.objectweb.asm.tree.LabelNode;
@@ -798,6 +799,13 @@ public enum Symbols implements Symbol {
         }
     },
 
+    TYPE {
+        @Override
+        public boolean match(AbstractInsnNode i) {
+            return LDC.match(i) && ((LdcInsnNode)i).cst instanceof Type;
+        }
+    },
+
     ICONST {
         @Override
         public boolean match(AbstractInsnNode i) {
@@ -1056,6 +1064,8 @@ public enum Symbols implements Symbol {
 
             // all values of the type 1
             return Symbols.ACONST_NULL.match(i)
+                    || Symbols.STRING.match(i)
+                    || Symbols.TYPE.match(i)
                     || Symbols.INT.match(i)
                     || Symbols.FLOAT.match(i)
                     || Symbols.ALOAD.match(i)

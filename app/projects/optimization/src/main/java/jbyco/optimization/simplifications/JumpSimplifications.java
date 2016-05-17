@@ -13,11 +13,33 @@ public class JumpSimplifications {
 
     // -------------------------------------------------------------------------------------------- useless
 
-    @Pattern({Symbols.GOTO /*x*/, Symbols.LABEL /*x*/}) /* => LABEL x */
+    @Pattern({Symbols.GOTO   /*x*/, Symbols.LABEL /*x*/}) /* => LABEL x */
     public static boolean removeJump(InsnList list, AbstractInsnNode[] matched) {
 
         if (((JumpInsnNode) matched[0]).label.equals(matched[1])) {
             list.remove(matched[0]);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Pattern({Symbols.IF /*x*/, Symbols.LABEL /*x*/}) /* => POP; LABEL x */
+    public static boolean removeIf(InsnList list, AbstractInsnNode[] matched) {
+
+        if (((JumpInsnNode) matched[0]).label.equals(matched[1])) {
+            list.set(matched[0], new InsnNode(Opcodes.POP));
+            return true;
+        }
+
+        return false;
+    }
+
+    @Pattern({Symbols.IF_CMP /*x*/, Symbols.LABEL /*x*/}) /* => POP2; LABEL x */
+    public static boolean removeIfCmp(InsnList list, AbstractInsnNode[] matched) {
+
+        if (((JumpInsnNode) matched[0]).label.equals(matched[1])) {
+            list.set(matched[0], new InsnNode(Opcodes.POP2));
             return true;
         }
 
@@ -30,8 +52,13 @@ public class JumpSimplifications {
         return true;
     }
 
-    @Pattern({Symbols.RETURN, Symbols.NOTLABEL}) /* => RETURN */
-    @Pattern({Symbols.GOTO, Symbols.NOTLABEL}) /* => GOTO */
+    @Pattern({Symbols.GOTO, Symbols.NOTLABEL})      /* => GOTO */
+    @Pattern({Symbols.RETURN, Symbols.NOTLABEL})    /* => RETURN */
+    @Pattern({Symbols.ARETURN, Symbols.NOTLABEL})   /* => ARETURN */
+    @Pattern({Symbols.IRETURN, Symbols.NOTLABEL})   /* => IRETURN */
+    @Pattern({Symbols.LRETURN, Symbols.NOTLABEL})   /* => LRETURN */
+    @Pattern({Symbols.FRETURN, Symbols.NOTLABEL})   /* => FRETURN */
+    @Pattern({Symbols.DRETURN, Symbols.NOTLABEL})   /* => DRETURN */
     public static boolean removeAfterJump(InsnList list, AbstractInsnNode[] matched) {
         list.remove(matched[1]);
         return true;
@@ -53,10 +80,40 @@ public class JumpSimplifications {
         return false;
     }
 
+    // -------------------------------------------------------------------------------------------- use smaller instructions
+
+    @Pattern({Symbols.INT/*0*/, Symbols.IF_CMP/*l*/}) /* => IF l; */
+    public static boolean replaceIfZero(InsnList list, AbstractInsnNode[] matched) {
+
+        if (InsnUtils.getIntValue(matched[0]) == 0) {
+
+            int opcode = Opcodes.IFEQ + (matched[1].getOpcode() - Opcodes.IF_ICMPEQ);
+            LabelNode label = ((JumpInsnNode)matched[1]).label;
+
+            list.remove(matched[0]);
+            list.set(matched[1], new JumpInsnNode(opcode, label));
+            return true;
+        }
+
+        return false;
+    }
+
     // -------------------------------------------------------------------------------------------- join same path
 
+    @Pattern({Symbols.IF/*l*/, Symbols.GOTO/*l*/}) /* => POP; GOTO l; */
+    public static boolean joinSamePathsIf(InsnList list, AbstractInsnNode[] matched) {
+
+        if (InsnUtils.getLabelNode(matched[0]).equals(InsnUtils.getLabelNode(matched[1]))) {
+            list.set(matched[0], new InsnNode(Opcodes.POP));
+            return true;
+        }
+
+        return false;
+    }
+
+
     @Pattern({Symbols.IF_CMP/*l*/, Symbols.GOTO/*l*/}) /* => POP2; GOTO l; */
-    public static boolean joinSamePaths(InsnList list, AbstractInsnNode[] matched) {
+    public static boolean joinSamePathsIfCmp(InsnList list, AbstractInsnNode[] matched) {
 
         if (InsnUtils.getLabelNode(matched[0]).equals(InsnUtils.getLabelNode(matched[1]))) {
             list.set(matched[0], new InsnNode(Opcodes.POP2));
@@ -175,7 +232,9 @@ public class JumpSimplifications {
         return true;
     }
 
+
     @Pattern({Symbols.DUP2, Symbols.LCMP}) /* => 0 */
+    // DCMP a FCMP cannot be optimized, because NaN != NaN
     public static boolean removeLongEquals(InsnList list, AbstractInsnNode[] matched) {
         list.remove(matched[0]);
         list.set(matched[1], new InsnNode(Opcodes.ICONST_0));

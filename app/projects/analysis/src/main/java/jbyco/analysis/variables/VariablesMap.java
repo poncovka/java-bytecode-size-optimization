@@ -4,6 +4,8 @@ import jbyco.lib.Utils;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A results of {@link VariablesAnalyzer}.
@@ -21,21 +23,21 @@ public class VariablesMap {
     /**
      * The map of variables.
      */
-    protected HashMap<Integer, Item> variables = new HashMap<>();
+    protected Map<Integer, Item> variables = new TreeMap<>();
     /**
      * The map of parameters.
      */
-    protected HashMap<Integer, Item> parameters = new HashMap<>();
+    protected Map<Integer, Item> parameters = new TreeMap<>();
 
     /**
      * Adds the method.
      *
      * @param nparams the number of parameters
-     * @param nvars   the number of variables
+     * @param nlocals   the number of all variables
      */
-    public void addMethod(int nparams, int nvars) {
+    public void addMethod(int nparams, int nlocals) {
 
-        this.nvars = nvars;
+        this.nvars = nlocals;
         this.nparams = nparams;
 
         for (int var = 0; var < nparams; var++) {
@@ -44,7 +46,7 @@ public class VariablesMap {
             item.counter++;
         }
 
-        for (int var = nparams; var < nvars; var++) {
+        for (int var = nparams; var < nlocals; var++) {
 
             Item item = getItem(variables, var);
             item.counter++;
@@ -59,7 +61,7 @@ public class VariablesMap {
      */
     public void add(int key, String op) {
 
-        HashMap<Integer, Item> map = (key < nparams) ? parameters : variables;
+        Map<Integer, Item> map = (key < nparams) ? parameters : variables;
         Item item = getItem(map, key);
 
         // update item
@@ -83,7 +85,7 @@ public class VariablesMap {
      * @param key the index
      * @return the item
      */
-    public Item getItem(HashMap<Integer, Item> map, int key) {
+    public Item getItem(Map<Integer, Item> map, int key) {
 
         // get item
         Item item = map.get(key);
@@ -119,7 +121,7 @@ public class VariablesMap {
      * @param out the output
      * @param map the map
      */
-    public void writeMap(PrintWriter out, HashMap<Integer, Item> map) {
+    public void writeMap(PrintWriter out, Map<Integer, Item> map) {
 
         // set format
         String format = "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n";
@@ -127,7 +129,7 @@ public class VariablesMap {
         // print header
         out.printf(format,
                 "INDEX",
-                "COUNT",
+                "METHODS",
                 "LOAD",
                 "STORE",
                 "INC",

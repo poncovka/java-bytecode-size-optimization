@@ -46,6 +46,10 @@ public class Runner {
 
     public void setStatistics(Statistics stats) {
         this.stats = stats;
+
+        for (StateMachine fsm : loaded) {
+            stats.initPepphole(fsm.toString());
+        }
     }
 
     public void loadPatterns(Class<?> ...klasses) {
@@ -76,7 +80,9 @@ public class Runner {
 
             // for every pattern add a new state machine
             for (Pattern pattern : patterns) {
-                loaded.add(new StateMachine(name, action, pattern.value()));
+
+                StateMachine fsm = new StateMachine(name, action, pattern.value());
+                loaded.add(fsm);
             }
         }
     }
@@ -120,20 +126,23 @@ public class Runner {
     }
 
     public void findAndReplace(MethodNode mn) {
-        System.err.println(">>> Method:" + mn.name);
+        //System.err.println(">>> Method:" + mn.name);
         findAndReplace(mn.instructions);
     }
 
     public void findAndReplace(InsnList list) {
-        System.err.println(">>> Instructions:");
+        //System.err.println(">>> Instructions:");
         //InsnUtils.debug(list);
 
         // iterate over the list while there is is a change
         boolean change = true;
         while (change) {
 
-            // no change
+            // there is no change in the list
             change = false;
+
+            // do not restart the search
+            boolean restart = false;
 
             // initiate running
             init();
@@ -141,13 +150,10 @@ public class Runner {
             // iterate over instructions of the list
             // the list is iterated from the last to the first node!
             AbstractInsnNode node = list.getLast();
-            while (node != null) {
+            while (!restart && node != null) {
 
                 // get the state node
                 AbstractInsnNode next = node.getPrevious();
-
-                // the flag to restart the search
-                boolean restart = false;
 
                 // iterate over all loaded machines
                 for (StateMachine fsm : loaded) {
@@ -180,11 +186,6 @@ public class Runner {
 
                         i.remove();
                     }
-                }
-
-                // initialize the running machines
-                if (restart) {
-                    init();
                 }
 
                 // process the state node

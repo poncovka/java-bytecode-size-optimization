@@ -28,8 +28,15 @@ public class Statistics {
         sizeAfter += size;
     }
 
+    public void initPepphole(String key) {
+        if (!peephole.containsKey(key)) {
+            peephole.put(key, 0);
+        }
+    }
+
     public void addPepphole(String key) {
         peephole.put(key, peephole.getOrDefault(key, 0) + 1);
+        System.err.println(key);
     }
 
     public void write(PrintWriter out) {
@@ -58,7 +65,7 @@ public class Statistics {
         out.printf(format, "Size before:", Long.toString(sizeBefore));
         out.printf(format, "Size after:", Long.toString(sizeAfter));
         out.printf(format, "Diff in bytes:", Long.toString(sizeBefore - sizeAfter));
-        out.printf(format, "Diff in percent:", Utils.longDivToString((sizeBefore - sizeAfter) * 100L, sizeBefore) + "%"); // TODO long?
+        out.printf(format, "Diff in percent:", Utils.doubleDivToString((sizeBefore - sizeAfter) * 100L, sizeBefore) + "%");
 
     }
 }

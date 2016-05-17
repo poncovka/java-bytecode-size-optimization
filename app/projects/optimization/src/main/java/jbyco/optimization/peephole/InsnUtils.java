@@ -2,6 +2,7 @@ package jbyco.optimization.peephole;
 
 import jbyco.optimization.peephole.Symbols;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.Printer;
 import org.objectweb.asm.util.Textifier;
@@ -68,6 +69,14 @@ public class InsnUtils {
         } else {
             return ((Double) ((LdcInsnNode) i).cst).doubleValue();
         }
+    }
+
+    public static boolean compareStrings(AbstractInsnNode i1, AbstractInsnNode i2) {
+        return ((String)((LdcInsnNode)i1).cst).equals(((String)((LdcInsnNode)i2).cst));
+    }
+
+    public static boolean compareTypes(AbstractInsnNode i1, AbstractInsnNode i2) {
+        return ((Type)((LdcInsnNode)i1).cst).equals((Type)((LdcInsnNode)i2).cst);
     }
 
     public static boolean compareInt(AbstractInsnNode i1, AbstractInsnNode i2) {
@@ -421,6 +430,12 @@ public class InsnUtils {
         else if (Symbols.FLOAD.match(i1) && Symbols.FLOAD.match(i2)) {
             return compareVariables(i1, i2);
         }
+        else if (Symbols.STRING.match(i1) && Symbols.STRING.match(i2)) {
+            return compareStrings(i1, i2);
+        }
+        else if (Symbols.TYPE.match(i1) && Symbols.TYPE.match(i2)) {
+            return compareTypes(i1, i2);
+        }
         else {
             return false;
         }
@@ -453,12 +468,32 @@ public class InsnUtils {
                 &&  invoke.desc.equals("()V");
     }
 
+    public static boolean isStringBuilderInitString(AbstractInsnNode i) {
+        MethodInsnNode invoke = (MethodInsnNode)i;
+
+        return      invoke.owner.equals("java/lang/StringBuilder")
+                &&  invoke.name.equals("<init>")
+                &&  invoke.desc.equals("(Ljava/lang/String;)V");
+    }
+
     public static boolean isStringAppendMethod(AbstractInsnNode i) {
         MethodInsnNode invoke = (MethodInsnNode)i;
 
         return      invoke.owner.equals("java/lang/StringBuilder")
                 &&  invoke.name.equals("append")
                 &&  invoke.desc.equals("(Ljava/lang/String;)Ljava/lang/StringBuilder;");
+    }
+
+    public static MethodInsnNode getStringBuilderInit() {
+
+        return new MethodInsnNode(
+                Opcodes.INVOKESPECIAL,
+                "java/lang/StringBuilder",
+                "<init>",
+                "(Ljava/lang/String;)V",
+                false
+        );
+
     }
 
     public static void debug(AbstractInsnNode[] array) {

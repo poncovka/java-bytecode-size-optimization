@@ -1,6 +1,7 @@
 package jbyco.analysis;
 
 import jbyco.analysis.content.BytecodePrinter;
+import jbyco.analysis.maximums.MaximumsAnalyzer;
 import jbyco.analysis.patterns.PatternsAnalyzer;
 import jbyco.analysis.size.SizeAnalyzer;
 import jbyco.analysis.statistics.StatisticsCollector;
@@ -47,6 +48,9 @@ public class Application {
                 case STATISTICS:
                     StatisticsCollector.main(arguments);
                     break;
+                case ANALYZE_MAXS:
+                    MaximumsAnalyzer.main(arguments);
+                    break;
                 case ANALYZE_VARIABLES:
                     VariablesAnalyzer.main(arguments);
                     break;
@@ -78,13 +82,19 @@ public class Application {
         /**
          * The option to analyze variables.
          */
+        ANALYZE_MAXS("Print frequencies of max_stack and max_locals values.",
+                "--maximums"),
+
+        /**
+         * The option to analyze variables.
+         */
         ANALYZE_VARIABLES("Print usage of local variables and parameters.",
                 "--variables"),
 
         /**
          * The option to analyze patterns.
          */
-        ANALYZE_PATTERNS("Print frequent instruction sequencies.",
+        ANALYZE_PATTERNS("Print frequent instruction sequences.",
                 "--patterns"),
 
         /**
