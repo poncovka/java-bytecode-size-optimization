@@ -1,16 +1,12 @@
 package jbyco.optimization.peephole;
 
+import jbyco.lib.Utils;
 import jbyco.optimization.Statistics;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -31,95 +27,43 @@ import java.util.*;
  */
 public class PeepholeRunner {
 
-    Collection<StateMachine> loaded;
+    Collection<StateMachine> loaded = new ArrayList<>();
     Collection<StateMachine> running;
     Statistics stats;
 
     public PeepholeRunner() {
-        loaded = new LinkedList<>();
         init();
+    }
+
+    public PeepholeRunner(Statistics stats) {
+        this();
+        this.stats = stats;
     }
 
     public void init() {
         running = new LinkedList<>();
     }
 
-    public void setStatistics(Statistics stats) {
-        this.stats = stats;
-
-        for (StateMachine fsm : loaded) {
-            stats.initPepphole(fsm.toString());
+    public void loadActions(Class<?> ...libraries) {
+        for (PeepholeAction action :  Utils.loadInstancesFromLibraries(PeepholeAction.class, libraries)) {
+            loadAction(action);
         }
     }
 
-    public void loadPatterns(Class<?> ...klasses) {
-
-        for (Class<?> klass : klasses) {
-            loadPatterns(klass);
+    public void loadActions(PeepholeAction ...actions) {
+        for (PeepholeAction action : actions) {
+            loadAction(action);
         }
     }
 
-    public void loadPatterns(Class<?> klass) {
-
-        // search methods
-        for (Method method : klass.getMethods()) {
-            loadPatterns(method);
+    public void loadAction(PeepholeAction action) {
+        for(Pattern pattern : action.getPatterns()) {
+            loaded.add(new StateMachine(action, pattern.value()));
         }
-    }
-
-    public void loadPatterns(Method method) {
-
-        // search patterns
-        Pattern[] patterns = method.getAnnotationsByType(Pattern.class);
-
-        if (patterns.length > 0) {
-
-            // get an action and its name
-            PeepholeAction action = loadAction(method);
-            String name = getActionName(method);
-
-            // for every pattern add a new state machine
-            for (Pattern pattern : patterns) {
-
-                StateMachine fsm = new StateMachine(name, action, pattern.value());
-                loaded.add(fsm);
-            }
-        }
-    }
-
-    public PeepholeAction loadAction(Method method) {
-
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-        MethodHandle handle = null;
-        PeepholeAction action = null;
-
-        try {
-
-            handle = lookup.unreflect(method);
-            action = (PeepholeAction) LambdaMetafactory.metafactory(
-                    lookup,
-                    "replace",
-                    MethodType.methodType(PeepholeAction.class),
-                    handle.type(),
-                    handle,
-                    handle.type()
-            ).getTarget().invokeExact();
-
-        } catch (Throwable e) {
-            throw new Error(e);
-        }
-
-        return action;
-    }
-
-    public String getActionName(Method method) {
-        return    method.getDeclaringClass().getSimpleName()
-                + "."
-                + method.getName();
     }
 
     public void findAndReplace(ClassNode cn) {
-        System.err.println(">>> Class:" + cn.name);
+        //System.err.println(">>> Class:" + cn.name);
         for (Object mn : cn.methods) {
             findAndReplace(((MethodNode)mn));
         }
@@ -201,17 +145,17 @@ public class PeepholeRunner {
 
         // record statistics
         if (result && stats != null) {
-            stats.addPepphole(fsm.toString());
+            stats.addOptimization(fsm.toString());
         }
 
 
         if (result) {
-            System.err.println(">>> Action: " + fsm);
-            System.err.println(">>> Matched:");
-            InsnUtils.debug(fsm.getMatchedInput());
+            //System.err.println(">>> Action: " + fsm);
+            //System.err.println(">>> Matched:");
+            //InsnUtils.debug(fsm.getMatchedInput());
             //System.err.println(">>> Result:");
             //InsnUtils.debug(list);
-            System.err.println();
+            //System.err.println();
         }
 
 

@@ -1,142 +1,70 @@
 package jbyco.optimization.jump;
 
 import jbyco.optimization.Statistics;
-import jbyco.optimization.reductions.JumpReductions;
-import jbyco.optimization.transformation.MethodTransformer;
-import org.objectweb.asm.tree.FrameNode;
+import jbyco.optimization.common.ClassTransformer;
+import jbyco.optimization.common.MethodTransformer;
+import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
- * Created by vendy on 17.5.16.
+ * Created by vendy on 19.5.16.
  */
-public class JumpTransformer extends MethodTransformer {
+public class JumpTransformer extends ClassTransformer {
 
-    JumpCollector collector = new JumpCollector();
     Statistics stats;
+    JumpCollector collector;
+    MethodTransformer mt;
 
-    LabelAction[] labelActions;
-    FrameAction[] frameActions;
-
-    public void setStatistics(Statistics stats) {
+    public JumpTransformer(MethodTransformer mt, JumpCollector collector, Statistics stats) {
+        this.mt = mt;
+        this.collector = collector;
         this.stats = stats;
     }
 
-    public void loadLabelActions(LabelAction ...actions) {
-        this.labelActions = actions;
-    }
-
-    public void loadFrameActions(FrameAction ...actions) {
-        this.frameActions = actions;
+    public JumpTransformer(ClassTransformer ct, MethodTransformer mt, JumpCollector collector, Statistics stats) {
+        super(ct);
+        this.mt = mt;
+        this.collector = collector;
+        this.stats = stats;
     }
 
     @Override
-    public void transform(MethodNode mn) {
+    public boolean transform(ClassNode cn) {
+        // no change in the class
+        boolean classChange = false;
 
-        InsnList list = mn.instructions;
+        // process methods
+        for (MethodNode mn : (List<MethodNode>)cn.methods) {
 
-        loadLabelActions(
-                JumpReductions::joinLabels,
-                JumpReductions::removeDoubleJumps,
-                //JumpReductions::removeUselessLabel,
-                JumpReductions::replaceGotoWithReturn
-        );
+            // get instruction list
+            InsnList list = mn.instructions;
 
-        loadFrameActions(
-                JumpReductions::removeUselessFrame
-        );
+            // do while there are changes in the method
+            boolean change = true;
+            while(change) {
 
-        // every optimization can compromise the validity of info
-        //replaceLookupswitch(list, frame, labels);
-        //replaceTableswitch(list, frame, labels);
+                // no change in the method
+                change = false;
 
-        boolean change = true;
-        while(change) {
+                // collect data
+                collector.collect(mn);
 
-            // no change
-            change = false;
-
-            // collect data
-            collector.collect(mn);
-
-            // transform labels
-            if (transformLabels(list, labelActions)) {
-                change = true;
-                continue;
-            }
-            else if (transformFrames(list, frameActions)) {
-                change = true;
-                continue;
+                // transform method with chain of transformers
+                if (mt.transform(mn)) {
+                    classChange = true;
+                    change = true;
+                    continue;
+                }
             }
         }
 
-        super.transform(mn);
+        // call next class transformer
+        boolean nextClassChange = super.transform(cn);
+        return classChange || nextClassChange;
     }
-
-    boolean transformLabels(InsnList list, LabelAction[] actions) {
-
-        boolean change = false;
-        for (LabelNodeInfo info : collector.labels.values()) {
-
-            for (LabelAction action : actions) {
-
-                // do action
-                change = action.replace(list, info.label, info);
-
-                // update statistics
-                if (change && stats != null) {
-                    stats.addPepphole(action.toString());
-                }
-
-                // stop
-                if (change) {
-                    break;
-                }
-            }
-
-            // stop
-            if (change) {
-                break;
-            }
-        }
-
-        return change;
-    }
-
-    boolean transformFrames(InsnList list, FrameAction[] actions) {
-
-        boolean change = false;
-
-        Map<FrameNode, FrameNodeInfo> frames = collector.frames;
-        Map<LabelNode, LabelNodeInfo> labels = collector.labels;
-
-        for (FrameNodeInfo info : frames.values()) {
-
-            for (FrameAction action : actions) {
-                if (action.replace(list, info.frame, info, labels)) {
-
-                    // update statistics
-                    if (change && stats != null) {
-                        stats.addPepphole(action.toString());
-                    }
-
-                    // stop
-                    if (change) {
-                        break;
-                    }
-                }
-            }
-
-            // stop
-            if (change) {
-                break;
-            }
-        }
-
-        return change;
-    }
-
 }

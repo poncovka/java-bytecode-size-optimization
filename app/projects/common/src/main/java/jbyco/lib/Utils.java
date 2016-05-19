@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Locale;
 
 /**
@@ -135,5 +137,39 @@ public class Utils {
 
     public static boolean isMathInteger(double x) {
         return (x % 1) == 0;
+    }
+
+    public static Collection<Class<?>> getClassesFromLibrary(Class<?> type, Class<?> library) {
+
+        Collection<Class<?>> result =  new ArrayList<>();
+
+        for (Class<?> klass : library.getClasses()) {
+            if (type.isAssignableFrom(klass)) {
+                result.add(klass);
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> T getClassInstance(Class<?> klass) {
+        try {
+            return (T) klass.newInstance();
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public static <T> Collection<T> loadInstancesFromLibraries(Class<T> type, Class<?> ...libraries) {
+
+        Collection<T> result =  new ArrayList<>();
+
+        for (Class<?> library : libraries) {
+            for (Class<?> klass : getClassesFromLibrary(type,library)) {
+                result.add(getClassInstance(klass));
+            }
+        }
+
+        return result;
     }
 }

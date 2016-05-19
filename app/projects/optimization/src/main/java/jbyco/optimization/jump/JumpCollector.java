@@ -1,6 +1,7 @@
 package jbyco.optimization.jump;
 
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.CodeSizeEvaluator;
 import org.objectweb.asm.tree.*;
 
 import java.util.*;
@@ -12,6 +13,7 @@ public class JumpCollector {
 
     public Map<LabelNode, LabelNodeInfo> labels;
     public Map<FrameNode, FrameNodeInfo> frames;
+    public Map<AbstractInsnNode, Integer> addresses;
     public Collection<LookupSwitchInsnNode> lookupSwitches;
     public Collection<TableSwitchInsnNode> tableSwitches;
 
@@ -22,11 +24,12 @@ public class JumpCollector {
     public void init() {
         labels = new HashMap<>();
         frames = new HashMap<>();
+        addresses = new HashMap<>();
         lookupSwitches = new ArrayList<>();
         tableSwitches = new ArrayList<>();
     }
 
-    LabelNodeInfo getInfo(LabelNode node) {
+    LabelNodeInfo getLabelInfo(LabelNode node) {
 
         LabelNodeInfo info = labels.get(node);
 
@@ -38,7 +41,7 @@ public class JumpCollector {
         return info;
     }
 
-    FrameNodeInfo getInfo(FrameNode node) {
+    FrameNodeInfo getFrameInfo(FrameNode node) {
 
         FrameNodeInfo info = frames.get(node);
 
@@ -50,20 +53,36 @@ public class JumpCollector {
         return info;
     }
 
+    void setAddress(AbstractInsnNode node, int address) {
+        addresses.put(node, address);
+    }
+
+    void addLookupSwitch(LookupSwitchInsnNode node) {
+        lookupSwitches.add(node);
+    }
+
+    void addTableSwitch(TableSwitchInsnNode node) {
+        tableSwitches.add(node);
+    }
 
     public void collect(MethodNode method) {
 
         // init
         init();
 
+        int address = 0;
         LabelNodeInfo labelInfo = null;
         FrameNodeInfo frameInfo = null;
 
         // process instructions
         InsnList list = method.instructions;
         AbstractInsnNode node = list.getFirst();
+        CodeSizeEvaluator evaluator = new CodeSizeEvaluator(null);
 
         while(node != null) {
+
+            // set the address
+            setAddress(node, address);
 
             // update current info
             labelInfo = updateLabelInfo(labelInfo, node);
@@ -74,6 +93,10 @@ public class JumpCollector {
 
             //process frames
             processFrame(node);
+
+            // update address
+            node.accept(evaluator);
+            address = evaluator.getMaxSize();
 
             // next
             node = node.getNext();
@@ -115,7 +138,7 @@ public class JumpCollector {
 
         // set new info
         if (type == AbstractInsnNode.LABEL) {
-            info = getInfo((LabelNode)node);
+            info = getLabelInfo((LabelNode)node);
         }
 
         return info;
@@ -128,7 +151,7 @@ public class JumpCollector {
 
             // add info
             FrameNode newFrame = (FrameNode)node;
-            FrameNodeInfo newFrameInfo = getInfo(newFrame);
+            FrameNodeInfo newFrameInfo = getFrameInfo(newFrame);
 
             // add label if it labels this frame
             if (labelInfo != null && !labelInfo.isCompletedLabeling()) {
@@ -157,7 +180,7 @@ public class JumpCollector {
 
         // add a jump instruction as a source of jump
         if (type == AbstractInsnNode.JUMP_INSN) {
-            getInfo(((JumpInsnNode)node).label).addJump(node);
+            getLabelInfo(((JumpInsnNode)node).label).addJump(node);
         }
 
         // add a lookupswitch instruction as a source of jump
@@ -165,14 +188,14 @@ public class JumpCollector {
             LookupSwitchInsnNode lookup = (LookupSwitchInsnNode) node;
 
             // add source to the default label frame
-            getInfo(lookup.dflt).addJump(lookup);
+            getLabelInfo(lookup.dflt).addJump(lookup);
 
             // add source to the other label nodes
             for (Object label : lookup.labels) {
-                getInfo((LabelNode)label).addJump(lookup);
+                getLabelInfo((LabelNode)label).addJump(lookup);
             }
 
-            lookupSwitches.add(lookup);
+            addLookupSwitch(lookup);
         }
 
         // add a tableswitch instruction as a source of jump
@@ -180,31 +203,31 @@ public class JumpCollector {
             TableSwitchInsnNode table = (TableSwitchInsnNode) node;
 
             // add source to the default label frame
-            getInfo(table.dflt).addJump(table);
+            getLabelInfo(table.dflt).addJump(table);
 
             // add source to the other label nodes
             for (Object label : table.labels) {
-                getInfo((LabelNode)label).addJump(table);
+                getLabelInfo((LabelNode)label).addJump(table);
             }
 
-            tableSwitches.add((TableSwitchInsnNode) node);
+            addTableSwitch((TableSwitchInsnNode) node);
         }
     }
 
     void processTryCatchBlock(TryCatchBlockNode block) {
-        getInfo(block.start).addTryCatchBlock(block);
-        getInfo(block.end).addTryCatchBlock(block);
-        getInfo(block.handler).addTryCatchBlock(block);
+        getLabelInfo(block.start).addTryCatchBlock(block);
+        getLabelInfo(block.end).addTryCatchBlock(block);
+        getLabelInfo(block.handler).addTryCatchBlock(block);
     }
 
     void processAnnotation(LocalVariableAnnotationNode a) {
 
         for (LabelNode node : (List<LabelNode>)a.start) {
-            getInfo(node).addAnnotation(a);
+            getLabelInfo(node).addAnnotation(a);
         }
 
         for (LabelNode node : (List<LabelNode>)a.end) {
-            getInfo(node).addAnnotation(a);
+            getLabelInfo(node).addAnnotation(a);
         }
     }
 
@@ -221,12 +244,11 @@ public class JumpCollector {
                 if (object instanceof LabelNode) {
 
                     LabelNode label = (LabelNode) object;
-                    getInfo(label).addFrame(frame);
-                    getInfo(frame).addLabel(label);
+                    getLabelInfo(label).addFrame(frame);
+                    getFrameInfo(frame).addLabel(label);
                 }
 
             }
         }
     }
-
 }

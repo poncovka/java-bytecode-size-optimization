@@ -1,41 +1,93 @@
 package jbyco.optimization;
 
 import jbyco.optimization.expansion.DuplicationExpansion;
-import jbyco.optimization.jump.JumpTransformer;
-import jbyco.optimization.reductions.ConstantNumbersSubstitution;
-import jbyco.optimization.reductions.DuplicationReduction;
-import jbyco.optimization.reductions.InfoAttributesRemoval;
+import jbyco.optimization.jump.*;
+import jbyco.optimization.reductions.*;
 import jbyco.optimization.peephole.*;
-import jbyco.optimization.reductions.JumpReductions;
 import jbyco.optimization.simplifications.*;
-import jbyco.optimization.transformation.ClassTransformer;
-import jbyco.optimization.transformation.MethodTransformer;
+import jbyco.optimization.common.ClassTransformer;
 import org.objectweb.asm.*;
-import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Created by vendy on 3.5.16.
  */
 public class Optimizer {
 
-    PeepholeRunner phase1runner;
-    PeepholeRunner phase2runner;
-    PeepholeRunner phase3runner;
     Statistics stats;
+    PeepholeRunner expander;
+    PeepholeRunner patternSimplifier;
+    ClassTransformer jumpSimplifier;
+    PeepholeRunner reducer;
 
-    public Optimizer() {
-        this.phase1runner = getPhase1Runner();
-        this.phase2runner = getPhase2Runner();
-        this.phase3runner = getPhase3Runner();
+    public Optimizer(Statistics stats) {
+
+        this.stats = stats;
+        initPhase1();
+        initPhase2();
+        initPhase3();
     }
 
-    public void setStatistics(Statistics stats) {
-        this.stats = stats;
+    public void initPhase1() {
+        expander = new PeepholeRunner(stats);
+        expander.loadActions(
+                DuplicationExpansion.class
+        );
+    }
+
+    public void initPhase2() {
+
+        // from specific to general
+        // duplication simplifications are last
+        patternSimplifier = new PeepholeRunner(stats);
+        patternSimplifier.loadActions(
+                ObjectSimplifications.class,
+                StringAppendSimplifications.class,
+                ConversionsSimplifications.class,
+                AlgebraicSimplifications.class,
+                JumpSimplifications.class,
+                StackSimplifications.class
+        );
+
+        // jump transformations
+        JumpCollector collector = new JumpCollector();
+        LabelTransformer lt = new LabelTransformer(collector, stats);
+        FrameTransformer ft = new FrameTransformer(lt, collector, stats);
+        LookupSwitchTransformer lst = new LookupSwitchTransformer(ft, collector, stats);
+        TableSwitchTransformer tst = new TableSwitchTransformer(lst, collector, stats);
+
+        lt.loadActions(
+                //JumpReductions.class
+                new JumpReductions.LabelsUnion(),
+                new JumpReductions.UselessLabelRemoval(),
+                new JumpReductions.JumpWithReturnReplacement(),
+                new JumpReductions.DoubleJumpRemoval()
+        );
+
+        ft.loadActions(
+                JumpReductions.class
+        );
+
+        lst.loadActions(
+                JumpReductions.class
+        );
+
+        tst.loadActions(
+                JumpReductions.class
+        );
+
+        jumpSimplifier = new JumpTransformer(lst, collector, stats);
+    }
+
+    public void initPhase3() {
+        reducer = new PeepholeRunner(stats);
+        reducer.loadActions(
+                DuplicationReduction.class
+        );
+
     }
 
     public byte[] optimizeClassFile(byte[] input) throws IOException {
@@ -48,7 +100,7 @@ public class Optimizer {
         // create class frame
         ClassNode result1 = phase1(input);
 
-        // peephole
+        // actions
         ClassNode result2 = phase2(result1);
 
         // create byte array
@@ -70,82 +122,37 @@ public class Optimizer {
         // create the chain of visitors
         ClassNode node = new ClassNode(Opcodes.ASM5);
         ClassVisitor cv = node;
-        cv = new InfoAttributesRemoval(cv);
+
+        // remove attributes
+        cv = new InfoAttributesRemoval(cv, stats);
 
         // process input
         ClassReader reader = new ClassReader(input);
-        reader.accept(cv, ClassReader.SKIP_DEBUG | ClassReader.EXPAND_FRAMES /*|ClassReader.SKIP_FRAMES*/);
+        reader.accept(cv, ClassReader.SKIP_DEBUG | ClassReader.EXPAND_FRAMES);
 
-        // apply peephole optimizations runner
-        phase1runner.setStatistics(stats);
-        phase1runner.findAndReplace(node);
+        // apply expansions
+        expander.findAndReplace(node);
 
         // return the frame
         return node;
     }
 
-    public PeepholeRunner getPhase1Runner() {
-        PeepholeRunner runner = new PeepholeRunner();
-        runner.loadPatterns(
-                DuplicationExpansion.class
-        );
-        return runner;
-    }
-
-    public PeepholeRunner getPhase2Runner() {
-        // from specific to general
-        // duplication simplifications are last
-        PeepholeRunner runner = new PeepholeRunner();
-        runner.loadPatterns(
-                ObjectSimplifications.class,
-                StringAppendSimplifications.class,
-                ConversionsSimplifications.class,
-                AlgebraicSimplifications.class,
-                JumpSimplifications.class,
-                StackSimplifications.class
-        );
-        return runner;
-    }
-
     public ClassNode phase2(ClassNode input) {
 
-        // apply peephole optimizations
-        phase2runner.setStatistics(stats);
-        phase2runner.findAndReplace(input);
+        // apply actions optimizations
+        patternSimplifier.findAndReplace(input);
 
         // apply jump optimizations
-        ClassTransformer transformer = new ClassTransformer() {
-            @Override
-            public void transform(ClassNode cn) {
-
-                JumpTransformer mt = new JumpTransformer();
-                mt.setStatistics(stats);
-
-                for (MethodNode mn : (List<MethodNode>)cn.methods) {
-                    mt.transform(mn);
-                }
-            }
-        };
-
-        transformer.transform(input);
+        jumpSimplifier.transform(input);
 
         // return the frame
         return input;
     }
 
-    public PeepholeRunner getPhase3Runner() {
-        PeepholeRunner runner = new PeepholeRunner();
-        runner.loadPatterns(
-                DuplicationReduction.class
-        );
-        return runner;
-    }
-
     public byte[] phase3(ClassNode input) {
 
-        // apply peephole optimizations
-        phase3runner.setStatistics(stats);
-        phase3runner.findAndReplace(input);
+        // reduce the code
+        reducer.findAndReplace(input);
 
         // create the chain of visitors
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
@@ -155,8 +162,8 @@ public class Optimizer {
             @Override
             public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
                 MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-                mv = new ConstantNumbersSubstitution(mv);
-                mv = new LocalVariablesSorter(access, desc, mv);
+                mv = new ConstantNumbersSubstitution(mv, stats);
+                mv = new LocalVariablesRealocation(access, desc, mv, stats);
                 return mv;
             }
 
@@ -179,5 +186,4 @@ public class Optimizer {
         ClassReader reader = new ClassReader(input);
         reader.accept(cv, 0);
     }
-
 }

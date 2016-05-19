@@ -1,131 +1,205 @@
 package jbyco.optimization.reductions;
 
-import jbyco.optimization.Statistics;
 import jbyco.optimization.jump.*;
-import jbyco.optimization.transformation.MethodTransformer;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
-import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
 /**
- * Created by vendy on 12.5.16.
+ * A library of frame and label actions.
  */
-public class JumpReductions extends MethodTransformer {
+public class JumpReductions {
 
-    // TODO SWITCH - implement class for switch optimizations, the absolute label values are neccessary, POP!!!
-    // TODO LABEL x, GOTO y - implement class for jump optimizations
-    // TODO GOTO x, ...., LABEL x, iRETURN
+    public static class TableSwitchReplacement implements TableSwitchAction {
 
-    public static boolean removeUselessFrame(InsnList list, FrameNode frame, FrameNodeInfo info, Map<LabelNode, LabelNodeInfo> labels) {
+        @Override
+        public boolean replace(InsnList list, TableSwitchInsnNode node, Map<AbstractInsnNode, Integer> addresses) {
 
-        boolean change = false;
+            int keys = node.labels.size();
+            boolean loadVar = node.getPrevious().getOpcode() == Opcodes.ILOAD;
 
-        // frame can be removed
-        if (info.label == null && info.labels.isEmpty()) {
-            list.remove(frame);
-            change = true;
+            long addr = addresses.get(node);
+            long maxLength = Math.abs(addr - addresses.get(node.dflt));
+
+            for (LabelNode label : (List<LabelNode>)node.labels) {
+                maxLength = Math.max(maxLength, Math.abs(addr - addresses.get(label)));
+            }
+
+            if (maxLength <= Short.MAX_VALUE) {
+                System.err.println("Table");
+            }
+
+            return false;
         }
-        // labels in the frame are only in this frame
-        else {
-            boolean inFrame = true;
-            for (LabelNode label : info.labels) {
+    }
 
-                if (!labels.get(label).isOnlyInFrame(frame)) {
-                    inFrame = false;
-                    break;
+    public static class LookupSwitchReplacement implements LookupSwitchAction {
+
+        @Override
+        public boolean replace(InsnList list, LookupSwitchInsnNode node, Map<AbstractInsnNode, Integer> addresses) {
+
+            int keys = node.labels.size();
+            boolean loadVar = node.getPrevious().getOpcode() == Opcodes.ILOAD;
+
+            long addr = addresses.get(node);
+            long maxLength = Math.abs(addr - addresses.get(node.dflt));
+
+            for (LabelNode label : (List<LabelNode>)node.labels) {
+                maxLength = Math.max(maxLength, Math.abs(addr - addresses.get(label)));
+            }
+
+            if (maxLength <= Short.MAX_VALUE) {
+                System.err.println("Lookup");
+            }
+
+            return false;
+        }
+    }
+
+
+    public static class UselessFrameRemoval implements FrameAction {
+
+        @Override
+        public boolean replace(InsnList list, FrameNodeInfo frameInfo, Map<LabelNode, LabelNodeInfo> labels) {
+
+            boolean change = false;
+
+            // frame can be removed
+            if (frameInfo.label == null && frameInfo.labels.isEmpty()) {
+                list.remove(frameInfo.frame);
+                change = true;
+            }
+            // labels in the frame are only in this frame
+            else {
+                boolean inFrame = true;
+                for (LabelNode label : frameInfo.labels) {
+
+                    if (!labels.get(label).isOnlyInFrame(frameInfo.frame)) {
+                        inFrame = false;
+                        break;
+                    }
+                }
+
+                if (inFrame) {
+                    list.remove(frameInfo.frame);
+                    change = true;
+                }
+            }
+            return change;
+        }
+    }
+
+
+    public static class UselessLabelRemoval implements LabelAction {
+
+        @Override
+        public boolean replace(InsnList list, LabelNodeInfo labelInfo, Map<AbstractInsnNode, Integer> addresses) {
+            if (!labelInfo.isUsefull()) {
+                list.remove(labelInfo.label);
+                //list.resetLabels();
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+
+    public static class LabelsUnion implements LabelAction {
+
+        @Override
+        public boolean replace(InsnList list, LabelNodeInfo labelInfo, Map<AbstractInsnNode, Integer> addresses) {
+            boolean change = false;
+
+            // label labels label
+            if (labelInfo.insn != null && labelInfo.insn.getType() == AbstractInsnNode.LABEL) {
+
+                // get target label
+                LabelNode target = ((LabelNode) labelInfo.insn);
+
+                // replace labels in jumps
+                for (AbstractInsnNode node : labelInfo.jumps) {
+                    change = replaceLabel(node, labelInfo.label, target);
+                }
+
+                for (TryCatchBlockNode block : labelInfo.tryCatchBlocks) {
+                    change = replaceLabel(block, labelInfo.label, target);
+                }
+
+                for (LocalVariableAnnotationNode node : labelInfo.annotations) {
+                    change = replaceLabel(node, labelInfo.label, target);
+                }
+
+                for (FrameNode frame : labelInfo.frames) {
+                    change = replaceLabel(frame, labelInfo.label, target);
+                }
+
+                if (change) {
+                    //list.remove(labelInfo.label);
+                    //list.resetLabels();
                 }
             }
 
-            if (inFrame) {
-                list.remove(frame);
-                change = true;
-            }
+            return change;
         }
-        return change;
     }
 
-    public static boolean removeUselessLabel(InsnList list, LabelNode label, LabelNodeInfo info) {
-        if (!info.isUsefull()) {
-            list.remove(label);
-            return true;
-        }
+    public static class JumpWithReturnReplacement implements LabelAction {
 
-        return false;
-    }
+        @Override
+        public boolean replace(InsnList list, LabelNodeInfo labelInfo, Map<AbstractInsnNode, Integer> addresses) {
 
-    public static boolean joinLabels(InsnList list, LabelNode label, LabelNodeInfo info) {
-        boolean change = false;
+            // has labeled instruction?
+            if (labelInfo.insn != null) {
 
-        // label labels label
-        if (info.insn != null && info.insn.getType() == AbstractInsnNode.LABEL) {
+                // is labeled instruction return?
+                int opcode = labelInfo.insn.getOpcode();
+                if (Opcodes.IRETURN <= opcode && opcode <= Opcodes.RETURN) {
 
-            // get target label
-            LabelNode target = ((LabelNode)info.insn);
+                    // find goto instruction that jumps to this label
+                    for (AbstractInsnNode node : labelInfo.jumps) {
 
-            // replace labels in jumps
-            for (AbstractInsnNode node : info.jumps) {
-                change = replaceLabel(node, label, target);
-            }
-
-            for (TryCatchBlockNode block : info.tryCatchBlocks) {
-                change = replaceLabel(block, label, target);
-            }
-
-            for (LocalVariableAnnotationNode node : info.annotations) {
-                change = replaceLabel(node, label, target);
-            }
-
-            for (FrameNode frame : info.frames) {
-                change = replaceLabel(frame, label, target);
-            }
-
-        }
-
-        return change;
-    }
-
-    public static boolean replaceGotoWithReturn(InsnList list, LabelNode label, LabelNodeInfo info) {
-
-        // has labeled instruction?
-        if (info.insn != null) {
-
-            // is labeled instruction return?
-            int opcode = info.insn.getOpcode();
-            if (Opcodes.IRETURN <= opcode && opcode <= Opcodes.RETURN) {
-
-                // find goto instruction that jumps to this label
-                for (AbstractInsnNode node : info.jumps) {
-
-                    // replace goto with return instruction
-                    if (node.getOpcode() == Opcodes.GOTO) {
-                        list.set(node, info.insn.clone(null));
-                        return true;
+                        // replace goto with return instruction
+                        if (node.getOpcode() == Opcodes.GOTO) {
+                            list.set(node, labelInfo.insn.clone(null));
+                            return true;
+                        }
                     }
                 }
             }
+            return false;
         }
-
-        return false;
     }
 
-    public static boolean removeDoubleJumps(InsnList list, LabelNode label, LabelNodeInfo info) {
-        boolean change = false;
+    public static class DoubleJumpRemoval implements LabelAction {
 
-        // is labeled instruction goto?
-        if (info.insn != null && info.insn.getOpcode() == Opcodes.GOTO) {
+        @Override
+        public boolean replace(InsnList list, LabelNodeInfo labelInfo, Map<AbstractInsnNode, Integer> addresses) {
+            boolean change = false;
 
-            // get target of this instruction
-            LabelNode target = ((JumpInsnNode)info.insn).label;
+            // is labeled instruction goto?
+            if (labelInfo.insn != null && labelInfo.insn.getOpcode() == Opcodes.GOTO) {
 
-            // replace labels in jumps
-            for (AbstractInsnNode node : info.jumps) {
-                change = replaceLabel(node, label, target);
+                // get target of this instruction
+                LabelNode target = ((JumpInsnNode) labelInfo.insn).label;
+
+                // replace labels in jumps
+                for (AbstractInsnNode node : labelInfo.jumps) {
+
+                    // calculate the length of the jump
+                    long length = 0;//addresses.get(target) - addresses.get(node);
+
+                    // replace the label in the jump
+                    if (Short.MIN_VALUE <= length && length <= Short.MAX_VALUE) {
+                        change = replaceLabel(node, labelInfo.label, target);
+                    }
+                }
             }
+            return change;
         }
-        return change;
     }
 
     private static boolean replaceLabel(FrameNode frame, LabelNode label, LabelNode target) {

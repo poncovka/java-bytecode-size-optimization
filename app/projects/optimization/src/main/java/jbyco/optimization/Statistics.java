@@ -10,14 +10,15 @@ import java.util.*;
  */
 public class Statistics {
 
-    Map<String, Integer> peephole;
     long sizeBefore;
     long sizeAfter;
 
+    Map<String, Integer> optimizations;
+
     public Statistics() {
-        this.peephole = new HashMap<>();
         int sizeBefore = 0;
         int sizeAfter = 0;
+        this.optimizations = new HashMap<>();
     }
 
     public void addSizeBefore(int size) {
@@ -28,27 +29,26 @@ public class Statistics {
         sizeAfter += size;
     }
 
-    public void initPepphole(String key) {
-        if (!peephole.containsKey(key)) {
-            peephole.put(key, 0);
+    public void initOptimization(String key) {
+        if (!optimizations.containsKey(key)) {
+            optimizations.put(key, 0);
         }
     }
 
-    public void addPepphole(String key) {
-        peephole.put(key, peephole.getOrDefault(key, 0) + 1);
-        System.err.println(key);
+    public void addOptimization(String key) {
+        optimizations.put(key, optimizations.getOrDefault(key, 0) + 1);
     }
 
     public void write(PrintWriter out) {
-        writePeepholes(out);
+        writeOptimizations(out);
         out.println();
         writeSizes(out);
     }
 
-    public void writePeepholes(PrintWriter out) {
+    public void writeOptimizations(PrintWriter out) {
 
-        // print peephole optimizations
-        Map<String, Integer> peephole = new TreeMap<>(this.peephole);
+        // print actions optimizations
+        Map<String, Integer> peephole = new TreeMap<>(this.optimizations);
         String format = "%-20s%-40s\n";
         out.printf(format, "COUNT", "METHOD");
 

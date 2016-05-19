@@ -11,17 +11,15 @@ import java.util.Arrays;
  */
 public class StateMachine {
 
-    String name;
     Symbols[] pattern;
     PeepholeAction action;
 
     int state;
     AbstractInsnNode[] matched;
 
-    public StateMachine(String name, PeepholeAction action, Symbols[] pattern) {
+    public StateMachine(PeepholeAction action, Symbols[] pattern) {
 
         // set the simplifications
-        this.name = name;
         this.pattern = pattern;
         this.action = action;
 
@@ -29,8 +27,6 @@ public class StateMachine {
         this.state = pattern.length - 1;
         this.matched = new AbstractInsnNode[pattern.length];
     }
-
-    public String getName() { return name; }
 
     public PeepholeAction getAction() {
         return action;
@@ -41,7 +37,7 @@ public class StateMachine {
     }
 
     public StateMachine copy() {
-        return new StateMachine(name, action, pattern);
+        return new StateMachine(action, pattern);
     }
 
     public boolean checkInput(AbstractInsnNode i) {
@@ -75,6 +71,6 @@ public class StateMachine {
 
     @Override
     public String toString() {
-        return getName() + Arrays.toString(pattern);
+        return action.getName() + Arrays.toString(pattern);
     }
 }

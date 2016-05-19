@@ -1,6 +1,7 @@
 package jbyco.optimization.reductions;
 
 import jbyco.lib.Utils;
+import jbyco.optimization.Statistics;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -9,8 +10,12 @@ import org.objectweb.asm.Opcodes;
  */
 public class ConstantNumbersSubstitution extends MethodVisitor {
 
-    public ConstantNumbersSubstitution(MethodVisitor visitor) {
+    public ConstantNumbersSubstitution(MethodVisitor visitor, Statistics stats) {
         super(Opcodes.ASM5, visitor);
+
+        if (stats != null) {
+            stats.addOptimization(this.getClass().getSimpleName());
+        }
     }
 
     public void visitOptimalInt(int operand) {

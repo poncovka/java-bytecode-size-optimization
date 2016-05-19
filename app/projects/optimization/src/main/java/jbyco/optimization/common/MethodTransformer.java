@@ -1,4 +1,4 @@
-package jbyco.optimization.transformation;
+package jbyco.optimization.common;
 
 import org.objectweb.asm.tree.MethodNode;
 
@@ -7,7 +7,7 @@ import org.objectweb.asm.tree.MethodNode;
  * The code is inspired by the document ASM 4.0 A Java bytecode engineering library.
 
  */
-public class MethodTransformer {
+public abstract class MethodTransformer {
 
     /** The next transformer in a chain. */
     protected MethodTransformer mt;
@@ -34,10 +34,12 @@ public class MethodTransformer {
      *
      * @param mn the method frame
      */
-    public void transform(MethodNode mn) {
+    public boolean transform(MethodNode mn) {
         if (mt != null) {
-            mt.transform(mn);
+            return mt.transform(mn);
         }
+
+        return false;
     }
 
 }

@@ -1,5 +1,6 @@
 package jbyco.optimization.reductions;
 
+import jbyco.optimization.Statistics;
 import org.objectweb.asm.*;
 
 /**
@@ -20,8 +21,12 @@ public class InfoAttributesRemoval extends ClassVisitor {
      *
      * @param cv the class visitor
      */
-    public InfoAttributesRemoval(ClassVisitor cv) {
+    public InfoAttributesRemoval(ClassVisitor cv, Statistics stats) {
         super(Opcodes.ASM5, cv);
+
+        if (stats != null) {
+            stats.addOptimization(this.getClass().getSimpleName());
+        }
     }
 
     /* (non-Javadoc)

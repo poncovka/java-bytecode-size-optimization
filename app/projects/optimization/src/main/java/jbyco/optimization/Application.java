@@ -60,12 +60,7 @@ public class Application {
         }
 
         // create file optimizer
-        Optimizer optimizer = new Optimizer();
-
-        // set statistics
-        if (statistics != null) {
-            optimizer.setStatistics(statistics);
-        }
+        Optimizer optimizer = new Optimizer(statistics);
 
         // create temporary directory
         Path workingDirectory = TemporaryFiles.createDirectory();

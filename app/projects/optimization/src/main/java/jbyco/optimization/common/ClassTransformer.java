@@ -1,4 +1,4 @@
-package jbyco.optimization.transformation;
+package jbyco.optimization.common;
 
 import org.objectweb.asm.tree.ClassNode;
 
@@ -7,7 +7,7 @@ import org.objectweb.asm.tree.ClassNode;
  * The code is inspired by the document ASM 4.0 A Java bytecode engineering library.
 
  */
-public class ClassTransformer {
+public abstract class ClassTransformer {
 
     /** The next transformer in a chain. */
     protected ClassTransformer ct;
@@ -34,10 +34,12 @@ public class ClassTransformer {
      *
      * @param cn the class frame
      */
-    public void transform(ClassNode cn) {
+    public boolean transform(ClassNode cn) {
         if (ct != null) {
-            ct.transform(cn);
+            return ct.transform(cn);
         }
+
+        return false;
     }
 
 }
