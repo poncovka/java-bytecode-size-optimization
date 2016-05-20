@@ -164,7 +164,7 @@ public class Optimizer {
     public byte[] phase3(ClassNode input) {
 
         // reduce the code
-        //reducer.findAndReplace(input);
+        reducer.findAndReplace(input);
 
         // create the chain of visitors
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);

@@ -171,13 +171,13 @@ public class DuplicationExpansion {
             Symbols.VALUE_TYPE2 /*x*/,
             Symbols.VALUE_TYPE1 /*y*/,
             Symbols.VALUE_TYPE1 /*z*/,
-            Symbols.DUP2_X2 }) /* => z;y;x;y;z */
+            Symbols.DUP2_X2 }) /* => y;z;x;y;z */
     public static class Dup2X2Form3Expansion implements PeepholeAction {
 
         @Override
         public boolean replace(InsnList list, AbstractInsnNode[] matched) {
-            list.insertBefore(matched[0], matched[2].clone(null));
             list.insertBefore(matched[0], matched[1].clone(null));
+            list.insertBefore(matched[0], matched[2].clone(null));
             list.remove(matched[3]);
             return true;
         }

@@ -169,6 +169,28 @@ public class InsnUtils {
         return Double.compare(x,y);
     }
 
+
+    public static AbstractInsnNode getIfNotInsn(int opcode, LabelNode label) {
+
+        if (Opcodes.IFEQ <= opcode && opcode <= Opcodes.IF_ACMPNE) {
+
+            // ne, ge, le
+            if (opcode % 2 == 0) {
+                opcode -= 1;
+            }
+            // eq, lt, gt
+            else {
+                opcode += 1;
+            }
+
+            return new JumpInsnNode(opcode, label);
+
+        }
+        else {
+            throw new IllegalArgumentException("Unexpected opcode: " + opcode);
+        }
+    }
+
     public static int applyIntOperation(AbstractInsnNode op, AbstractInsnNode i) {
 
         int x = getIntValue(i);
@@ -527,6 +549,4 @@ public class InsnUtils {
         printer.print(writer);
         writer.flush();
     }
-
-
 }

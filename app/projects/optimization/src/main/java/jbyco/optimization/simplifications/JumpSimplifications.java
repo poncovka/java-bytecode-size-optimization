@@ -314,6 +314,25 @@ public class JumpSimplifications {
         }
     }
 
+    // -------------------------------------------------------------------------------------------- simplify if
+
+    @Pattern({Symbols.IF_CMP/*l*/, Symbols.GOTO/*x*/, Symbols.LABEL /*l*/}) /* => IF_CMPnot l; l */
+    @Pattern({Symbols.IF/*l*/, Symbols.GOTO/*x*/, Symbols.LABEL /*l*/})     /* => IFnot l; l */
+    public static class IfSimplification implements PeepholeAction {
+
+        @Override
+        public boolean replace(InsnList list, AbstractInsnNode[] matched) {
+            JumpInsnNode node = (JumpInsnNode) matched[0];
+            if (node.label.equals(matched[2])) {
+
+                list.set(node, InsnUtils.getIfNotInsn(node.getOpcode(), node.label));
+                list.remove(matched[1]);
+                return true;
+            }
+            return false;
+        }
+    }
+
     // -------------------------------------------------------------------------------------------- compare null
 
     @Pattern({Symbols.ACONST_NULL, Symbols.IFNULL/*l*/}) /* => GOTO l; */

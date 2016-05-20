@@ -138,14 +138,7 @@ public class JumpReductions {
 
                 // replace labels in jumps
                 for (AbstractInsnNode node : labelInfo.jumps) {
-
-                    // calculate the length of the jump
-                    long length = 0;//addresses.get(target) - addresses.get(node);
-
-                    // replace the label in the jump
-                    if (Short.MIN_VALUE <= length && length <= Short.MAX_VALUE) {
-                        change |= replaceLabel(node, labelInfo.label, target);
-                    }
+                    change |= replaceLabel(node, labelInfo.label, target);
                 }
             }
             return change;
