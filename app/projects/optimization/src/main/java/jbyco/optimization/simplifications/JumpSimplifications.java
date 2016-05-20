@@ -1,14 +1,12 @@
 package jbyco.optimization.simplifications;
 
-import jbyco.optimization.peephole.InsnUtils;
+import jbyco.optimization.common.InsnUtils;
 import jbyco.optimization.peephole.Pattern;
 import jbyco.optimization.peephole.PeepholeAction;
 import jbyco.optimization.peephole.Symbols;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.TreeMap;
 

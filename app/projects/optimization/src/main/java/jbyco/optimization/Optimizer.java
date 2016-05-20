@@ -68,11 +68,11 @@ public class Optimizer {
         );
 
         t3.loadActions(
-                JumpReductions.class
+                SwitchSubstitution.class
         );
 
         t4.loadActions(
-                JumpReductions.class
+                SwitchSubstitution.class
         );
 
         jumpSimplifier = new JumpTransformer(t4, collector, stats);

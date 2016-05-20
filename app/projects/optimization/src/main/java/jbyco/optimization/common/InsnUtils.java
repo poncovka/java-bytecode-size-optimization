@@ -1,4 +1,4 @@
-package jbyco.optimization.peephole;
+package jbyco.optimization.common;
 
 import jbyco.optimization.peephole.Symbols;
 import org.objectweb.asm.Opcodes;
@@ -15,7 +15,8 @@ import java.io.PrintWriter;
  */
 public class InsnUtils {
 
-    public static AbstractInsnNode IZERO = new InsnNode(Opcodes.ICONST_0);
+    public static final int MAX_CODE_SIZE = 65535;
+    public static final AbstractInsnNode IZERO = new InsnNode(Opcodes.ICONST_0);
 
     public static LabelNode getLabelNode(AbstractInsnNode i) {
         return ((JumpInsnNode)i).label;

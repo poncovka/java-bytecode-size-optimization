@@ -14,68 +14,6 @@ import java.util.TreeMap;
  */
 public class JumpReductions {
 
-    public static class TableSwitchReplacement implements TableSwitchAction {
-
-        @Override
-        public boolean replace(InsnList list, TableSwitchInsnNode node, Map<AbstractInsnNode, Integer> addresses) {
-
-            int keys = node.labels.size();
-            AbstractInsnNode prev = node.getPrevious();
-
-            long addr = addresses.get(node);
-            long maxLength = Math.abs(addr - addresses.get(node.dflt));
-
-            for (LabelNode label : (List<LabelNode>)node.labels) {
-                maxLength = Math.max(maxLength, Math.abs(addr - addresses.get(label)));
-            }
-
-            if (maxLength <= Short.MAX_VALUE) {
-
-                // create table of values and labels
-                Map<Integer, LabelNode> table = new TreeMap<>();
-                //for (int )
-
-                // previous instruction is ILOAD
-                if (prev.getOpcode() == Opcodes.ILOAD) {
-
-
-
-
-
-                }
-
-            }
-
-            return false;
-        }
-    }
-
-    //public static void generateIfSwitch(InsnList list, )
-
-    public static class LookupSwitchReplacement implements LookupSwitchAction {
-
-        @Override
-        public boolean replace(InsnList list, LookupSwitchInsnNode node, Map<AbstractInsnNode, Integer> addresses) {
-
-            int keys = node.labels.size();
-            boolean loadVar = node.getPrevious().getOpcode() == Opcodes.ILOAD;
-
-            long addr = addresses.get(node);
-            long maxLength = Math.abs(addr - addresses.get(node.dflt));
-
-            for (LabelNode label : (List<LabelNode>)node.labels) {
-                maxLength = Math.max(maxLength, Math.abs(addr - addresses.get(label)));
-            }
-
-            if (maxLength <= Short.MAX_VALUE) {
-                //System.err.println("Lookup");
-            }
-
-            return false;
-        }
-    }
-
-
     public static class UselessFrameRemoval implements FrameAction {
 
         @Override

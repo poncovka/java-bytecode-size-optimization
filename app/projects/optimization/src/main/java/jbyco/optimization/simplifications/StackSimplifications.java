@@ -1,6 +1,6 @@
 package jbyco.optimization.simplifications;
 
-import jbyco.optimization.peephole.InsnUtils;
+import jbyco.optimization.common.InsnUtils;
 import jbyco.optimization.peephole.Pattern;
 import jbyco.optimization.peephole.PeepholeAction;
 import jbyco.optimization.peephole.Symbols;

@@ -2,6 +2,7 @@ package jbyco.optimization.peephole;
 
 import jbyco.lib.Utils;
 import jbyco.optimization.Statistics;
+import jbyco.optimization.common.InsnUtils;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
