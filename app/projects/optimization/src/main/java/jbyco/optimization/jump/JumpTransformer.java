@@ -64,7 +64,6 @@ public class JumpTransformer extends ClassTransformer {
         }
 
         // call next class transformer
-        boolean nextClassChange = super.transform(cn);
-        return classChange || nextClassChange;
+        return classChange | super.transform(cn);
     }
 }

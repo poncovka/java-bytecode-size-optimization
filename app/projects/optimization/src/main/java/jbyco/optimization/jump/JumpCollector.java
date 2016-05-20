@@ -242,12 +242,19 @@ public class JumpCollector {
 
                 // process labels
                 if (object instanceof LabelNode) {
-
                     LabelNode label = (LabelNode) object;
                     getLabelInfo(label).addFrame(frame);
                     getFrameInfo(frame).addLabel(label);
                 }
+            }
 
+            for (Object object : frame.stack) {
+
+                if (object instanceof LabelNode) {
+                    LabelNode label = (LabelNode) object;
+                    getLabelInfo(label).addFrame(frame);
+                    getFrameInfo(frame).addLabel(label);
+                }
             }
         }
     }

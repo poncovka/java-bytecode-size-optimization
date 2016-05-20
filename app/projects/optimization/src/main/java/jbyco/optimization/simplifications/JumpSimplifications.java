@@ -58,6 +58,16 @@ public class JumpSimplifications {
         }
     }
 
+    @Pattern({Symbols.LABEL, Symbols.FRAME, Symbols.LABEL}) /* => LABEL; LABEL; */
+    public static class FrameRemoval implements PeepholeAction {
+
+        @Override
+        public boolean replace(InsnList list, AbstractInsnNode[] matched) {
+            list.remove(matched[1]);
+            return true;
+        }
+    }
+
     @Pattern({Symbols.GOTO, Symbols.NOTLABEL})      /* => GOTO */
     @Pattern({Symbols.RETURN, Symbols.NOTLABEL})    /* => RETURN */
     @Pattern({Symbols.ARETURN, Symbols.NOTLABEL})   /* => ARETURN */

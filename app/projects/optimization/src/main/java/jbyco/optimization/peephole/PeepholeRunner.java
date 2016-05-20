@@ -148,16 +148,14 @@ public class PeepholeRunner {
             stats.addOptimization(fsm.toString());
         }
 
-
         if (result) {
-            //System.err.println(">>> Action: " + fsm);
-            //System.err.println(">>> Matched:");
-            //InsnUtils.debug(fsm.getMatchedInput());
+            System.err.println(">>> Action: " + fsm);
+            System.err.println(">>> Matched:");
+            InsnUtils.debug(fsm.getMatchedInput());
             //System.err.println(">>> Result:");
             //InsnUtils.debug(list);
             //System.err.println();
         }
-
 
         // return the result
         return result;

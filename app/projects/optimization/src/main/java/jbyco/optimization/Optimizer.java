@@ -54,32 +54,28 @@ public class Optimizer {
 
         // jump transformations
         JumpCollector collector = new JumpCollector();
-        LabelTransformer lt = new LabelTransformer(collector, stats);
-        FrameTransformer ft = new FrameTransformer(lt, collector, stats);
-        LookupSwitchTransformer lst = new LookupSwitchTransformer(ft, collector, stats);
-        TableSwitchTransformer tst = new TableSwitchTransformer(lst, collector, stats);
+        LabelTransformer t1 = new LabelTransformer(collector, stats);
+        FrameTransformer t2 = new FrameTransformer(t1, collector, stats);
+        LookupSwitchTransformer t3 = new LookupSwitchTransformer(t2, collector, stats);
+        TableSwitchTransformer t4 = new TableSwitchTransformer(t3, collector, stats);
 
-        lt.loadActions(
-                //JumpReductions.class
-                new JumpReductions.LabelsUnion(),
-                new JumpReductions.UselessLabelRemoval(),
-                new JumpReductions.JumpWithReturnReplacement(),
-                new JumpReductions.DoubleJumpRemoval()
-        );
-
-        ft.loadActions(
+        t1.loadActions(
                 JumpReductions.class
         );
 
-        lst.loadActions(
+        t2.loadActions(
                 JumpReductions.class
         );
 
-        tst.loadActions(
+        t3.loadActions(
                 JumpReductions.class
         );
 
-        jumpSimplifier = new JumpTransformer(lst, collector, stats);
+        t4.loadActions(
+                JumpReductions.class
+        );
+
+        jumpSimplifier = new JumpTransformer(t4, collector, stats);
     }
 
     public void initPhase3() {
@@ -92,29 +88,45 @@ public class Optimizer {
 
     public byte[] optimizeClassFile(byte[] input) throws IOException {
 
+        // init
+        byte[] output = null;
+        boolean change = true;
+
         // statistics
         if (stats != null) {
             stats.addSizeBefore(input.length);
         }
 
-        // create class frame
-        ClassNode result1 = phase1(input);
+        // optimize while there are changes
+        while (change) {
 
-        // actions
-        ClassNode result2 = phase2(result1);
+            // expansion
+            ClassNode result1 = phase1(input);
 
-        // create byte array
-        byte[] result3 = phase3(result2);
+            // simplification
+            ClassNode result2 = phase2(result1);
 
-        // checkInput the output
-        check(result3);
+            // reduction
+            output = phase3(result2);
+
+            // check the result
+            check(output);
+
+            // check the size
+            if (input.length <= output.length) {
+                change = false;
+            }
+
+            // set the input
+            input = output;
+        }
 
         // statistics
         if (stats != null) {
-            stats.addSizeAfter(result3.length);
+            stats.addSizeAfter(output.length);
         }
 
-        return result3;
+        return output;
     }
 
     public ClassNode phase1(byte[] input) {
@@ -152,11 +164,12 @@ public class Optimizer {
     public byte[] phase3(ClassNode input) {
 
         // reduce the code
-        reducer.findAndReplace(input);
+        //reducer.findAndReplace(input);
 
         // create the chain of visitors
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor cv = writer;
+        cv = new CheckClassAdapter(cv, false);
         cv = new ClassVisitor(Opcodes.ASM5, cv) {
 
             @Override

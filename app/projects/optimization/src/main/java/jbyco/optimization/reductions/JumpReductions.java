@@ -7,6 +7,7 @@ import org.objectweb.asm.tree.*;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A library of frame and label actions.
@@ -19,7 +20,7 @@ public class JumpReductions {
         public boolean replace(InsnList list, TableSwitchInsnNode node, Map<AbstractInsnNode, Integer> addresses) {
 
             int keys = node.labels.size();
-            boolean loadVar = node.getPrevious().getOpcode() == Opcodes.ILOAD;
+            AbstractInsnNode prev = node.getPrevious();
 
             long addr = addresses.get(node);
             long maxLength = Math.abs(addr - addresses.get(node.dflt));
@@ -29,12 +30,27 @@ public class JumpReductions {
             }
 
             if (maxLength <= Short.MAX_VALUE) {
-                System.err.println("Table");
+
+                // create table of values and labels
+                Map<Integer, LabelNode> table = new TreeMap<>();
+                //for (int )
+
+                // previous instruction is ILOAD
+                if (prev.getOpcode() == Opcodes.ILOAD) {
+
+
+
+
+
+                }
+
             }
 
             return false;
         }
     }
+
+    //public static void generateIfSwitch(InsnList list, )
 
     public static class LookupSwitchReplacement implements LookupSwitchAction {
 
@@ -52,7 +68,7 @@ public class JumpReductions {
             }
 
             if (maxLength <= Short.MAX_VALUE) {
-                System.err.println("Lookup");
+                //System.err.println("Lookup");
             }
 
             return false;
@@ -99,7 +115,6 @@ public class JumpReductions {
         public boolean replace(InsnList list, LabelNodeInfo labelInfo, Map<AbstractInsnNode, Integer> addresses) {
             if (!labelInfo.isUsefull()) {
                 list.remove(labelInfo.label);
-                //list.resetLabels();
                 return true;
             }
 
@@ -122,25 +137,22 @@ public class JumpReductions {
 
                 // replace labels in jumps
                 for (AbstractInsnNode node : labelInfo.jumps) {
-                    change = replaceLabel(node, labelInfo.label, target);
+                    change |= replaceLabel(node, labelInfo.label, target);
                 }
 
                 for (TryCatchBlockNode block : labelInfo.tryCatchBlocks) {
-                    change = replaceLabel(block, labelInfo.label, target);
+                    change |= replaceLabel(block, labelInfo.label, target);
                 }
 
                 for (LocalVariableAnnotationNode node : labelInfo.annotations) {
-                    change = replaceLabel(node, labelInfo.label, target);
+                    change |= replaceLabel(node, labelInfo.label, target);
                 }
 
                 for (FrameNode frame : labelInfo.frames) {
-                    change = replaceLabel(frame, labelInfo.label, target);
+                    change |= replaceLabel(frame, labelInfo.label, target);
                 }
 
-                if (change) {
-                    //list.remove(labelInfo.label);
-                    //list.resetLabels();
-                }
+                // label will be removed as useless
             }
 
             return change;
@@ -194,7 +206,7 @@ public class JumpReductions {
 
                     // replace the label in the jump
                     if (Short.MIN_VALUE <= length && length <= Short.MAX_VALUE) {
-                        change = replaceLabel(node, labelInfo.label, target);
+                        change |= replaceLabel(node, labelInfo.label, target);
                     }
                 }
             }
@@ -205,7 +217,22 @@ public class JumpReductions {
     private static boolean replaceLabel(FrameNode frame, LabelNode label, LabelNode target) {
 
         boolean change = false;
-        ListIterator<Object> i = frame.local.listIterator();
+        ListIterator<Object> i;
+
+        i = frame.local.listIterator();
+        while(i.hasNext()) {
+
+            Object object = i.next();
+            if (object instanceof LabelNode) {
+
+                if (((LabelNode)object).equals(label)) {
+                    i.set(target);
+                    change = true;
+                }
+            }
+        }
+
+        i = frame.stack.listIterator();
         while(i.hasNext()) {
 
             Object object = i.next();

@@ -18,11 +18,10 @@ public class TableSwitchTransformer extends MethodTransformer implements ActionL
 
     Statistics stats;
     JumpCollector collector;
-    MethodTransformer mt;
     Collection<TableSwitchAction> actions = new ArrayList<>();
 
     public TableSwitchTransformer(MethodTransformer mt, JumpCollector collector, Statistics stats) {
-        this.mt = mt;
+        super(mt);
         this.collector = collector;
         this.stats = stats;
     }
@@ -72,10 +71,6 @@ public class TableSwitchTransformer extends MethodTransformer implements ActionL
             }
         }
 
-        if (!change) {
-            change = super.transform(mn);
-        }
-
-        return change;
+        return change | super.transform(mn);
     }
 }

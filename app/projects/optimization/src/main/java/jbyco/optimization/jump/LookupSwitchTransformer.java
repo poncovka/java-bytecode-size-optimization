@@ -19,11 +19,10 @@ public class LookupSwitchTransformer extends MethodTransformer implements Action
 
     Statistics stats;
     JumpCollector collector;
-    MethodTransformer mt;
     Collection<LookupSwitchAction> actions = new ArrayList<>();
 
     public LookupSwitchTransformer(MethodTransformer mt, JumpCollector collector, Statistics stats) {
-        this.mt = mt;
+        super(mt);
         this.collector = collector;
         this.stats = stats;
     }
@@ -73,10 +72,6 @@ public class LookupSwitchTransformer extends MethodTransformer implements Action
             }
         }
 
-        if (!change) {
-            change = super.transform(mn);
-        }
-
-        return change;
+        return change | super.transform(mn);
     }
 }

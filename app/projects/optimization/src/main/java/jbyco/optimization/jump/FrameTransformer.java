@@ -77,11 +77,7 @@ public class FrameTransformer extends MethodTransformer implements ActionLoader<
             }
         }
 
-        if (!change) {
-            change = super.transform(mn);
-        }
-
-        return change;
+        return change | super.transform(mn);
     }
 }
 
