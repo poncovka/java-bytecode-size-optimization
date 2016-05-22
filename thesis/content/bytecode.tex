@@ -3,12 +3,12 @@
 
 Architektura Javy se podle Vennerse \cite{Venners:InsideJVM} skládá z~programovacího jazyka Java, formátu instrukčního souboru, aplikačního programového rozhraní Java Application Programming Interface (Java API) a virtuálního stroje Java Virtual Machine (JVM). Pro psaní zdrojových kódů a jejich spouštění je zapotřebí všech těchto částí.
 Zdrojový kód zapsaný v~programovacím jazyce Java je uložený v~souboru s~příponou \texttt{.java} (dále \texttt{java} souboru). Tento kód je při kompilaci převeden na mezikód, tzv. bajtkód, a uložen v~souborech s~příponou \texttt{.class} (dále \texttt{class} souborech). Bajtkód lze následně spustit pomocí virtuálního stroje, který má přístup k~Java API. 
-V~této kapitole popisuji základní charakteristiky JVM a formát jeho instrukčního souboru.
+V~této kapitole popisuji základní charakteristiky JVM a formát jeho instrukčního souboru dle specifikace ve verzi Java SE 8 Edition \cite{Lindholm:JVM}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Virtuální stroj JVM}\label{JVM}
 
-O~JVM lze  hovořit z~hlediska abstraktní specifikace nebo konkrétní implementace. Konkrétní implementace je závislá na daném systému a hardwaru, ale jednotná interpretace \texttt{class} souborů napříč platformami je zajištěna dodržením specifikace a platformově nezávislým formátem \texttt{class} souborů. Vzhledem k~zaměření práce se v~této kapitole zabývám abstraktní specifikací JVM dle dokumentu \cite{Lindholm:JVM}. 
+O~JVM lze  hovořit z~hlediska abstraktní specifikace nebo konkrétní implementace. Konkrétní implementace je závislá na daném systému a hardwaru, ale jednotná interpretace \texttt{class} souborů napříč platformami je zajištěna dodržením specifikace a platformově nezávislým formátem \texttt{class} souborů. Vzhledem k~zaměření práce se v~této kapitole zabývám abstraktní specifikací JVM.
 
 \subsection{Datové typy a hodnoty}\label{JVMTypes}
 
@@ -48,13 +48,13 @@ Při načítání \texttt{class} souboru je ověřeno správné formátování t
 
 % doplnit příklady
 
-Při kompilaci \texttt{java} souboru překladač pro každou definovanou třídu a rozhraní vytvoří jeden \texttt{class} soubor. Tento soubor obsahuje binární reprezentaci kompilovaného mezikódu, který lze interpretovat prostřednictvím JVM.  V~této kapitole popisuji formát \texttt{class} souboru dle specifikace ve verzi Java SE 8 Edition \cite{Lindholm:JVM}.
+Při kompilaci \texttt{java} souboru překladač pro každou definovanou třídu a rozhraní vytvoří jeden \texttt{class} soubor. Tento soubor obsahuje binární reprezentaci kompilovaného mezikódu, který lze interpretovat prostřednictvím JVM.  Tato kapitola je věnovaná popisu formátu \texttt{class} souboru.
 
 Pro popis formátu jsem zvolila rozšířenou Backus-Naurovu formu, která umožňuje zapsat syntaxi formálního jazyka pomocí pravidel a terminálních a nonterminálních symbolů. Nonterminální symboly jsou definovány pomocí definujícího symbolu \texttt{:=}, symbolu pro konkatenaci \texttt{,}, symbolu pro alternaci \texttt{$\mathtt{|}$}, symbolů pro nula a více opakování \texttt{\{\}}, ukončujícího symbolu \texttt{;} a pomocí graficky odlišených \T{terminálních} a \N{nonterminálních} symbolů. Symboly popisují jednotlivé struktury, ze kterých se \texttt{class} soubor skládá.
 
 \subsection{Základní struktura}\label{FormatBasic}
 
-Položky \texttt{class} souboru tvoří posloupnost osmibitových bajtů. Základní stavební jednotkou je tedy bajt, který je v~pravidlech reprezentovaný symbolem \N{B}. Symbol $\langle n \rangle$\N{B}, kde $\langle n \rangle \in \{2,3,\dots\}$, reprezentuje $n$ bajtů. Terminály začínají prefixem \texttt{0x} a jsou hexadecimální reprezentací posloupnosti bajtů. 
+Položky \texttt{class} souboru tvoří posloupnost bajtů. Základní stavební jednotkou je tedy bajt, který je v~pravidlech reprezentovaný symbolem \N{B}. Symbol $\langle n \rangle$\N{B}, kde $\langle n \rangle \in \{2,3,\dots\}$, reprezentuje $n$ bajtů. Terminály začínají prefixem \texttt{0x} a jsou hexadecimální reprezentací posloupnosti bajtů. 
 
 Základní struktura souboru je popsaná symbolem \N{classfile}. Soubor obsahuje informace o~svém typu a verzi (\N{version}), disponuje tabulkou všech konstant, které se v~souboru vyskytují (\N{constants}), nese informace o~třídě či rozhraní (\N{class}), které reprezentuje, obsahuje seznam rozhraní (\N{interface\_list}), které reprezentovaná třída implementuje, případně rozhraní rozšiřuje, seznam členských proměnných (\N{field\_list}), seznam metod (\N{method\_list}) a seznam atributů (\N{attribute\_list}). 
 
@@ -218,14 +218,58 @@ Reprezentovaná třída, případně rozhraní, metody, členské proměnné a i
 \end{figure}
 
 Specifikace \cite{Lindholm:JVM} definuje 23 atributů. Překladače však mohou definovat a vkládat do \texttt{class} souborů i atributy vlastní. Pokud je JVM neumí rozpoznat, pak je ignoruje. Atributy mají různou míru důležitosti vzhledem k~interpretaci \texttt{class} souboru. 
+Pro správnou interpretaci virtuálním strojem je důležitých následujících pět atributů. 
 
-Pro správnou interpretaci virtuálním strojem je důležitých následujících pět atributů. Atribut \texttt{Code} s~instrukcemi metody byl představen v~kapitole \ref{FormatMethod}. Jedním z~atributů \texttt{Code} může být \texttt{StackMapTable}. Tento atribut je důležitý pro typovou kontrolu při verifikaci \texttt{class} souborů. Pro každý základní blok instrukcí je definován rámec obsahující typy lokálních proměnných a hodnot na zásobníku operandů. U~starších verzí \texttt{class} souboru tento atribut chybí, a proto se provádí typová inference pomocí analýzy datového toku. \texttt{Exceptions} je atribut metody. Obsahuje odkazy do tabulky konstant na typy kontrolovaných výjimek, které metoda může vyhodit. Jedním z~atributů členské proměnné může být \texttt{ConstantValue}, který v~sobě nese index do tabulky konstant na položku s~číselnou nebo řetězcovou konstantou. Jestliže je daná proměnná statická, pak je jí při inicializaci třídy přiřazena právě tato hodnota. Atribut \texttt{BootstrapMethods} souvisí s~dynamickými jazyky.
+\begin{description}
 
-Následujících dvanáct atributů je podstatných pro správnou interpretaci knihovnami Java API. Vnitřní třídy třídy reprezentované \texttt{class} souborem jsou vyjmenované v~atributu \texttt{InnerClasses}. Pro každou vnitřní třídu atribut uchovává bitové pole příznaků, ukazatel na název vnitřní třídy, ukazatel na vnější třídu a ukazatel na vnitřní třídu. Každá lokální nebo anonymní třída pak musí mít atribut \texttt{EnclosingMethod} obsahující ukazatel na vnější třídu a ukazatel na metodu, která definici třídy uzavírá. Atribut \texttt{Synthetic} reprezentuje příznak, že daný člen třídy se nevyskytuje ve zdrojovém kódu a zároveň není standardním členem. Atribut \texttt{Signature} nese deklaraci třídy, rozhraní, členské proměnné nebo metody, v~níž se vyskytují typové proměnné nebo parametrizované typy. Jména a přístupové příznaky formálních parametrů metody mohou být dostupné v~atributu \texttt{MethodParameters}. 
-Anotace jsou dostupné v~atributech \texttt{Runtime}$Visibility$$Annotations$, kde $Visibility$ určuje, zda je anotace viditelná (\texttt{Visible}) či neviditelná (\texttt{Invisible}) za běhu programu, a $Type$ označuje jeden z~typů anotací \texttt{Annotations}, \texttt{TypeAnnotations}, \texttt{ParameterAnnotations}.
-Atribut \texttt{AnnotationDefault} reprezentuje výchozí hodnotu elementu, který patří typu anotace.
+\item [\texttt{ConstantValue}] může být atributem členské proměnné. Jeho součástí je index do tabulky konstant na položku s~číselnou nebo řetězcovou konstantou. Jestliže je daná proměnná statická, pak je jí při inicializaci třídy přiřazena právě tato hodnota.
 
-Další atributy jsou pouze informativní a mohou sloužit například k~ladění chyb ve zdrojovém souboru. Atribut \texttt{SourceFile} obsahuje odkaz na název zdrojového kódu. Atribut \texttt{SourceDebugExtension} v~sobě nese řetězec s~ladícími informacemi. \texttt{LineNumberTable} reprezentuje mapování indexů do pole instrukcí na čísla řádků zdrojového kódu. Informace o~lokálních proměnných metody mohou být dostupné v~atributu \texttt{LocalVariableTable}, kde je obsažen rozsah instrukcí, ve kterém proměnná nese hodnotu, odkaz na název proměnné, odkaz na typ proměnné a index do pole lokálních proměnných. Stejné informace nese atribut \texttt{LocalVariableTypeTable}, ale pouze pro proměnné, jejichž typy používají typované proměnné nebo parametrizované typy. Atribut \texttt{Deprecated} slouží k~indikaci toho, že třída, metoda, členská proměnná či rozhraní jsou zastaralé.
+\item [\texttt{Code}] obsahuje kód metody, které je atributem, a byl představen v~kapitole \ref{FormatMethod}.
+
+\item [\texttt{StackMapTable}] může být jedním z atributů \texttt{Code}. Je důležitý pro typovou kontrolu při verifikaci \texttt{class} souborů. Pro každý základní blok instrukcí obsahuje rámec s typy lokálních proměnných a s typy hodnot na zásobníku operandů. U~starších verzí \texttt{class} souboru tento atribut chybí, a proto se provádí typová inference pomocí analýzy datového toku.
+
+\item [\texttt{Exceptions}] je atribut metody. Obsahuje odkazy do tabulky konstant na typy kontrolovaných výjimek, které metoda může vyhodit.
+
+\item [\texttt{BootstrapMethods}] souvisí s~dynamickými jazyky.
+
+\end{description}
+
+Dalších dvanáct atributů je podstatných pro správnou interpretaci knihovnami Java API. Nesou informace o dané třídě, které mohou být dostupné za běhu programu prostřednictvím reflexe.
+
+\begin{description}
+
+\item [\texttt{InnerClasses}] obsahuje seznam vnitřních tříd třídy reprezentované \texttt{class} souborem. Pro každou vnitřní třídu atribut uchovává bitové pole příznaků, ukazatel na název vnitřní třídy, ukazatel na vnější třídu a ukazatel na vnitřní třídu.
+
+\item [\texttt{EnclosingMethod}] je atribut každé lokální nebo anonymní třídy. Obsahuje ukazatel na vnější třídu a ukazatel na metodu, která definici třídy uzavírá.
+
+\item [\texttt{Synthetic}] reprezentuje příznak, že daný člen třídy se nevyskytuje ve zdrojovém kódu a zároveň není standardním členem.
+
+\item [\texttt{Signature}] nese deklaraci třídy, rozhraní, členské proměnné nebo metody, v~níž se vyskytují typové proměnné nebo parametrizované typy.
+
+\item [\texttt{Runtime}$Visibility$$Annotations$] jsou atributy obsahující seznamy anotací s danou viditelností a z dané skupiny. $Annotations$ označuje jednu z následujících skupin anotací: \texttt{Annotations} pro anotace tříd, členských proměnných a metod, \texttt{TypeAnnotations} pro anotace typů a \texttt{ParameterAnnotations} pro anotace formálních parametrů metod. $Visibility$ určuje, zda je anotace za běhu programu viditelná \texttt{Visible} či neviditelná \texttt{Invisible}. 
+
+\item [\texttt{AnnotationDefault}] reprezentuje výchozí hodnotu elementu, který patří typu anotace.
+
+\item [\texttt{MethodParameters}] může být atributem metody a obsahuje jména a přístupové příznaky jeho formálních parametrů.
+\end{description}
+
+Zbývající atributy jsou pouze informativní a mohou sloužit například k~ladění chyb ve zdrojovém souboru. Obsahují informace o zdrojovém kódu a lokálních proměnných.
+
+\begin{description}
+
+\item [\texttt{SourceFile}] obsahuje odkaz na název souboru se zdrojovým kódem, jehož překladem vznikl daný \texttt{class} soubor.
+
+\item [\texttt{SourceDebugExtension}] v~sobě nese řetězec s~ladícími informacemi.
+
+\item [\texttt{LineNumberTable}] reprezentuje mapování indexů do pole instrukcí na čísla řádků zdrojového kódu.
+
+\item [\texttt{LocalVariableTable}] obsahuje informace o~lokálních proměnných metody. Pro každou proměnnou uchovává rozsah instrukcí, ve kterém proměnná nese hodnotu, odkaz na název proměnné, odkaz na typ proměnné a index do pole lokálních proměnných.
+
+\item [\texttt{LocalVariableTypeTable}] nese stejné informace jako atribut \texttt{LocalVariableTable}, ale pouze pro proměnné, jejichž typy používají typované proměnné nebo parametrizované typy. 
+
+\item [\texttt{Deprecated}] slouží k~indikaci toho, že třída, metoda, členská proměnná či rozhraní jsou zastaralé.
+
+\end{description}
 
 \subsection{Instrukce}\label{FormatInstruction}
 
