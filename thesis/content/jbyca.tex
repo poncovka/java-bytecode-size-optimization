@@ -10,7 +10,7 @@
 % * abstrahování - zobecnění
 % * kešování
 
-K získání dostatečně obecných dat, ze kterých bych mohla čerpat při návrhu metod pro optimalizaci velikosti bajtkódu, bylo potřeba zpracovat a analyzovat velké množství \texttt{class} souborů. Bylo proto výhodné navrhnout a implementovat nástroj, který tyto činnosti umožňuje zautomatizovat. Výslednému nástroji \texttt{jbyca} nebo-li Java Bytecode Analyzer je věnovaná tato kapitola.
+K~získání dostatečně obecných dat, ze kterých bych mohla čerpat při návrhu metod pro optimalizaci velikosti bajtkódu, bylo potřeba zpracovat a analyzovat velké množství \texttt{class} souborů. Bylo proto výhodné navrhnout a implementovat nástroj, který tyto činnosti umožňuje zautomatizovat. Výslednému nástroji \texttt{jbyca} nebo-li Java Bytecode Analyzer je věnovaná tato kapitola.
 
 \section{Požadavky na program}\label{Jbyca:Requirements}
 
@@ -29,7 +29,7 @@ Ty by měly umět zodpovědět následující otázky:
 \item Jak vypadá obsah konkrétního \texttt{class} souboru? 
 \end{enumerate}
 
-Program je určen ke zpracování \texttt{class} souborů, přičemž důraz je kladen na jejich dávkové zpracování. Z toho plynou požadavky na vstup programu a jeho rychlost. Vstupem může být \texttt{class} soubor, \texttt{jar} soubor nebo adresář. Adresáře a \texttt{jar} soubory jsou dále prohledávány a každý nalezený \texttt{class} soubor je považován za další vstup programu. 
+Program je určen ke zpracování \texttt{class} souborů, přičemž důraz je kladen na jejich dávkové zpracování. Z~toho plynou požadavky na vstup programu a jeho rychlost. Vstupem může být \texttt{class} soubor, \texttt{jar} soubor nebo adresář. Adresáře a \texttt{jar} soubory jsou dále prohledávány a každý nalezený \texttt{class} soubor je považován za další vstup programu. 
 
 \section{Návrh programu}\label{Jbyca:Design}
 
@@ -40,27 +40,29 @@ Většinu potřebných dat lze získat jednoduše pomocí knihoven ASM a BCEL. V
 
 Získání typických sekvencí instrukcí vyžaduje uchovávat v~paměti všechny nalezené různé sekvence ze všech zpracovaných metod s~četnostmi jejich výskytu. Každou novou sekvenci je pak třeba porovnat s~ostatními, a buď upravit četnost shodné sekvence, nebo vložit novou sekvenci mezi ostatní. To představuje velkou časovou a paměťovou zátěž a nelze zaručit, že program skončí dřív než dojde k~nedostatku paměti. Z~těchto důvodů bylo třeba vymyslet úspornou datovou strukturu reprezentující sekvence a způsob zotavení se z~nedostatku paměti.
 
-Jako vhodná datová struktura se pro sekvence instrukcí nabízí strom. Kořenem stromu by byl prázdný uzel, uzly jednotlivé instrukce a žádný uzel by nesměl mít dva bezprostřední následníky se stejnou instrukcí. Každá cesta z~kořene do nějakého uzlu stromu by představovala jednu sekvenci a poslední uzel této cesty by pak obsahoval hodnotu četnosti výskytu sekvence. Tuto stromovou strukturu lze vytvořit z postfixů seznamů instrukcí metod. 
-Po vložení takového postfixu jsou z kořene stromu dostupné všechny jeho prefixy. Prefixy všech postfixů pak tvoří množinu všech sufixů, což jsou všechny různé sekvence seznamu instrukcí.
+Jako vhodná datová struktura se pro sekvence instrukcí nabízí strom. Kořenem stromu by byl prázdný uzel, uzly jednotlivé instrukce a žádný uzel by nesměl mít dva bezprostřední následníky se stejnou instrukcí. Každá cesta z~kořene do nějakého uzlu stromu by představovala jednu sekvenci a poslední uzel této cesty by pak obsahoval hodnotu četnosti výskytu sekvence. Tuto stromovou strukturu lze vytvořit z~postfixů seznamů instrukcí metod. 
+Po vložení takového postfixu jsou z~kořene stromu dostupné všechny jeho prefixy. Prefixy všech postfixů pak tvoří množinu všech sufixů, což jsou všechny různé sekvence seznamu instrukcí.
 Stromová reprezentace umožňuje snadné porovnávání i přidávání sekvencí instrukcí a šetří pamětí, neboť sekvence sdílejí společné prefixy.
 
 Nedostatku paměti je třeba předcházet v~každém případě. Možným řešením je pravidelně kontrolovat, kolik procent z~dostupné paměti se již využilo, a při překročení určité hodnoty zmenšit velikost vytvořeného stromu. Zmenšení stromu je možné dosáhnout jedním průchodem, při kterém se odstraní všechny hrany do uzlů s~nižší hodnotou četnosti výskytu, než je stanovený práh. Tento práh se následně zvedne. V~krajním případě bude strom po ukončení výpočtu obsahovat pouze svůj kořen, ale výpočet neskončí nedostatkem paměti.
 
 \subsection{Zobecnění instrukcí a jejich sekvencí}
 
-Každá instrukce je daná svým operačním kódem a parametry. Zkoumat typické sekvence instrukcí s~konkrétními hodnotami parametrů může přinést zajímavé výsledky, ale nevede k nalezení obecných typických konstrukcí. Instrukce lze tak nahradit jejich zobecněnými protějšky. Zobecnění instrukce se skládá ze svou částí: zobecnění operačního kódu a zobecnění parametrů. Zobecnění operačního kódu lze dosáhnout odstraněním typové informace z~názvu operace. Zobecnění parametrů může mít dvě úrovně. Na nejnižší úrovni je parametr zastoupený jen svým typem. Na vyšší úrovni je každé hodnotě parametru přiřazen typ a číselný identifikátor. Pokud se taková hodnota vyskytuje v~jedné sekvenci vícekrát, přiřazený identifikátor se nemění. Lze tak obecně zkoumat práci s~opakujícími se hodnotami parametrů.
+Každá instrukce je daná svým operačním kódem a parametry. Zkoumat typické sekvence instrukcí s~konkrétními hodnotami parametrů může přinést zajímavé výsledky, ale nevede k~nalezení obecných typických konstrukcí. Instrukce lze tak nahradit jejich zobecněnými protějšky. Zobecnění instrukce se skládá ze svou částí: zobecnění operačního kódu a zobecnění parametrů. Zobecnění operačního kódu lze dosáhnout odstraněním typové informace z~názvu operace. Zobecnění parametrů může mít dvě úrovně. Na nejnižší úrovni je parametr zastoupený jen svým typem. Na vyšší úrovni je každé hodnotě parametru přiřazen typ a číselný identifikátor. Pokud se taková hodnota vyskytuje v~jedné sekvenci vícekrát, přiřazený identifikátor se nemění. Lze tak obecně zkoumat práci s~opakujícími se hodnotami parametrů.
 
 V~některých případech může být užitečné naopak rozšířit informace o~instrukcích. Pracuje-li instrukce s~lokální proměnnou a proměnná je jedním z~parametrů metody, pak je vhodné nahradit označení proměnné klíčovým slovem \texttt{this}, nebo identifikátorem parametru metody. Díky tomu je možné pozorovat, jak se v~metodě pracuje s~jejími parametry a jak třída pracuje se svými metodami a členskými proměnnými.
 Seznam instrukcí je vhodné doplnit o~návěští, která budou označovat místa skoků. Budou-li tato návěští součástí zkoumaných sekvencí, lze rozlišit jednotlivé základní bloky instrukcí.
 
 Jako další možné rozšíření se nabízí práce s~divokými kartami.
-V sekvencích instrukcí lze instrukce na libovolných pozicích nahradit zástupnými instrukcemi.
-Tyto instrukce se nazývají divoké karty a představují další formu zobecnění instrukcí. Každá divoká karta v sekvenci označuje pozici, na které se může vyskytovat jedna libovolná instrukce. Z pohledu stromové struktury jsou všechny divoké karty totožné.
+V~sekvencích instrukcí lze instrukce na libovolných pozicích nahradit zástupnými instrukcemi.
+Tyto instrukce se nazývají divoké karty a představují další formu zobecnění instrukcí. Každá divoká karta v~sekvenci označuje pozici, na které se může vyskytovat jedna libovolná instrukce. Z~pohledu stromové struktury jsou všechny divoké karty totožné.
  Sekvence s~divokými kartami tak umožňují zkoumat i typické sekvence instrukcí, které nenásledují bezprostředně za sebou. K~vytvoření všech sekvencí s~divokými kartami pro danou sekvenci je třeba určit všechny možné kombinace indexů instrukcí, které budou nahrazeny divokými kartami. Z~praktických důvodů je vhodné zakázat náhradu instrukcí, které formují základní bloky.
 
 \section{Popis implementace}\label{Jbyca:Implementation}
 
-Program jsem implementovala v~jazyce Java 8 s~použitím knihoven ASM 5.0\footnote{\texttt{http://asm.ow2.org/}} a BCEL 6.0\footnote{\texttt{https://commons.apache.org/bcel/}} a nástroje Gradle 2.7\footnote{\texttt{http://gradle.org/}}. V~balíčku \texttt{jbyco.analysis} je deklarována třída \texttt{Application} s~metodou \texttt{main}, která dle předaných parametrů spustí některý z~nástrojů. Každý nástroj má definovanou vlastní metodu \texttt{main} a lze jej tedy spustit i samostatně.
+Program jsem implementovala v~programovacím jazyce Java 8 s~použitím knihoven ASM 5.0\footnote{\texttt{http://asm.ow2.org/}} a BCEL 6.0\footnote{\texttt{https://commons.apache.org/bcel/}} a nástroje Gradle 2.7\footnote{\texttt{http://gradle.org/}}. 
+Vzhledem k~tomu, že program \texttt{jbyca} některé třídy sdílí s~programem \texttt{jbyco} z~kapitoly \ref{Jbyco}, tak jsou třídy a balíčky obou programů umístěné v~balíčku s~názvem \texttt{jbyco}.
+ V~balíčku \texttt{jbyco.analysis} je deklarována třída \texttt{Application} s~metodou \texttt{main}, která dle předaných parametrů spustí některý z~nástrojů pro analýzu bajtkódu. Každý nástroj má definovanou vlastní metodu \texttt{main} a lze jej tedy spustit i samostatně.
 
 \subsection{Zpracování parametrů}
 
@@ -73,7 +75,7 @@ Třída \texttt{BytecodePrinter} je nástroj pro vypsání obsahu \texttt{class}
 
 \subsection{Analýza bajtkódu}
 
-Nástroje pro analýzu bajtkódu jsou umístěné v~balíčku \texttt{jbyco.analysis}. V~rozhraní \texttt{Analyzer} jsou deklarované metody pro zpracování \texttt{class} souborů \texttt{processClassFile} a výpis získaných dat \texttt{writeResults}. Jednotlivé nástroje pro analýzu jsou dostupné v podbalíčcích.
+Nástroje pro analýzu bajtkódu jsou umístěné v~balíčku \texttt{jbyco.analysis}. V~rozhraní \texttt{Analyzer} jsou deklarované metody pro zpracování \texttt{class} souborů \texttt{processClassFile} a výpis získaných dat \texttt{writeResults}. Jednotlivé nástroje pro analýzu jsou dostupné v~podbalíčcích.
 
 Hledání typických sekvencí probíhá ve třídě \texttt{PatternsAnalyzer} následovně. Každý \texttt{class} soubor je převeden na stromovou reprezentaci knihovny ASM. Seznam instrukcí každé metody je doplněn o~návěští označující začátek a konec metody. Každou metodu pak navštíví instance třídy \texttt{ActiveLabelsFinder} a vyhledá všechna aktivní návěští. Návěští, která nejsou aktivní, budou při dalším zpracování vynechána. Ze seznamu instrukcí metody se postupně vygenerují všechny sekvence instrukcí dané délky. Z~těchto sekvencí mohou být dále generované sekvence s~daným počtem divokých karet. Každá vygenerovaná sekvence je pomocí třídy \texttt{Abstractor} převedena na sekvenci abstrahovaných instrukcí typu \texttt{AbstractInstruction}. Abstrahované instrukce jsou prostřednictvím třídy \texttt{Cache} nahrazeny instrukcemi typu \texttt{CachedInstruction}. Výsledná sekvence je předaná instanci třídy \texttt{TreeBuilder}, která sekvenci vloží do vytvářeného stromu. Po zpracování každého souboru tato třída zkontroluje dostupnou paměť a případně provede ořezání stromu. Nakonec se pomocí třídy \texttt{PatternsWriter} vypíšou nalezené sekvence a jejich četnosti.
 
@@ -83,7 +85,7 @@ Nástroj pro získání souhrnných informací o~zpracovaných \texttt{class} so
 
 \subsection{Analýza velikosti}
 
-Přehled o~velikostech jednotlivých položek v~souborech poskytuje nástroj \texttt{SizeAnalyzer}. Nástroj určuje velikosti zpracovávaných položek a informace o~jejich velikostech udržuje v~instanci třídy \texttt{SizeMap}. Výstupem je tabulka s~typem položky, celkovou velikostí tohoto typu v~souborech, průměrnou velikostí tohoto typu a relativní velikostí vzhledem k celkové velikosti zpracovaných souborů. 
+Přehled o~velikostech jednotlivých položek v~souborech poskytuje nástroj \texttt{SizeAnalyzer}. Nástroj určuje velikosti zpracovávaných položek a informace o~jejich velikostech udržuje v~instanci třídy \texttt{SizeMap}. Výstupem je tabulka s~typem položky, celkovou velikostí tohoto typu v~souborech, průměrnou velikostí tohoto typu a relativní velikostí vzhledem k~celkové velikosti zpracovaných souborů. 
 
 \subsection{Analýza lokálních proměnných}
 
@@ -113,7 +115,7 @@ S~operacemi se pracuje v~balíčku \texttt{jbyco.analysis.patterns.operations}. 
 
 Balíček \texttt{jbyco.analysis.patterns.parameters} umožňuje práci s~parametry instrukcí. Každá třída reprezentující parametr implementuje rozhraní \texttt{AbstractParameter}. Těmito implementacemi jsou výčty \texttt{ParameterType} popisující typ parametru a \texttt{ParameterValue} sloužící k~popisu hodnot \texttt{null} a \texttt{this}, třída \texttt{NumberedParameter} popisující parametr pomocí typu a relativního identifikátoru a třída \texttt{FullParameter} sestávající z~typu parametru a pole hodnot. Abstrahování je deklarované v~rozhraní \texttt{AbstractParameterFactory} a implementované v~následujících třídách. Metody třídy \texttt{GeneralParameterFactory} vrací instance z~výčtu \texttt{ParameterType}, metody třídy \texttt{NumberedParameterFactory} vrací instance třídy \texttt{NumberedParameter} a metody třídy \texttt{FullParameterFactory} vrací instance třídy \texttt{FullParameter}.
 
-\subsubsection{Generování sekvencí s divokými kartami}
+\subsubsection{Generování sekvencí s~divokými kartami}
 
 Třídy balíčku \texttt{jbyco.analysis.patterns.wildcards} slouží k~vytváření sekvencí s~divokými kartami. Divoká karta je reprezentovaná hodnotou \texttt{null}. Třída \texttt{CombinationIterator} je iterátorem přes všechny povolené kombinace indexů instrukcí v~sekvenci, které budou nahrazené divokými kartami. Třída \texttt{WildSequenceGenerator} je iterátorem přes všechny sekvence s~divokými kartami, které lze z~dané sekvence vytvořit.
 
@@ -125,7 +127,7 @@ Zdrojové soubory nástroje \texttt{jbyca} jsou součástí projektu \texttt{ana
 
 Příkaz \texttt{./gradlew build} ve všech projektech do jejich adresářů \texttt{build} přeloží zdrojové soubory, stáhne potřebné knihovny a sestaví a zabalí výsledné distribuce. Po zadání příkazu \texttt{./gradlew installDist} se distribuce nainstalují do adresářů \texttt{build/install}. Výsledkem instalace projektu \texttt{analysis} je adresář \texttt{jbyca} se dvěma podadresáři \texttt{bin} a \texttt{lib} pro spustitelné soubory a knihovny. Nástroj lze spustit příkazem \texttt{./jbyca} z~adresáře \texttt{bin}. Nápověda k~nástroji se vypíše po uvedení přepínače \texttt{---help}. Dokumentaci k~programovému rozhraní lze vygenerovat příkazem \texttt{./gradlew javadoc}. Dokumentace bude k~dispozici v~adresáři \texttt{build/docs}.
 
-Součástí spustitelných souborů jsou dva nástroje pro vygenerování a zpracování výstupů programu. Příkaz \texttt{./jbyca-experiment data out} spustí sérii analýz souborů v~adresáři \texttt{data} a získané výstupy uloží do adresáře \texttt{out}. Příkaz \texttt{jbyca-postprocessing out cls} zpracuje soubory s výstupy v~adresáři \texttt{out} a vygeneruje sjednocené a seřazené výstupy do adresáře \texttt{cls}. Obě činnosti mohou být v~závislosti na velikosti vstupních dat časově náročné.
+Součástí spustitelných souborů jsou dva nástroje pro vygenerování a zpracování výstupů programu. Příkaz \texttt{./jbyca-experiment data out} spustí sérii analýz souborů v~adresáři \texttt{data} a získané výstupy uloží do adresáře \texttt{out}. Příkaz \texttt{jbyca-postprocessing out cls} zpracuje soubory s~výstupy v~adresáři \texttt{out} a vygeneruje sjednocené a seřazené výstupy do adresáře \texttt{cls}. Obě činnosti mohou být v~závislosti na velikosti vstupních dat časově náročné.
 
 
 

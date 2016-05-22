@@ -4,7 +4,7 @@
 % TODO 
 % * zmínit, že záleží na pořadí, a že každá optimalizace produkuje další možnosti k optimalizaci, mebo taky ne
 
-V~této kapitole popisuji návrh a implementaci nástroje \texttt{jbyco} nebo-li Java Bytecode Optimizer určeného k optimalizaci velikosti \texttt{class} souborů. Nástroj implementuje optimalizační metody, které jsem navrhla v~předchozí kapitole. Efektivita těchto metod je na základě výstupů programu vyhodnocena v~kapitole \ref{Jbyco:Results}.
+V~této kapitole popisuji návrh a implementaci nástroje \texttt{jbyco} nebo-li Java Bytecode Optimizer určeného k~optimalizaci velikosti \texttt{class} souborů. Nástroj implementuje optimalizační metody, které jsem navrhla v~předchozí kapitole. Efektivita těchto metod je na základě výstupů programu vyhodnocena v~kapitole \ref{Jbyco:Results}.
 
 \section{Požadavky na program}\label{Jbyco:Requirements}
 
@@ -47,7 +47,7 @@ Rozpoznávání posloupností symbolů lze realizovat jednoduchým konečným au
 
 \section{Popis implementace}
 
-Program jsem implementovala v~jazyce Java 8 za použití knihovny ASM 5.0 a knihovny \texttt{jbyco-common}, která vznikla v~rámci implementace nástroje \texttt{jbyca}. Překlad a instalaci zajišťuje knihovna Gradle 2.7. V~balíčku \texttt{jbyco.optimization} je umístěná třída \texttt{Application} s~hlavní metodou \texttt{main}. Tato metoda zpracuje parametry, inicializuje instanci třídy \texttt{Optimizer} pro optimalizaci bajtkódu a pro každý \texttt{class} soubor vrácený iterátorem \texttt{BytecodeFilesIterator} z~balíčku \texttt{jbyco.io} zavolá jeho metodu \texttt{optimizeClassFile}. Ke sběru informací o~provedených optimalizacích slouží třída \texttt{Statistics}. Třídy implementující optimalizační metody pro expanzi kódu jsou umístěné v~balíčku \texttt{jbyco.optimization.expansion}, třídy pro zjednodušení kódu jsou v~balíčku \texttt{jbyco.optimization.simplification} a třídy pro redukci kódu jsou obsažené v~balíčku \texttt{jbyco.optimization.reduction}.
+Program jsem implementovala v~jazyce Java 8 za použití knihovny ASM 5.0\footnote{\texttt{http://asm.ow2.org/}} a tříd, které vznikly v~rámci implementace nástroje \texttt{jbyca}. Překlad a instalaci zajišťuje knihovna Gradle 2.7\footnote{\texttt{http://gradle.org/}}. V~balíčku \texttt{jbyco.optimization} je umístěná třída \texttt{Application} s~hlavní metodou \texttt{main}. Tato metoda zpracuje parametry, inicializuje instanci třídy \texttt{Optimizer} pro optimalizaci bajtkódu a pro každý \texttt{class} soubor vrácený iterátorem \texttt{BytecodeFilesIterator} z~balíčku \texttt{jbyco.io} zavolá jeho metodu \texttt{optimizeClassFile}. Ke sběru informací o~provedených optimalizacích slouží třída \texttt{Statistics}. Třídy implementující optimalizační metody pro expanzi kódu jsou umístěné v~balíčku \texttt{jbyco.optimization.expansion}, třídy pro zjednodušení kódu jsou v~balíčku \texttt{jbyco.optimization.simplification} a třídy pro redukci kódu jsou obsažené v~balíčku \texttt{jbyco.optimization.reduction}.
 
 \subsubsection{Reprezentace vzorových sekvencí a akcí}
 

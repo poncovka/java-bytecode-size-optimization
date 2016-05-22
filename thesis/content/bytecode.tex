@@ -77,7 +77,7 @@ Lokální proměnná v~poli lokálních proměnných je 32-bitová hodnota. Prom
 
 \subsection{Kontrola instrukčního souboru}
 
-Při načítání \texttt{class} souboru je ověřeno správné formátování tak, jak je popsáno v~kapitole \ref{Bytecode:Format}. Jsou zkontrolovány první čtyři bajty souboru, předdefinované atributy musí být správné délky, názvy a typy tříd, rozhraní, metod a proměnných musí být validní, indexy do tabulky konstant musí adresovat správný typ položky. Dále jsou kladena jistá omezení na kód metod. Mimo jiné, argumenty instrukcí musí mít správný typ a musí být správného počtu, integrita hodnot typu \texttt{long} a \texttt{double} nemůže být nikdy narušena, k~hodnotě lokální proměnné se nesmí přistupovat před inicializací proměnné a nesmí dojít k~načtení hodnoty z~prázdného zásobníku operandů, či překročení jeho maximální velikosti. Metody musí byt ukončené některou z instrukcí pro návrat z metody. Součástí verifikace těchto omezení je typová kontrola nebo typová inference. Díky kontrole instrukčního souboru se omezení nemusí kontrolovat za běhu programu.
+Při načítání \texttt{class} souboru je ověřeno správné formátování tak, jak je popsáno v~kapitole \ref{Bytecode:Format}. Jsou zkontrolovány první čtyři bajty souboru, předdefinované atributy musí být správné délky, názvy a typy tříd, rozhraní, metod a proměnných musí být validní, indexy do tabulky konstant musí adresovat správný typ položky. Dále jsou kladena jistá omezení na kód metod. Mimo jiné, argumenty instrukcí musí mít správný typ a musí být správného počtu, integrita hodnot typu \texttt{long} a \texttt{double} nemůže být nikdy narušena, k~hodnotě lokální proměnné se nesmí přistupovat před inicializací proměnné a nesmí dojít k~načtení hodnoty z~prázdného zásobníku operandů, či překročení jeho maximální velikosti. Metody musí byt ukončené některou z~instrukcí pro návrat z~metody. Součástí verifikace těchto omezení je typová kontrola nebo typová inference. Díky kontrole instrukčního souboru se omezení nemusí kontrolovat za běhu programu.
 
 %=========================================================================
 
@@ -264,7 +264,7 @@ Pro správnou interpretaci virtuálním strojem je důležitých následujícíc
 
 \item [\texttt{Code}] obsahuje kód metody, které je atributem, a byl představen v~kapitole \ref{Bytecode:Format:Method}.
 
-\item [\texttt{StackMapTable}] může být jedním z atributů \texttt{Code}. Je důležitý pro typovou kontrolu při verifikaci \texttt{class} souborů. Pro každý základní blok instrukcí obsahuje rámec s typy lokálních proměnných a s typy hodnot na zásobníku operandů. U~starších verzí \texttt{class} souboru tento atribut chybí, a proto se provádí typová inference pomocí analýzy datového toku.
+\item [\texttt{StackMapTable}] může být jedním z~atributů \texttt{Code}. Je důležitý pro typovou kontrolu při verifikaci \texttt{class} souborů. Pro každý základní blok instrukcí obsahuje rámec s~typy lokálních proměnných a s~typy hodnot na zásobníku operandů. U~starších verzí \texttt{class} souboru tento atribut chybí, a proto se provádí typová inference pomocí analýzy datového toku.
 
 \item [\texttt{Exceptions}] je atribut metody. Obsahuje odkazy do tabulky konstant na typy kontrolovaných výjimek, které metoda může vyhodit.
 
@@ -272,7 +272,7 @@ Pro správnou interpretaci virtuálním strojem je důležitých následujícíc
 
 \end{description}
 
-Dalších dvanáct atributů je podstatných pro správnou interpretaci knihovnami Java API. Nesou informace o dané třídě, které mohou být dostupné za běhu programu prostřednictvím reflexe.
+Dalších dvanáct atributů je podstatných pro správnou interpretaci knihovnami Java API. Nesou informace o~dané třídě, které mohou být dostupné za běhu programu prostřednictvím reflexe.
 
 \begin{description}
 
@@ -284,14 +284,14 @@ Dalších dvanáct atributů je podstatných pro správnou interpretaci knihovna
 
 \item [\texttt{Signature}] nese deklaraci třídy, rozhraní, členské proměnné nebo metody, v~níž se vyskytují typové proměnné nebo parametrizované typy.
 
-\item [\texttt{Runtime}$Visibility$$Annotations$] jsou atributy obsahující seznamy anotací s danou viditelností a z dané skupiny. $Annotations$ označuje jednu z následujících skupin anotací: \texttt{Annotations} pro anotace tříd, členských proměnných a metod, \texttt{TypeAnnotations} pro anotace typů a \texttt{ParameterAnnotations} pro anotace formálních parametrů metod. $Visibility$ určuje, zda je anotace za běhu programu viditelná \texttt{Visible} či neviditelná \texttt{Invisible}. 
+\item [\texttt{Runtime}$Visibility$$Annotations$] jsou atributy obsahující seznamy anotací s~danou viditelností a z~dané skupiny. $Annotations$ označuje jednu z~následujících skupin anotací: \texttt{Annotations} pro anotace tříd, členských proměnných a metod, \texttt{TypeAnnotations} pro anotace typů a \texttt{ParameterAnnotations} pro anotace formálních parametrů metod. $Visibility$ určuje, zda je anotace za běhu programu viditelná \texttt{Visible} či neviditelná \texttt{Invisible}. 
 
 \item [\texttt{AnnotationDefault}] reprezentuje výchozí hodnotu elementu, který patří typu anotace.
 
 \item [\texttt{MethodParameters}] může být atributem metody a obsahuje jména a přístupové příznaky jeho formálních parametrů.
 \end{description}
 
-Zbývající atributy jsou pouze informativní a mohou sloužit například k~ladění chyb ve zdrojovém souboru. Obsahují informace o zdrojovém kódu a lokálních proměnných.
+Zbývající atributy jsou pouze informativní a mohou sloužit například k~ladění chyb ve zdrojovém souboru. Obsahují informace o~zdrojovém kódu a lokálních proměnných.
 
 \begin{description}
 
@@ -317,7 +317,7 @@ Každá instrukce se skládá z~jednobajtového operačního kódu \textit{opcod
 
 Konstantní hodnotu lze dle jejího typu, velikosti a hodnoty vložit na zásobník několika způsoby.
 Instrukce \texttt{aconst\_null} vloží na zásobník referenci na \texttt{null}. 
-Instrukce \texttt{iconst\_}$value$, kde $value \in \{ \texttt{m1}, \texttt{0}, \texttt{1}, \texttt{2}, \texttt{3}, \texttt{4}, \texttt{5}\}$ reprezentuje číselnou hodnotu v rozsahu -1 až 5, vloží na zásobník odpovídající hodnotu typu \texttt{int}. Obdobně lze instrukcí \texttt{fconst\_}$value$, kde $value \in \{\texttt{0}, \texttt{1}, \texttt{2}\}$, a instrukcemi \texttt{lconst\_}$value$ a \texttt{dconst\_}$value$, kde $value \in \{\texttt{0}, \texttt{1}\}$, vložit konstantní hodnoty typu \texttt{float}, \texttt{long} a \texttt{double}. 
+Instrukce \texttt{iconst\_}$value$, kde $value \in \{ \texttt{m1}, \texttt{0}, \texttt{1}, \texttt{2}, \texttt{3}, \texttt{4}, \texttt{5}\}$ reprezentuje číselnou hodnotu v~rozsahu -1 až 5, vloží na zásobník odpovídající hodnotu typu \texttt{int}. Obdobně lze instrukcí \texttt{fconst\_}$value$, kde $value \in \{\texttt{0}, \texttt{1}, \texttt{2}\}$, a instrukcemi \texttt{lconst\_}$value$ a \texttt{dconst\_}$value$, kde $value \in \{\texttt{0}, \texttt{1}\}$, vložit konstantní hodnoty typu \texttt{float}, \texttt{long} a \texttt{double}. 
 Větší celočíselnou hodnotu typu \texttt{int} umožňují vložit instrukce \texttt{bipush} $value$ a \texttt{sipush} $value$, kde $value$ je jednobajtová, respektive dvoubajtová celočíselná hodnota se znaménkem, tj. -128 až 127 pro \texttt{bipush} a -32 768 až 32 767 pro \texttt{sipush}.
 
 Ve všech ostatních případech je nutné vložit hodnotu z~tabulky konstant. Pomocí instrukce \texttt{ldc} $index$, kde $index$ je jednobajtový index do tabulky konstant, lze vložit hodnotu typu \texttt{int} či \texttt{float} nebo referenci na objekt. Instrukce \texttt{ldc\_w} $index$ umožňuje použít dvoubajtový index. Instrukce \texttt{ldc2\_w} $index$ vloží na zásobník hodnotu typu \texttt{long} nebo \texttt{double} danou dvoubajtovým indexem  $index$.
@@ -395,8 +395,8 @@ K~odstranění hodnot z~vrcholu zásobníku slouží instrukce \texttt{pop} a \t
 
 \subsubsection{Další instrukce}
 
-Instrukce \texttt{nop} nic nedělá a nemá žádný efekt. V instrukční sadě je zahrnuta zejména pro úplnost, ale může být užitečná například při generování kódu \cite{}.
-Sada dále obsahuje instrukce \texttt{breakpoint}, \texttt{impdep1} a \texttt{impdep2} rezervované pro interní užití v JVM. Význam těchto instrukcí není a nebude definovaný, což dává prostor ke specifickému rozšíření funkcionality JVM. Instrukce \texttt{breakpoint} je zamýšlena k implementaci zarážek v ladících programech. 
+Instrukce \texttt{nop} nic nedělá a nemá žádný efekt. V~instrukční sadě je zahrnuta zejména pro úplnost, ale může být užitečná například při generování kódu \cite{}.
+Sada dále obsahuje instrukce \texttt{breakpoint}, \texttt{impdep1} a \texttt{impdep2} rezervované pro interní užití v~JVM. Význam těchto instrukcí není a nebude definovaný, což dává prostor ke specifickému rozšíření funkcionality JVM. Instrukce \texttt{breakpoint} je zamýšlena k~implementaci zarážek v~ladících programech. 
 
 
 

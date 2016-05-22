@@ -6,7 +6,7 @@ V~této kapitole analyzuji obsah vybraného vzorku \texttt{class} souborů a na 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Analýza bajtkódu}\label{Optimization:Analysis}
 
-Pomocí nástroje \texttt{jbyca} jsem získala data reprezentující vybraný vzorek testovacích souborů a tato data následně zpracovala a vyhodnotila. Zkoumala jsem velikosti položek v~\texttt{class} souborech, užití lokálních proměnných a parametrů metod a typické sekvence instrukcí. Testovací vzorek jsem vytvořila z~\texttt{jar} souborů stažených z~\texttt{http://mvnrepository.com}. Soubory jsem vybírala náhodně s ohledem na jejich velikost a četnost stahování. Zvolený vzorek se skládal z~95 souborů o~celkové velikosti 102,4 MB a obsahoval 59 230 \texttt{class} souborů.
+Pomocí nástroje \texttt{jbyca} jsem získala data reprezentující vybraný vzorek testovacích souborů a tato data následně zpracovala a vyhodnotila. Zkoumala jsem velikosti položek v~\texttt{class} souborech, užití lokálních proměnných a parametrů metod a typické sekvence instrukcí. Testovací vzorek jsem vytvořila z~\texttt{jar} souborů stažených z~\texttt{http://mvnrepository.com}. Soubory jsem vybírala náhodně s~ohledem na jejich velikost a četnost stahování. Zvolený vzorek se skládal z~95 souborů o~celkové velikosti 102,4 MB a obsahoval 59 230 \texttt{class} souborů.
 
 \subsection{Velikost položek v~souboru}
 
@@ -230,7 +230,7 @@ V~této kapitole jsou uvedeny optimalizační metody, které nemodifikují struk
 % zmínit další možné optimalizace, rozsah optimalizací
 
 \subsubsection{Odstranění zbytečných atributů}
-V~kapitole \ref{Bytecode:Format:Attributes} jsou mezi informativní atributy zařazeny ty, které poskytují informace vhodné například pro ladění programů. Jsou to atributy \texttt{SourceFile}, \texttt{SourceDebugExtension}, \texttt{LineNumberTable}, \texttt{LocalVariableTable}, \texttt{LocalVariableTypeTable} a \texttt{Deprecated}.  Z~analýzy vyplynulo, že informativní atributy tvoří 14\% z~celkové velikosti zpracovaných \texttt{class} souborů. Vzhledem k~tomu, že atributy nejsou důležité pro správnou interpretaci souboru, je žádoucí je ze souboru odstranit. Generování těchto atributů lze v překladači \texttt{javac} zabránit již za překladu volbou \texttt{--g:none}.
+V~kapitole \ref{Bytecode:Format:Attributes} jsou mezi informativní atributy zařazeny ty, které poskytují informace vhodné například pro ladění programů. Jsou to atributy \texttt{SourceFile}, \texttt{SourceDebugExtension}, \texttt{LineNumberTable}, \texttt{LocalVariableTable}, \texttt{LocalVariableTypeTable} a \texttt{Deprecated}.  Z~analýzy vyplynulo, že informativní atributy tvoří 14\% z~celkové velikosti zpracovaných \texttt{class} souborů. Vzhledem k~tomu, že atributy nejsou důležité pro správnou interpretaci souboru, je žádoucí je ze souboru odstranit. Generování těchto atributů lze v~překladači \texttt{javac} zabránit již za překladu volbou \texttt{--g:none}.
 
 \subsubsection{Realokace lokálních proměnných}
 Analýza užití lokálních proměnných a parametrů metod odhalila, že se s~tímto paměťovým prostorem nepracuje optimálně. K~úspornějšímu užívání proměnných nabádá i specifikace \cite{Lindholm:JVM}. Proměnné lze realokovat a recyklovat tak, aby se častěji pracovalo s~nižšími indexy proměnných. Nižší indexy pak umožňují používat kratší varianty instrukcí pro práci s~proměnnými. Nejvíce užívanými indexy by proto měly být hodnoty 0 až 3, pro které existují specializované jednobajtové instrukce \texttt{load} a \texttt{store}. 
