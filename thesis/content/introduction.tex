@@ -2,9 +2,11 @@
 \chapter{Úvod}\label{Introduction}
 
 % Úvod do tématu. 
-TODO: Úvod do tématu, přehled kapitol.
 
-%V~této práci se zabývám bajtkódem Javy z~hlediska optimalizace jeho velikosti. V~kapitole~\ref{JVM} popisuji virtuální stroj Java Virtual Machine a způsob, jakým je bajtkód interpretován. Kapitola \ref{Format} je věnovaná formátu, v~jakém je bajtkód uložen v~instrukčních souborech. Dále uvádím stručný popis nástrojů pro manipulaci s~bajtkódem a shrnuji jejich výhody a nevýhody v~kapitole \ref{Tools}. Konkrétně zmiňuji nástroje BCEL, ACM a Javassist. Kapitola \ref{Tool} je věnovaná návrhu a implementaci nástroje pro analýzu bajtkódu. Pomocí tohoto nástroje jsem získala data, která jsem zpracovala a vyhodnotila v~kapitole \ref{Analysis}. Cílem této práce je seznámení se s~bajtkódem a diagnostika míst vhodných k~optimalizaci z~hlediska velikosti.
+Kód programu je obvykle optimalizován s~cílem minimalizovat dobu běhu programu, ale hlavním požadavkem může být i kratší kód či efektivnější práce s~dostupnými prostředky, jak uvádí Aho \cite{}. Zatímco optimalizace rychlosti je u~jazyka Java dobře zpracovaným tématem \cite{}, optimalizace velikosti kódu se řeší především v~souvislosti s~vestavěnými systémy \cite{} a obfuskací \cite{}. Ve vestavěných systémech se však používají specializované edice Javy a obfuskace kódu vede k~modifikaci struktury programu. Kratší kód přitom zabírá méně paměti, rychleji se přenáší po síti a může vést i k~rychlejšímu běhu programu. Cílem této práce je proto studium bajtkódu Javy SE z~hlediska jeho velikosti a návrh metod pro optimalizaci velikosti bajtkódu. Výstupem práce jsou nástroje \texttt{jbyca} a \texttt{jbyco} pro analýzu a optimalizaci bajtkódu.
+
+V~kapitole \ref{} se věnuji obecné speficikaci bajtkódu Javy. Popisuji virtuální stroj Java Virtual Machine, způsob, jakým je bajtkód interpretován, a zabývám se formátem, v~jakém je bajtkód uložen v~instrukčních souborech. V~kapitole \ref{Tools} uvádím stručný popis existujících nástrojů pro manipulaci s~bajtkódem a shrnuji jejich výhody a nevýhody. Konkrétně zmiňuji BCEL, ASM a Javassist. Tyto nástroje jsem využila při návrhu a implementaci nástroje \texttt{jbyca} pro analýzu bajtkódu popsaného v~kapitole \ref{}. Nástroj jsem aplikovala na vybraný vzorek dat a získané výstupy zpracovala a vyhodnotila v~kapitole \ref{}. Na základě výsledků jsem navrhla metody pro optimalizaci velikosti a implementovala je v~nástroji \texttt{jbyco}, kterému je věnovaná kapitola \ref{}. Nakonec jsem s užitím tohoto nástroje optimalizovala vzorová data a vyhodnotila účinky optimalizačních metod.
+
 
 %=========================================================================
 

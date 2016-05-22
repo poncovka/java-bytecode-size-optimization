@@ -1,131 +1,70 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Nástroj pro analýzu bajtkódu}\label{Tool}
+\chapter{Nástroj pro optimalizaci velikosti bajtkódu}\label{Implementation}
 
 % TODO 
-% * dostatečně
-% * obrázek s instrukcemi a stromem
-% * příklady zobecnění instrukcí 
-% * základní blok
-% * kombinatoriky
-% * abstrahování - zobecnění
-% * kešování
+% * zmínit, že záleží na pořadí, a že každá optimalizace produkuje další možnosti k optimalizaci, mebo taky ne
 
+V~této kapitole popisuji návrh a implementaci nástroje \texttt{jbyco} určeného k optimalizaci velikosti \texttt{class} souborů. Nástroj implementuje optimalizační metody, které jsem navrhla v~předchozí kapitole. Efektivita těchto metod je na základě výstupů programu vyhodnocena v~kapitole \ref{Implementation:Results}.
 
-V~této kapitole popisuji návrh a implementaci nástroje \texttt{jbyca}. Nástroj je určen pro zpracování \texttt{class} souborů a získání dat shrnujících obsahy těchto souborů. Následná analýza dat poslouží k~návrhu optimalizace velikosti bajtkódu.
+\section{Požadavky na program}
 
-\section{Požadavky na program}\label{ToolRequirements}
+Cílem programu je implementovat navržené optimalizační metody a na testovacím vzorku \texttt{class} souborů demonstrovat jejich efektivitu. Zaměřila jsem se na metody pro optimalizaci sekvencí instrukcí. Jedním z~požadavků je proto i návrh vhodného programového rozhraní, který umožní snadno implementovat nové optimalizační metody.
 
-% TODO upravit
+\section{Návrh programu}
 
-Při návrhu programu jsem vycházela z požadavků na výstupy programu.
-Ty by měly umět zodpovědět následující otázky: 
+Při návrhu programu bylo potřeba se zamyslet nad pořadím aplikací optimalizačních metod. Dále bylo třeba navrhnout rozhraní pro optimalizaci sekvencí instrukcí.
+
+\subsection{Pořadí optimalizačních metod}
+
+U~některých optimalizačních metod může záležet na pořadí, v~jakém se aplikují. Například metodu pro substituci číselných konstant má smysl uskutečnit až jako poslední krok optimalizace, neboť jiné metody by mohly tuto substituci zvrátit. Na druhou stranu metoda pro odstranění zbytečných atributů může usnadnit další manipulaci s~kódem a je proto vhodné ji aplikovat při načtení vstupního bajtkódu. 
+
+U~optimalizací sekvencí instrukcí může docházet k~tomu, že některé optimalizace budou vytvářet příležitosti pro další optimalizace. Vzhledem k~uspořádání zásobníkového kódu pak může být výhodnější aplikovat metody pro sekvence instrukcí na kód v~opačném směru, tedy od poslední instrukce k~první. Nejprve se tak zkoumají operace a jejich parametry, předtím než se začnou zkoumat další vztahy mezi instrukcemi. Tento způsob práce s~bajtkódem lze podpořit expanzí duplikací. Pokud je možné instrukci pro duplikaci aplikovat na úrovni instrukcí kódu, může tato aplikace vytvořit nové příležitosti pro optimalizace.
+Konečný návrh na pořadí optimalizačních metod je následující:
 
 \begin{enumerate}
 \setlength{\itemsep}{0pt}
 \setlength{\parskip}{0pt}
-\item Kolik souborů, bajtů, tříd, metod a členských proměnných se zpracovalo? 
-\item Jaké jsou velikosti jednotlivých položek v~souborech? 
-\item Jaké je využití lokálních proměnných? 
-\item Jaké jsou typické sekvence instrukcí v~souborech?
-\item Jak vypadá obsah konkrétního \texttt{class} souboru? 
+\item Odstranění zbytečných atributů.
+\item Expanze duplikací. 
+\item Zjednodušení kódu.
+\item Redukce duplikací.
+\item Substituce číselných konstant.
 \end{enumerate}
 
-\section{Návrh programu}\label{ToolDesign}
 
-Program jsem rozdělila na několik podprogramů, přičemž každý z~nich řeší jeden z požadavků. 
-Většinu potřebných dat lze získat jednoduše pomocí knihoven ASM a BCEL. Výjimku tvoří nalezení typických sekvencí instrukcí. Sekvence instrukcí je třeba nějakým způsobem uchovávat v paměti a umožnit jejich zobecňování.
+\subsection{Návrh rozhraní pro peephole optimalizace}
 
-\subsection{Reprezentace sekvencí instrukcí}
+Většina navržených optimalizačních metod v~kapitole \ref{} je založených na nalezení vzorové sekvence instrukcí a náhradě této sekvence za optimalizované řešení. Tento způsob optimalizace se nazývá peephole optimalizace \ref{} a je specifický tím, že se vždy zkoumá jen malý úsek kódu. Nezbytnou součástí návrhu programu \texttt{jbyco} je tedy i návrh rozhraní pro peephole optimalizace. Konkrétně je třeba navrhnout, jakým způsobem budou definovány vzorové sekvence, jak budou vzorové sekvence rozpoznávány v~kódu určeném k~optimalizaci a jak bude probíhat samotná úprava kódu.
 
-Získání typických sekvencí instrukcí vyžaduje uchovávat v~paměti všechny nalezené různé sekvence ze všech zpracovaných metod s četnostmi jejich výskytu. Každou novou sekvenci je pak třeba porovnat s~ostatními, a buď upravit četnost shodné sekvence, nebo vložit novou sekvenci mezi ostatní. To představuje velkou časovou a paměťovou zátěž a nelze zaručit, že program skončí dřív než dojde k~nedostatku paměti. Z~těchto důvodů bylo třeba vymyslet úspornou datovou strukturu reprezentující sekvence a způsob zotavení se z~nedostatku paměti.
+Způsobů implementace peephole optimalizace je mnoho. Jako přímé řešení se nabízí převádět vstupní bajtkód na řetězcovou reprezentaci. Vzorové sekvence by pak byly popsány regulárními výrazy a problematika nalezení a úpravy bajtkódu by se zjednodušila na prosté hledání a nahrazování regulárních výrazů v~řetězci. Na závěr by bylo nutné řetězcovou reprezentaci opět převést na sekvenci instrukcí. Výhodou tohoto přístupu je snadné ladění, neboť řetězcová reprezentace kódu je snadno čitelná.
 
-Jako vhodná datová struktura se pro sekvence instrukcí nabízí strom. Kořenem stromu by byl prázdný uzel, uzly jednotlivé instrukce a žádný uzel by nesměl mít dva bezprostřední následníky se stejnou instrukcí. Každá cesta z~kořene do nějakého uzlu stromu by představovala jednu sekvenci a poslední uzel této cesty by pak obsahoval hodnotu četnosti výskytu sekvence. Do stromu pak stačí vkládat postfixy seznamu instrukcí každé metody, neboť sufixy těchto postfixů tvoří všechny sekvence seznamu instrukcí a každý z~těchto sufixů je tvořen cestou z~kořene stromu. Stromová reprezentace umožňuje snadné porovnávání a přidávání sekvencí a šetří pamětí, neboť sekvence mohou sdílet společné prefixy.
+Efektivnější variantou by mohlo být hledání regulárními výrazy přímo nad instrukcemi bajtkódu. Regulární výrazy pro popis vzorových sekvencí by bylo možné předzpracovat a vygenerovat konečný stavový automat, který bude tyto výrazy rozpoznávat. Nalezené sekvence instrukcí pak mohou být nahrazeny za optimální. Pokud bude automat generován v~době překladu, pak by takové řešení mělo být velice rychlé. Vyžaduje však implementovat nástroje pro lexikální a syntaktickou analýzu regulárních výrazů, nástroje pro převod regulárních výrazů na konečný automat a nástroje pro minimalizaci konečného automatu. Pokud se však sleví z~požadavků na sílu jazyka pro popis vzorových sekvencí, lze tuto variantu zjednodušit.
 
-Nedostatku paměti je třeba předcházet v~každém případě. Možným řešením je pravidelně kontrolovat, kolik procent z~dostupné paměti se již využilo, a při překročení určité hodnoty zmenšit velikost vytvořeného stromu. Zmenšení stromu je možné dosáhnout jedním průchodem, při kterém se odstraní všechny hrany do uzlů z~nižší hodnotou četnosti výskytu než je stanovený práh. Tento práh se následně zvedne. V~krajním případě bude strom po ukončení výpočtu obsahovat pouze svůj kořen, ale výpočet neskončí nedostatkem paměti.
+Většinu vzorových sekvencí v~navržených optimalizačních metodách tvoří posloupnost instrukcí konstantní délky. Vzorové instrukce jsou specifikovány svými operačními kódy a omezeními kladenými na jejich parametry. Jako možné řešení se proto nabízí definovat vzorové sekvence pomocí posloupností operačních kódů a teprve při nalezení odpovídající sekvence kontrolovat další omezení. Pokud jsou všechna omezení splněna, může být sekvence optimalizována. Ve své implementaci jsem zvolila tuto variantu. 
 
-\subsection{Zobecnění instrukcí a jejich sekvencí}
+Každá peephole optimalizace je tedy definována posloupností symbolů, které reprezentují množiny operačních kódů, a akcí, které provádí dodatečné kontroly a optimalizaci. Jedním z~výstupů akce je informace o~tom, zda se optimalizace provedla či neprovedla.
+Rozpoznávání posloupností symbolů lze realizovat jednoduchým konečným automatem, jehož stavy jsou indexy do posloupnosti symbolů. Počátečním stavem je nula a koncovým stavem je délka posloupnosti. Pokud operační kód instrukce na vstupu patří do množiny reprezentované symbolem na indexu určeném aktuálním stavem, automat provede přechod na následující index. Pokud automat přejde do koncového stavu, provede se pro nalezenou sekvenci instrukcí odpovídající akce.
 
-Každá instrukce je daná svým operačním kódem a parametry. Zkoumat typické sekvence instrukcí s~konkrétními hodnotami parametrů může přinést zajímavé výsledky, ale nenalezne obecné typické konstrukce. Instrukce lze tak nahradit jejich zobecněnými protějšky. Zobecnění instrukce se skládá ze svou částí: zobecnění operačního kódu a zobecnění parametrů. Zobecnění operačního kódu lze dosáhnout odstraněním typové informace z~názvu operace. Zobecnění parametrů může mít dvě úrovně. Na nejnižší úrovni je parametr zastoupený jen svým typem. Na vyšší úrovni je každé hodnotě parametru přiřazen typ a číselný identifikátor. Pokud se taková hodnota vyskytuje v~jedné sekvenci vícekrát, přiřazený identifikátor se nemění. Lze tak obecně zkoumat práci s~opakujícími se hodnotami parametrů.
+\section{Popis implementace}
 
-V~některých případech může být užitečné naopak rozšířit informace o~instrukcích. Pracuje-li instrukce s~lokální proměnnou a proměnná je jedním z~parametrů metody, pak je vhodné nahradit označení proměnné klíčkovým slovem \texttt{this}, nebo identifikátorem parametru metody. Díky tomu je možné pozorovat, jak se v~metodě pracuje s~jejími parametry a jak třída pracuje se svými metodami a členskými proměnnými.
-Seznam instrukcí je vhodné doplnit o~návěští, která budou označovat místa skoků. Budou-li tato návěští součástí zkoumaných sekvencí, lze rozlišit jednotlivé základní bloky instrukcí.
+Program jsem implementovala v~jazyce Java 8 za použití knihovny ASM 5.0 a knihovny \texttt{jbyco-common}, která vznikla v~rámci implementace nástroje \texttt{jbyca}. Překlad a instalaci zajišťuje knihovna Gradle 2.7. V~balíčku \texttt{jbyco.optimization} je umístěná třída \texttt{Application} s~hlavní metodou \texttt{main}. Tato metoda zpracuje parametry, inicializuje instanci třídy \texttt{Optimizer} pro optimalizaci bajtkódu a pro každý \texttt{class} soubor vrácený iterátorem \texttt{BytecodeFilesIterator} z~balíčku \texttt{jbyco.io} zavolá jeho metodu \texttt{optimizeClassFile}. Ke sběru informací o~provedených optimalizacích slouží třída \texttt{Statistics}. Třídy implementující optimalizační metody pro expanzi kódu jsou umístěné v~balíčku \texttt{jbyco.optimization.expansion}, třídy pro zjednodušení kódu jsou v~balíčku \texttt{jbyco.optimization.simplification} a třídy pro redukci kódu jsou obsažené v~balíčku \texttt{jbyco.optimization.reduction}.
 
-Jako další možné rozšíření se nabízí práce s~divokými kartami.
-Jedna divoká karta zastupuje v sekvenci jednu instrukci. Vyskytuje-li se tedy v sekvenci divoká karta, pak si lze na jejím místě domyslet libovolnou instrukci. Sekvence s~divokými kartami tak umožňují zkoumat i typické sekvence instrukcí, které nenásledují bezprostředně za sebou. K~vytvoření všech sekvencí s~divokými kartami pro danou sekvenci je třeba určit všechny možné kombinace indexů instrukcí, které budou nahrazeny divokými kartami. Z praktických důvodů je vhodné zakázat náhradu instrukcí, které formují základní bloky.
+\subsubsection{Reprezentace vzorových sekvencí a akcí}
 
-\section{Popis implementace}\label{ToolImplementation}
+Balíček \texttt{jbyco.optimization.peephole} obsahuje třídy pro implementaci a aplikaci peephole optimalizací. Rozhraní \texttt{Symbol} pro symboly reprezentuje množinu operačních kódů. Má jedinou metodu \texttt{match} s~parametrem \texttt{AbstractInsnNode} z~knihovny ASM, která vrací \texttt{true}, pokud operační kód dané instrukce patří do množiny reprezentované symbolem, jinak \texttt{false}. Toto rozhraní je implementováno výčtem \texttt{Symbols}, kde každý operační kód je reprezentován jedním symbolem a další symboly reprezentují skupiny operačních kódů se stejnými vlastnostmi. Vzorovou sekvenci lze definovat pomocí anotace \texttt{Pattern}, která obsahuje pole symbolů typu \texttt{Symbol}. Metoda anotovaná anotací \texttt{Pattern} je pak považovaná za akci, která se vykoná při nalezení sekvence instrukcí odpovídající vzoru. Parametry metody jsou seznam instrukcí typu \texttt{InsnList} z~knihovny ASM a pole instrukcí typu \texttt{AbstractInsnNode}. Seznam instrukcí je aktuální reprezentací bajtkódu metody. Pole instrukcí pak obsahuje instrukce ze seznamu instrukcí a tvoří nalezenou sekvenci instrukcí. Pomocí prvků tohoto pole lze snadno provádět dodatečné kontroly a modifikovat seznam instrukcí. Návratová hodnota je typu \texttt{boolean} a značí, zda došlo k~modifikaci seznamu instrukcí. Třída \texttt{InsnUtils} slouží akcím jako knihovna užitečných funkcí.
 
-Program jsem implementovala v~jazyce Java 8 s~použitím knihoven ASM 5.0 a BCEL 6.0 a nástroje Gradle 2.7. V balíčku \texttt{jbyco.analysis} je třída \texttt{Application} s~metodou \texttt{main}, která dle předaných parametrů spustí některý z~nástrojů. Každý nástroj má definovanou vlastní metodu \texttt{main} a lze jej tedy spustit i samostatně.
+\subsubsection{Hledání vzorových sekvencí a aplikace akcí}
 
-\subsection{Zpracování parametrů}
+Třída \texttt{Runner} z~balíčku \texttt{jbyco.optimization.peephole} zapouzdřuje hledání vzorů a spouštění odpovídajících akcí. Její metoda \texttt{loadPatterns} načte z~dané třídy akce a vzory a vytvoří se pro ně konečné automaty reprezentované instancemi třídy \texttt{StateMachine}. Akce je po tomto kroku reprezentovaná instancí funkčního rozhraní \texttt{Action} s~metodou \texttt{replace}. Třída \texttt{StateMachine} obsahuje metody pro test, zda lze přečíst vstupní instrukci, pro čtení vstupní instrukce, pro určení, zda je automat v~konečném stavu, a vykonání příslušné akce. 
 
-Balíček \texttt{jbyco.lib} slouží jako knihovna užitečných tříd a funkcí. Jeho součástí jsou třídy \texttt{AbstractOption} a \texttt{AbstractOptions} sloužící k~definování a zpracování argumentů příkazové řádky a třída \texttt{Utils} obsahující různé statické metody. 
+Metoda \texttt{findAndReplace} třídy \texttt{Runner} slouží k~hledání vzorů a spouštění akcí. Dokud v~daném seznamu instrukcí dochází ke změnám, tak se v~něm opakovaně vyhledává. Pro aktuální instrukci se nejprve ověří, zda nemůže být přečtena některým z~načtených konečných automatů. Pokud ano, je vytvořena kopie tohoto automatu a vložena do fronty běžících automatů. Tato fronta je následně dále zpracovávána. Pokud automat z~fronty běžících automatů přečte aktuální instrukci, pak zůstává, a pokud ji nepřečte, je z~fronty odebrán. Přejde-li automat do koncového stavu, spustí se akce, a modifikuje-li akce seznam instrukcí, fronta běžících automatů se vyprázdní a vyhledávání vzorů se restartuje.
 
-\subsection{Práce se soubory}
+\section{Překlad a spuštění}
 
-Balíček \texttt{jbyco.io} obsahuje třídy pro práci se soubory. Třída \texttt{CommonFile} soubor pomocí jeho absolutní i relativní cesty. Instance této třídy vrací iterátor \texttt{CommonFilesIterator}, který rekurzivně prochází daný adresář a vrací všechny nalezené soubory. Rozšířením tohoto iterátoru je třída \texttt{BytecodeFilesIterator}, který prochází i \texttt{jar} soubory a vrací všechny nalezené \texttt{class} třídy. Nalezené \texttt{jar} soubory jsou pomocí třídy \texttt{JarExtractor} rozbaleny do dočasného adresáře a prohledávání pokračuje v tomto adresáři. Knihovna metod pro práci s dočasnými soubory je obsažena ve třídě \texttt{TemporaryFiles}. Třída \texttt{BytecodeFilesCounter} slouží v určení počtu \texttt{class} souborů v prohledávaném prostoru a nevyžaduje ke své práci dočasné soubory. 
-Třída \texttt{BytecodePrinter} je nástroj pro vypsání obsahu \texttt{class} souboru. Tabulku konstant vypisuje prostřednictvím třídy \texttt{ConstantPoolWriter}.  
+TODO
 
-\subsection{Analýza bajtkódu}
+\section{Zhodnocení výstupů programu}\label{Implementation:Results}
 
-Nástroje pro analýzu bajtkódu jsou umístěné v~balíčku \texttt{jbyco.analysis}. V~rozhraní \texttt{Analyzer} jsou deklarované metody pro zpracování \texttt{class} souborů \texttt{processClassFile} a výpis získaných dat \texttt{writeResults}. Jednotlivé nástroje pro analýzu jsou dostupné podbalíčcích.
+TODO\\
+          
 
-Hledání typických sekvencí probíhá ve třídě \texttt{PatternsAnalyzer} následovně. Každý \texttt{class} soubor je převeden na stromovou reprezentaci knihovny ASM. Seznam instrukcí každé metody je doplěn o návěští označující začátek a konec metody. Každou metodu pak navštíví instance třídy \texttt{ActiveLabelsFinder} a vyhledá všechna aktivní návěští. Návěští, která nejsou aktivní budou při dalším zpracování vynechána. Ze seznamu instrukcí metody se postupně vygenerují všechny sekvence instrukcí dané délky. Z~těchto sekvencí mohou být dále generované sekvence s~daným počtem divokých karet. Každá vygenerovaná sekvence je pomocí třídy \texttt{Abstractor} převedena na sekvenci abstrahovaných instrukcí typu \texttt{AbstractInstruction}. Abstrahované instrukce jsou prostřednictvím třídy \texttt{Cache} nahrazeny instrukcemi typu \texttt{CachedInstruction}. Výsledná sekvence je předaná instanci třídy \texttt{TreeBuilder}, která sekvenci vloží do vytvářeného stromu. Po zpracování každého souboru tato třída zkontroluje dostupnou paměť a případně provede ořezání stromu. Nakonec se pomocí třídy \texttt{PatternsWriter} vypíšou nalezené sekvence a jejich četnosti.
-
-\subsection{Sběr statistik}
-
-Nástroj pro získání souhrnných informací o~zpracovaných \texttt{class} souborech je implementovaný ve třídě \texttt{StatisticsCollector}. Nástroj prochází jednotlivé položky souboru a  počty těchto položek aktualizuje v~instanci třídy \texttt{StatisticsMap}. Po zpracování všech souborů se vypíše tabulka s~typem položky, celkovým počtem výskytu tohoto typu a počtem výskytu přepočteným na jeden soubor. 
-
-\subsection{Analýza velikosti}
-
-Přehled o velikostech jednotlivých položek v~souborech poskytuje nástroj \texttt{SizeAnalyzer}. Nástroj určuje velikosti zpracovávaných položek a informace o~jejich velikostech udržuje v~instanci třídy \texttt{SizeMap}. Výstupem je tabulka s~typem položky, celkovou velikostí tohoto typu v~souborech, průměrnou velikostí tohoto typu a relativní velikostí vzhledem celkové velikosti zpracovaných souborů. 
-
-\subsection{Analýza lokálních proměnných}
-
-Data o~využití lokálních proměnných jsou dostupná s~nástrojem \texttt{VariablesAnalyzer}. Nástroj s~pomocí třídy \texttt{VariablesMap} zaznamenává pro každou metodu počet formálních parametrů a lokálních proměnných a jejich použití v~instrukcích metod. Výstupem tohoto nástroje jsou dvě tabulky: jedna pro lokální proměnné a jedna pro formální parametry metody. Každá z~tabulek obsahuje index do tabulky lokálních proměnných, počet metod, které s~danou proměnnou pracují, počet instrukcí pro načítání, ukládání a inkrementaci, součet všech instrukcí a průměrné hodnoty.
-
-\subsection{Analýza typických sekvencí instrukcí}
-
-Nástroj \texttt{PatternsAnalyzer} umožňuje vyhledat typické sekvence instrukcí. Dle návrhu potřebuje ke své práci stromovou reprezentaci sekvencí a abstrahovanou reprezentaci instrukcí. K~těmto účelům slouží dále uvedené balíčky. Výpis nalezených sekvenci zajišťuje třída \texttt{PatternsWriter}. Výstupem jsou četnosti sekvencí, jejich délky a řetězová reprezentace instrukcí v sekvencích. Výstup není seřazený.
-
-\subsubsection{Balíček \texttt{jbyco.analysis.patterns.tree}}
-
-V~balíčku \texttt{jbyco.analysis.patterns.tree} jsou dostupné třídy pro stromovou reprezentaci. Uzel stromu je reprezentován třídou \texttt{Node} a nese položku a čítač četnosti výskytu této položky. Třída \texttt{Tree} reprezentuje strom. Budování stromu, vkládání sekvencí a ořezávání stromu zajišťuje třída \texttt{TreeBuilder}. Třída \texttt{TreeExporter} slouží pro výpis grafu ve formátu GML.
-
-\subsubsection{Balíček \texttt{jbyco.analysis.patterns.instructions}}
-
-Balíček \texttt{jbyco.analysis.patterns.instructions} obsahuje rozhraní a třídy pro reprezentaci a abstrakci instrukcí. Abstrahování instrukcí umožňuje třída \texttt{Abstractor}. Třída implementuje rozhraní návštěvníka metody z~knihovny ASM. Jednotlivé instrukce jsou abstrahovány a ukládány do seznamu instrukcí typu \texttt{AbstractInstruction}. Abstrakce instrukce spočívá v~abstrahování operačního kódu, parametrů a návěští. Instance tříd pro abstrakci jednotlivých komponent jsou předány třídě \texttt{Abstractor} v~konstruktoru. Z~abstrahovaných komponent lze sestavit abstrahovanou instrukci typu \texttt{Instruction}. Součástí balíčku jsou i třídy \texttt{Cache} a \texttt{CachedInstruction}. Třída \texttt{Cache} spravuje mapu slabých referencí na abstraktní instrukce mapovaných na slabé reference na instrukce typu \texttt{CachedInstruction}. Pro každou abstrahovanou instrukci pak vrátí odpovídající instrukci z~mapy. Pro různé objekty se shodnými instrukcemi tak \texttt{Cache} vrátí stejný objekt. Třídy slouží k~úspoře paměti.
-
-\subsubsection{Balíček \texttt{jbyco.analysis.patterns.labels}}
-
-V~balíčku \texttt{jbyco.analysis.patterns.labels} jsou rozhraní a třídy pro práci s~návěštími. Abstrahované návěští je reprezentované rozhraním \texttt{AbstractLabel}. Abstrakci návěští popisuje rozhraní \texttt{AbstractLabelFactory}. Implementacemi jsou třídy \texttt{NumberedLabel}, \texttt{NamedLable} a \texttt{RelativeLabelFactory}, které každému návěští přiřazují relativní identifikátor. Návěští pro začátek a konec metody budou přiřazeny objekty typu \texttt{NamedLable} s identifikátory \texttt{begin} a \texttt{end}. Zbývajícím návěštím budou přiřazeny číselné identifikátory. Identifikátory jsou relativní. Znamená to, že jsou jedinečné pouze v rámci aktuální sekvence. Třída \texttt{ActiveLabelsFinder} implementuje návštěvníka metody z~knihovny ASM a slouží k~získání množiny návěští, na které se skáče z~nějaké instrukce dané metody nebo v rámci zpracování výjimek. Taková návěští dále označuji za aktivní.
-
-\subsubsection{Balíček \texttt{jbyco.analysis.patterns.operations}}
-
-S~operacemi se pracuje v~balíčku \texttt{jbyco.analysis.patterns.operations}. Operace jsou definované pomocí výčtů implementujících rozhraní \texttt{AbstractOperation}. Každá operace reprezentuje skupinu operačních kódů. Výčet \texttt{GeneralOperation} obsahuje operace bez typových informací na rozdíl od výčtu \texttt{TypedOperation}. Výčty \texttt{GeneralHandleOperation} a \texttt{TypedHandleOperation} implementující rozhraní \texttt{AbstractHandleOperation} definují operace, které se mohou vyskytovat v~položkách \textit{constant\_methodHandle}. Rozhraní pro abstrakci operačních kódů má název \texttt{AbstractOperationFactory}. Implementacemi tohoto rozhraní jsou třídy \texttt{GeneralOperationFactory} a \texttt{TypedOperationFactory}. 
-
-\subsubsection{Balíček \texttt{jbyco.analysis.patterns.parameters}}
-
-Balíček \texttt{jbyco.analysis.patterns.parameters} umožňuje práci s~parametry instrukcí. Každá třída reprezentující parametr implementuje rozhraní \texttt{AbstractParameter}. Těmito implementacemi jsou výčty \texttt{ParameterType} popisující typ parametru a \texttt{ParameterValue} sloužící k~popisu hodnot \texttt{null} a \texttt{this}, třída \texttt{NumberedParameter} popisující parametr pomocí typu a relativního identifikátoru a třída \texttt{FullParameter} sestávající z~typu parametru a pole hodnot. Abstrahování je deklarované v~rozhraní \texttt{AbstractParameterFactory} a implementované v~následujících třídách. Metody třídy \texttt{GeneralParameterFactory} vrací instance z~výčtu \texttt{ParameterType}, metody třídy \texttt{NumberedParameterFactory} vrací instance třídy \texttt{NumberedParameter} a metody třídy \texttt{FullParameterFactory} vrací instance třídy \texttt{FullParameter}.
-
-\subsubsection{Balíček \texttt{jbyco.analysis.patterns.wildcards}}
-
-Třídy balíčku \texttt{jbyco.analysis.patterns.wildcards} slouží k~vytváření sekvencí s~divokými kartami. Divoká karta je reprezentovaná hodnotou \texttt{null}. Třída \texttt{CombinationIterator} je iterátorem přes všechny povolené kombinace indexů instrukcí v~sekvenci, které budou nahrazené divokými kartami. Třída \texttt{WildSequenceGenerator} je iterátorem přes všechny sekvence s~divokými kartami, které lze z~dané sekvence vytvořit.
-
-\section{Překlad a spuštění}\label{ToolRun}
-
-Nástroj \texttt{jbyca} je implementován jazyce Java 8, proto je pro jeho překlad a spuštění vyžadovaná instalace Java JDK 8 a JRE 8.
-Překlad a instalaci zajišťuje skript \texttt{gradlew} vygenerovaný nástrojem Gradle. Nápovědu k tomuto skriptu lze vypsat příkazem \texttt{./gradlew tasks}. 
-Zdrojové soubory nástroje \texttt{jbyca} jsou součástí projektu \texttt{analysis}, zatímco knihovny pro práci se soubory a argumenty příkazové řádky jsou umístěné v projektu \texttt{common}. Projekt \texttt{examples} je užitečný pro generování testovacích \texttt{class} souborů.
-
-Příkaz \texttt{./gradlew build} ve všech projektech do jejich adresářů \texttt{build} přeloží zdrojové soubory, stáhne potřebné knihovny a sestaví a zabalí výsledné distribuce. Po zadání příkazu \texttt{./gradlew installDist} se distribuce nainstalují do adresářů \texttt{build/install}. Výsledkem instalace projektu \texttt{analysis} je adresář \texttt{jbyca} se dvěma podadresáři \texttt{bin} a \texttt{lib} pro spustitelné soubory a knihovny. Nástroj lze spustit příkazem \texttt{./jbyca} z adresáře \texttt{bin}. Nápověda k nástroji se vypíše po uvedení přepínače \texttt{---help}. Dokumentaci k programovému rozhraní lze vygenerovat příkazem \texttt{./gradlew javadoc}. Dokumentace bude k dispozici v adresáři \texttt{build/docs}.
-
-Součástí spustitelných souborů jsou dva nástroje pro vygenerování a zpracování výstupů. Příkaz \texttt{./jbyca-experiment data out} spustí sérii analýz nad soubory v adresáři \texttt{data} a získané soubory uloží do adresáře \texttt{out}. Příkaz \texttt{jbyca-postprocessing out cls} zpracuje výstupy v adresáři \texttt{out} a vygeneruje sjednocené a seřazené výstupy do adresáře \texttt{cls}. Obě činnosti mohou být v závislosti na velikosti vstupních dat časově náročné.
-
-
-
-
-
-
-
-%=========================================================================

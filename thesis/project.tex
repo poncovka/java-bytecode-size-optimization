@@ -161,20 +161,18 @@
 }
 
 %Abstrakt (cesky, anglicky)
-%\abstract[cs]{Tato práce je zaměřená na studium bajtkódu Javy z~hlediska jeho velikosti. Popisuje virtuální stroj Javy a formát instrukčního souboru a uvádí přehled některých nástrojů pro manipulaci s~bajtkódem. Pomocí těchto nástrojů jsem implementovala nástroj pro analýzu bajtkódu. Ze získaných dat se mi podařilo diagnostikovat místa, která jsou vhodná pro optimalizaci velikosti bajtkódu.}
-\abstract[cs]{TODO}
-%\abstract[en]{This paper deals with the Java bytecode in terms of  its size. It describes the Java Virtual Machine and the Java class file format. It also presents some tools for bytecode manipulation. Using these tools, I~have designed and implemented a tool for bytecode analysis. From collected data, I~have diagnosed locations suitable for size optimization.}
-\abstract[en]{TODO}
+\abstract[cs]{Tato práce se zabývá bajtkódem jazyka Java z~hlediska jeho velikosti. Popisuje virtuální stroj Javy a formát jeho instrukčního souboru a uvádí přehled některých knihoven pro manipulaci s~bajtkódem. S~pomocí těchto knihoven byla provedena analýza vybraného vzorku dat a nalezeny sekvence instrukcí, které by bylo možné optimalizovat. Na základě výsledků analýzy byly navrhnuty a implementovány metody pro optimalizaci velikosti bajtkódu. Velikost bajtkódu zkoumaného vzorku dat se po aplikaci metod snížila o~zhruba 25\%.}
+\abstract[en]{This paper deals with the Java bytecode in terms of its size. It describes the Java Virtual Machine and the Java class file format. It also presents some tools for the bytecode manipulation. Using these tools, I~have analyzed selected data and found sequences of instructions, that could be optimized. Based on the results of the analysis, I~have designed and implemented methods for bytecode size optimization. The bytecode size of the selected data was reduced by roughly 25\%.}
 
 %Klicova slova (cesky, anglicky)
-\keywords[cs]{Java, JVM, bajtkód, optimalizace velikosti, ASM, BCEL, Javassist}
-\keywords[en]{Java, JVM, bytecode, size optimization, ASM, BCEL, Javassist}
+\keywords[cs]{Java, JVM, bajtkód, ASM, BCEL, Javassist, optimalizace velikosti, peephole optimalizace}
+\keywords[en]{Java, JVM, bytecode, ASM, BCEL, Javassist, size optimization, peephole optimization}
 
 %Prohlaseni
 \declaration{Prohlašuji, že jsem tuto semestrální práci vypracovala samostatně pod vedením pana Ing. Radka Kočího, Ph.D. a pana Ing. Pavla Tišnovského, Ph.D. Uvedla jsem všechny literární prameny a publikace, ze kterých jsem čerpala.}
 
-%Podekovani (nepovinne)
-%\acknowledgment{V této sekci je možno uvést poděkování vedoucímu práce a těm, kteří poskytli odbornou pomoc (externí zadavatel, konzultant, apod.).}
+%Podekovani
+\acknowledgment{Děkuji panu Ing. Radkovi Kočímu za odborné vedení a pomoc při zpracování této práce. Mé poděkování patří též panu Ing. Pavlu Tišnovskému za cenné rady a připomínky.}
 
 \begin{document}
   % Vysazeni titulnich stran
