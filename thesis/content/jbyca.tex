@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Nástroj pro analýzu bajtkódu}\label{Tool}
+\chapter{Nástroj pro analýzu bajtkódu}\label{Jbyca}
 
 % TODO 
 % * dostatečně
@@ -10,10 +10,9 @@
 % * abstrahování - zobecnění
 % * kešování
 
+K získání dostatečně obecných dat, ze kterých bych mohla čerpat při návrhu metod pro optimalizaci velikosti bajtkódu, bylo potřeba zpracovat a analyzovat velké množství \texttt{class} souborů. Bylo proto výhodné navrhnout a implementovat nástroj, který tyto činnosti umožňuje zautomatizovat. Výslednému nástroji \texttt{jbyca} nebo-li Java Bytecode Analyzer je věnovaná tato kapitola.
 
-V~této kapitole popisuji návrh a implementaci nástroje \texttt{jbyca}. Nástroj je určen pro zpracování \texttt{class} souborů a získání dat shrnujících obsahy těchto souborů. Následná analýza dat poslouží k~návrhu optimalizace velikosti bajtkódu.
-
-\section{Požadavky na program}\label{ToolRequirements}
+\section{Požadavky na program}\label{Jbyca:Requirements}
 
 % TODO upravit
 
@@ -30,7 +29,9 @@ Ty by měly umět zodpovědět následující otázky:
 \item Jak vypadá obsah konkrétního \texttt{class} souboru? 
 \end{enumerate}
 
-\section{Návrh programu}\label{ToolDesign}
+Program je určen ke zpracování \texttt{class} souborů, přičemž důraz je kladen na jejich dávkové zpracování. Z toho plynou požadavky na vstup programu a jeho rychlost. Vstupem může být \texttt{class} soubor, \texttt{jar} soubor nebo adresář. Adresáře a \texttt{jar} soubory jsou dále prohledávány a každý nalezený \texttt{class} soubor je považován za další vstup programu. 
+
+\section{Návrh programu}\label{Jbyca:Design}
 
 Program jsem rozdělila na několik podprogramů, přičemž každý z~nich řeší jeden z~požadavků. 
 Většinu potřebných dat lze získat jednoduše pomocí knihoven ASM a BCEL. Výjimku tvoří nalezení typických sekvencí instrukcí. Sekvence instrukcí je třeba nějakým způsobem uchovávat v~paměti a umožnit jejich zobecňování.
@@ -57,9 +58,9 @@ V sekvencích instrukcí lze instrukce na libovolných pozicích nahradit zástu
 Tyto instrukce se nazývají divoké karty a představují další formu zobecnění instrukcí. Každá divoká karta v sekvenci označuje pozici, na které se může vyskytovat jedna libovolná instrukce. Z pohledu stromové struktury jsou všechny divoké karty totožné.
  Sekvence s~divokými kartami tak umožňují zkoumat i typické sekvence instrukcí, které nenásledují bezprostředně za sebou. K~vytvoření všech sekvencí s~divokými kartami pro danou sekvenci je třeba určit všechny možné kombinace indexů instrukcí, které budou nahrazeny divokými kartami. Z~praktických důvodů je vhodné zakázat náhradu instrukcí, které formují základní bloky.
 
-\section{Popis implementace}\label{ToolImplementation}
+\section{Popis implementace}\label{Jbyca:Implementation}
 
-Program jsem implementovala v~jazyce Java 8 s~použitím knihoven ASM 5.0 a BCEL 6.0 a nástroje Gradle 2.7. V~balíčku \texttt{jbyco.analysis} je deklarována třída \texttt{Application} s~metodou \texttt{main}, která dle předaných parametrů spustí některý z~nástrojů. Každý nástroj má definovanou vlastní metodu \texttt{main} a lze jej tedy spustit i samostatně.
+Program jsem implementovala v~jazyce Java 8 s~použitím knihoven ASM 5.0\footnote{\texttt{http://asm.ow2.org/}} a BCEL 6.0\footnote{\texttt{https://commons.apache.org/bcel/}} a nástroje Gradle 2.7\footnote{\texttt{http://gradle.org/}}. V~balíčku \texttt{jbyco.analysis} je deklarována třída \texttt{Application} s~metodou \texttt{main}, která dle předaných parametrů spustí některý z~nástrojů. Každý nástroj má definovanou vlastní metodu \texttt{main} a lze jej tedy spustit i samostatně.
 
 \subsection{Zpracování parametrů}
 
@@ -116,7 +117,7 @@ Balíček \texttt{jbyco.analysis.patterns.parameters} umožňuje práci s~parame
 
 Třídy balíčku \texttt{jbyco.analysis.patterns.wildcards} slouží k~vytváření sekvencí s~divokými kartami. Divoká karta je reprezentovaná hodnotou \texttt{null}. Třída \texttt{CombinationIterator} je iterátorem přes všechny povolené kombinace indexů instrukcí v~sekvenci, které budou nahrazené divokými kartami. Třída \texttt{WildSequenceGenerator} je iterátorem přes všechny sekvence s~divokými kartami, které lze z~dané sekvence vytvořit.
 
-\section{Překlad a spuštění}\label{ToolRun}
+\section{Překlad a spuštění}\label{Jbyca:Run}
 
 Nástroj \texttt{jbyca} je implementován v~programovacím jazyce Java 8, proto je pro jeho překlad a spuštění vyžadovaná instalace Java JDK 8 a JRE 8.
 Překlad a instalaci zajišťuje skript \texttt{gradlew} vygenerovaný nástrojem Gradle. Nápovědu k~tomuto skriptu lze vypsat příkazem \texttt{./gradlew tasks}. 
