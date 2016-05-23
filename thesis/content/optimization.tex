@@ -205,7 +205,7 @@ Sekvence s~instrukcemi pro podmíněné i nepodmíněné skoky jsou uvedené v~t
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Metody pro optimalizaci velikosti bajtkódu}\label{Optimization:Methods}
 
-Výsledky analýzy \texttt{class} souborů jsem uplatnila při návrhu metod pro optimalizaci jejich velikosti. Inspirovala jsem se optimalizacemi, které navrhl Vašek \cite{TODO} nebo které popisuje Aho \cite{TODO}. 
+Výsledky analýzy \texttt{class} souborů jsem uplatnila při návrhu metod pro optimalizaci jejich velikosti. Inspirovala jsem se optimalizacemi, které navrhl Vašek \cite{Vasek:Optimalizace} nebo které popisuje Aho \cite{Aho:Compilers}. 
 
 % ZMĚNA OD 9.5.2016
 \subsection{Optimalizace modifikující strukturu programu}
@@ -214,10 +214,10 @@ Metody pro optimalizaci je vhodné rozdělit podle toho, zda optimalizace zasahu
 Modifikace struktury programu nemusí být vždy žádoucí. Je třeba zvážit dva krajní případy. Pokud program slouží jako knihovna, ze které lze importovat balíčky a třídy, pak je třeba zachovat původní strukturu programu. Pokud je program konečnou aplikací zabalenou do \texttt{jar} souboru, pak je možné strukturu libovolně modifikovat tak, aby zůstala zachovaná sémantika.
 
 \subsubsection{Přejmenování balíčků, tříd, metod a členských proměnných}
-Více než polovinu z~celkové velikosti souborů tvoří řetězce. Mezi tyto řetězce patří mimo jiné řetězcové konstanty, názvy atributů, tříd, metod, proměnných a popisy typů. Součástí popisu typu pak mohou být opět názvy tříd. Jako vhodnou optimalizací se v~této oblasti proto nabízí přejmenování balíčků, tříd, metod a členských proměnných za použití co nejkratších názvů. Tato forma optimalizace je obvykle vedlejším efektem obfuskace kódu \cite{}.
+Více než polovinu z~celkové velikosti souborů tvoří řetězce. Mezi tyto řetězce patří mimo jiné řetězcové konstanty, názvy atributů, tříd, metod, proměnných a popisy typů. Součástí popisu typu pak mohou být opět názvy tříd. Jako vhodnou optimalizací se v~této oblasti proto nabízí přejmenování balíčků, tříd, metod a členských proměnných za použití co nejkratších názvů. Tato forma optimalizace je obvykle vedlejším efektem obfuskace kódu \cite{Chan:Obfuscation}.
 
 \subsubsection{Vkládání metod}
-Pokud je volání metody z~hlediska velikosti dražší než provedení těla metody, pak je vhodné toto volání nahradit instrukcemi z~těla metody. Pokud se následně tato metoda nikde nevolá, je žádoucí její definici z~příslušného \texttt{class} souboru zcela odstranit. Vkládání metod do kódu je často prováděno virtuálním strojem \cite{}.
+Pokud je volání metody z~hlediska velikosti dražší než provedení těla metody, pak je vhodné toto volání nahradit instrukcemi z~těla metody. Pokud se následně tato metoda nikde nevolá, je žádoucí její definici z~příslušného \texttt{class} souboru zcela odstranit. Vkládání metod do kódu je často prováděno virtuálním strojem \cite{Oracle:JVM}.
 
 % TODO popsat vkládání členských proměnných, odstranění
 % zmínit další možné optimalizace, rozsah optimalizací

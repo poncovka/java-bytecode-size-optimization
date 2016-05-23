@@ -1,16 +1,114 @@
 
-% compilers, AHO
-% bakalářka
-% paper o optimalizaci rychlosti v jave
-% paper o optimalizace veliksoti pro vestav2n0 syst0my
-% paper o obfuskaci a sn96en9 velikosti
-% BCEL ASM jvasist, popul8rn9
-% proguard
-% Hotspot inlining
-% peephole opimalizace obecně
-% peephole opimalizace způsoby implementace
-% p59klad generov8n9 nop nstrukc9
+% benchmark
+% nástroje pro optimalizaci - posouzení
 
+@article{Chakraborty:Peephole,
+ author = {Pinaki Chakraborty},
+ title = {Fifty years of peephole optimization},
+ journal = {Current Science},
+ issue_date = {June 2015},
+ volume = {108},
+ number = {12},
+ month = jun,
+ year = {2015},
+ issn = {0011-3891},
+ pages = {2186--2190},
+ publisher = {Current Science Association},
+ language = {english}
+} 
+
+@article{McKeeman:Peephole,
+ author = {McKeeman, W. M.},
+ title = {Peephole Optimization},
+ journal = {Commun. ACM},
+ issue_date = {july 1965},
+ volume = {8},
+ number = {7},
+ month = jul,
+ year = {1965},
+ issn = {0001-0782},
+ pages = {443--444},
+ publisher = {ACM},
+ language = {english}
+} 
+
+
+@ARTICLE{Chan:Obfuscation,
+ author = {Chan, Jien-Tsai and Yang, Wuu},
+ title = {Advanced Obfuscation Techniques for Java Bytecode},
+ journal = {J. Syst. Softw.},
+ issue_date = {April 2004},
+ volume = {71},
+ number = {1-2},
+ month = apr,
+ year = {2004},
+ issn = {0164-1212},
+ pages = {1--10},
+ publisher = {Elsevier Science Inc.},
+ language = {english}
+}
+
+@ARTICLE{Kazi:Performance,
+ author = {Kazi, Iffat H. and Chen, Howard H. and Stanley, Berdenia and Lilja, David J.},
+ title = {Techniques for Obtaining High Performance in Java Programs},
+ journal = {ACM Comput. Surv.},
+ issue_date = {Sept. 2000},
+ volume = {32},
+ number = {3},
+ month = sep,
+ year = {2000},
+ issn = {0360-0300},
+ pages = {213--240},
+ publisher = {ACM},
+language = {english}
+} 
+
+
+@ARTICLE{Clausen:Embedded,
+ author = {Clausen, Lars R{\ae}der and Schultz, Ulrik Pagh and Consel, Charles and Muller, Gilles},
+ title = {Java Bytecode Compression for Low-end Embedded Systems},
+ journal = {ACM Trans. Program. Lang. Syst.},
+ issue_date = {May 2000},
+ volume = {22},
+ number = {3},
+ month = may,
+ year = {2000},
+ issn = {0164-0925},
+ pages = {471--489},
+ publisher = {ACM},
+ language = {english}
+} 
+
+@mastersthesis{Vasek:Optimalizace,
+  author = {Vašek, Matej},
+  title = {Optimalizace bajtkódu Javy s ohledem na jeho velikost},
+  year = {2013},
+  type = {Bakalářská práce},
+  school = {Masarykova univerzita, Fakulta informatiky, Brno},
+  supervisor = {Mgr. Marek Grác, Ph.D.},
+  url = {http://theses.cz/id/yoo69v/}
+}
+
+@BOOK{Engel:JVM,
+  author={Joshua Engel},
+  title={Programming for the Java Virtual Machine},
+  year={1999},
+  isbn={9780201309720},
+  pages = {488},
+  publisher={Addison-Wesley},
+  language = {english}
+}
+
+@BOOK{Aho:Compilers,
+ author = {Aho, Alfred V. and Lam, Monica S. and Sethi, Ravi and Ullman, Jeffrey D.},
+ title = {Compilers: Principles, Techniques, and Tools},
+ edition = {2nd},
+ year = {2007},
+ isbn = {0-321-49169-6},
+ pages = {1009},
+ publisher = {Addison-Wesley},
+ language = {english}
+}
 
 @BOOK{Lindholm:JVM,
  author = {Tim Lindholm and Frank Yellin and Gilad Bracha and Alex Buckley},
@@ -18,7 +116,7 @@
  year = {2014},
  isbn = {013390590X},
  pages = {600},
- publisher = {Addison-Wesley Professional},
+ publisher = {Addison-Wesley},
  language = {english}
 } 
 
@@ -33,32 +131,52 @@
  language = {english}
 } 
 
+@MISC{Oracle:JVM,
+  author = {{Oracle Corporation}},
+  title = {The Java HotSpot Performance Engine Architecture [online]},
+  url = {http://oracle.com/technetwork/java/whitepaper-135217.html},
+  year = {2015 [cit. 2016-05-16]},
+  language = {english}
+}
+
 @MISC{BCEL,
   author = {{The Apache Software Foundation}},
   title = {BCEL [online]},
   url = {http://commons.apache.org/proper/commons-bcel/},
-  year = {2014 [cit. 2016-01-11]}
+  year = {2014 [cit. 2016-01-11]},
+  language = {english}
 }
 
 @MISC{ASM,
   author = {{OW2 Consortium}},
   title = {ASM [online]},
   url = {http://asm.ow2.org/},
-  year = {2015 [cit. 2016-01-11]}
+  year = {2015 [cit. 2016-01-11]},
+  language = {english}
 }
 
 @MISC{Javassist,
   author = {Shigeru Chiba},
   title = {Javassist [online]},
   url = {http://jboss-javassist.github.io/javassist/},
-  year = {2015 [cit. 2016-01-11]}
+  year = {2015 [cit. 2016-01-11]},
+  language = {english}
+}
+
+@MISC{ProGuard,
+  author = {Eric Lafortune},
+  title = {ProGuard [online]},
+  url = {http://proguard.sourceforge.net/},
+  year = {2015 [cit. 2016-05-16]},
+  language = {english}
 }
 
 @MISC{Tools,
     author = {Eugene Kuleshov},
     title =  {Using the ASM framework to implement common Java bytecode transformation patterns},
     url   =  {http://asm.ow2.org/current/asm-transformations.pdf},
-    year =   {2007}
+    year =   {2007},
+    language = {english}
 }
 
 @BOOK{Meduna:Theory,
