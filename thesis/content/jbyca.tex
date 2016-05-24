@@ -14,8 +14,6 @@ K~získání dostatečně obecných dat, ze kterých bych mohla čerpat při ná
 
 \section{Požadavky na program}\label{Jbyca:Requirements}
 
-% TODO upravit
-
 Při návrhu programu jsem vycházela z~požadavků na výstupy programu.
 Ty by měly umět zodpovědět následující otázky: 
 
@@ -27,6 +25,7 @@ Ty by měly umět zodpovědět následující otázky:
 \item Jaké je využití lokálních proměnných? 
 \item Jaké jsou typické sekvence instrukcí v~souborech?
 \item Jak vypadá obsah konkrétního \texttt{class} souboru? 
+\item Jaké jsou maximální počty lokálních proměnných a maximální hloubky zásobníků operandů v metodách?
 \end{enumerate}
 
 Program je určen ke zpracování \texttt{class} souborů, přičemž důraz je kladen na jejich dávkové zpracování. Z~toho plynou požadavky na vstup programu a jeho rychlost. Vstupem může být \texttt{class} soubor, \texttt{jar} soubor nebo adresář. Adresáře a \texttt{jar} soubory jsou dále prohledávány a každý nalezený \texttt{class} soubor je považován za další vstup programu. 
@@ -70,30 +69,37 @@ Balíček \texttt{jbyco.lib} slouží jako knihovna užitečných tříd a funkc
 
 \subsection{Práce se soubory}
 
-Balíček \texttt{jbyco.io} obsahuje třídy pro práci se soubory. Třída \texttt{CommonFile} reprezentuje soubor pomocí jeho absolutní i relativní cesty. Iterátor \texttt{CommonFilesIterator} rekurzivně prochází daný adresář a pro nalezené soubory vytváří a vrací instance třídy \texttt{CommonFile}. Rozšířením tohoto iterátoru je třída \texttt{BytecodeFilesIterator}, která prochází i \texttt{jar} soubory a vrací všechny nalezené \texttt{class} třídy. Nalezené \texttt{jar} soubory jsou pomocí třídy \texttt{JarExtractor} rozbaleny do dočasného adresáře a prohledávání pokračuje v~tomto adresáři. Knihovna metod pro práci s~dočasnými soubory je obsažena ve třídě \texttt{TemporaryFiles}. Třída \texttt{BytecodeFilesCounter} slouží v~určení počtu \texttt{class} souborů v~prohledávaném prostoru a nevyžaduje ke své práci dočasné soubory. 
-Třída \texttt{BytecodePrinter} je nástroj pro vypsání obsahu \texttt{class} souboru. Tabulku konstant vypisuje prostřednictvím třídy \texttt{ConstantPoolWriter}.  
+Balíček \texttt{jbyco.io} obsahuje třídy pro práci se soubory. Třída \texttt{CommonFile} reprezentuje soubor pomocí jeho absolutní i relativní cesty. Iterátor \texttt{CommonFilesIterator} rekurzivně prochází daný adresář a pro nalezené soubory vytváří a vrací instance třídy \texttt{CommonFile}. Rozšířením tohoto iterátoru je třída \texttt{ExtractedFilesIterator}, která prochází i \texttt{jar} soubory. Pomocí něj umožňuje třída \texttt{BytecodeCommonFiles} iterovat přes všechny nalezené \texttt{class} soubory. Soubory typu \texttt{jar} jsou pomocí třídy \texttt{JarExtractor} rozbaleny do dočasného adresáře a prohledávání pokračuje v~tomto adresáři. Knihovna metod pro práci s~dočasnými soubory je obsažena ve třídě \texttt{TemporaryFiles}. Třída \texttt{BytecodeFilesCounter} slouží v~určení počtu \texttt{class} souborů v~prohledávaném prostoru a nevyžaduje ke své práci dočasné soubory. 
 
 \subsection{Analýza bajtkódu}
 
-Nástroje pro analýzu bajtkódu jsou umístěné v~balíčku \texttt{jbyco.analysis}. V~rozhraní \texttt{Analyzer} jsou deklarované metody pro zpracování \texttt{class} souborů \texttt{processClassFile} a výpis získaných dat \texttt{writeResults}. Jednotlivé nástroje pro analýzu jsou dostupné v~podbalíčcích.
+Nástroje pro analýzu bajtkódu jsou umístěné v~balíčku \texttt{jbyco.analysis}. Implementují rozhraní \texttt{Analyzer}, které deklaruje metody pro zpracování \texttt{class} souborů \texttt{processClassFile} a výpis získaných dat \texttt{writeResults}. 
 
-Hledání typických sekvencí probíhá ve třídě \texttt{PatternsAnalyzer} následovně. Každý \texttt{class} soubor je převeden na stromovou reprezentaci knihovny ASM. Seznam instrukcí každé metody je doplněn o~návěští označující začátek a konec metody. Každou metodu pak navštíví instance třídy \texttt{ActiveLabelsFinder} a vyhledá všechna aktivní návěští. Návěští, která nejsou aktivní, budou při dalším zpracování vynechána. Ze seznamu instrukcí metody se postupně vygenerují všechny sekvence instrukcí dané délky. Z~těchto sekvencí mohou být dále generované sekvence s~daným počtem divokých karet. Každá vygenerovaná sekvence je pomocí třídy \texttt{Abstractor} převedena na sekvenci abstrahovaných instrukcí typu \texttt{AbstractInstruction}. Abstrahované instrukce jsou prostřednictvím třídy \texttt{Cache} nahrazeny instrukcemi typu \texttt{CachedInstruction}. Výsledná sekvence je předaná instanci třídy \texttt{TreeBuilder}, která sekvenci vloží do vytvářeného stromu. Po zpracování každého souboru tato třída zkontroluje dostupnou paměť a případně provede ořezání stromu. Nakonec se pomocí třídy \texttt{PatternsWriter} vypíšou nalezené sekvence a jejich četnosti.
+\subsection{Výpis textové reprezentace bajtkódu}
+
+Převedení obsahu \texttt{class} souboru do textové reprezentace a její výpis na standardní výstup zajišťuje nástroj \texttt{BytecodePrinter} z balíčku \texttt{jbyco.analysis.content}. Tabulku konstant vypisuje prostřednictvím třídy \texttt{ConstantPoolWriter}.  
 
 \subsection{Sběr statistik}
 
-Nástroj pro získání souhrnných informací o~zpracovaných \texttt{class} souborech je implementovaný ve třídě \texttt{StatisticsCollector}. Nástroj prochází jednotlivé položky souboru a  počty těchto položek aktualizuje v~instanci třídy \texttt{StatisticsMap}. Po zpracování všech souborů se vypíše tabulka s~typem položky, celkovým počtem výskytu tohoto typu a počtem výskytu přepočteným na jeden soubor. 
+Nástroj pro získání souhrnných informací o~zpracovaných \texttt{class} souborech je implementovaný ve třídě \texttt{StatisticsCollector} z balíčku \texttt{jbyco.analysis.statistics}. Nástroj prochází jednotlivé položky souboru a  počty těchto položek aktualizuje v~instanci třídy \texttt{StatisticsMap}. Po zpracování všech souborů se vypíše tabulka s~typem položky, celkovým počtem výskytů tohoto typu a počtem výskytů přepočteným na jeden soubor. 
 
 \subsection{Analýza velikosti}
 
-Přehled o~velikostech jednotlivých položek v~souborech poskytuje nástroj \texttt{SizeAnalyzer}. Nástroj určuje velikosti zpracovávaných položek a informace o~jejich velikostech udržuje v~instanci třídy \texttt{SizeMap}. Výstupem je tabulka s~typem položky, celkovou velikostí tohoto typu v~souborech, průměrnou velikostí tohoto typu a relativní velikostí vzhledem k~celkové velikosti zpracovaných souborů. 
+Přehled o~velikostech jednotlivých položek v~souborech poskytuje nástroj \texttt{SizeAnalyzer} z balíčku \texttt{jbyco.analysis.size}. Nástroj určuje velikosti zpracovávaných položek a informace o~jejich velikostech udržuje v~instanci třídy \texttt{SizeMap}. Výstupem je tabulka s~typem položky, celkovou velikostí položek tohoto typu v~souborech, průměrnou velikostí jedné položky tohoto typu a relativní celkovou velikostí vzhledem k~celkové velikosti zpracovaných souborů. 
 
 \subsection{Analýza lokálních proměnných}
 
-Data o~využití lokálních proměnných jsou dostupná s~nástrojem \texttt{VariablesAnalyzer}. Nástroj s~pomocí třídy \texttt{VariablesMap} zaznamenává pro každou metodu počet formálních parametrů a lokálních proměnných a jejich použití v~instrukcích metod. Výstupem tohoto nástroje jsou dvě tabulky: jedna pro lokální proměnné a jedna pro formální parametry metody. Každá z~tabulek obsahuje index do tabulky lokálních proměnných, počet metod, které s~danou proměnnou pracují, počet instrukcí pro načítání, ukládání a inkrementaci, součet všech instrukcí a průměrné hodnoty.
+Data o~využití lokálních proměnných jsou dostupná s~nástrojem \texttt{VariablesAnalyzer} z balíčku \texttt{jbyco.analysis.variables}. Nástroj s~pomocí třídy \texttt{VariablesMap} zaznamenává pro každou metodu počet formálních parametrů a lokálních proměnných a jejich použití v~instrukcích metod. Výstupem tohoto nástroje jsou dvě tabulky: jedna pro formální parametry metody a jedna pro lokální proměnné. Každá z~tabulek obsahuje index do tabulky lokálních proměnných, počet metod, které s~danou proměnnou pracují, počet instrukcí pro načítání, ukládání a inkrementaci, součet všech instrukcí a průměrné hodnoty.
+
+\subsection{Analýza maxim}
+
+Ve třídě \texttt{MaxAnalyzer} z balíčku \texttt{jbyco.analysis.max} je implementovaný nástroj pro analýzu maximálního počtu lokálních proměnných a maximální hloubky zásobníku operandů v metodách. Nástroj zkoumá maxima v položkách \textit{max\_stack} a \textit{max\_variables} v atributech \texttt{Code}. Výstupem jsou tabulky s četnostmi těchto maxim ve zkoumaných metodách.
 
 \subsection{Analýza typických sekvencí instrukcí}
 
-Nástroj \texttt{PatternsAnalyzer} umožňuje vyhledat typické sekvence instrukcí. Dle návrhu potřebuje ke své práci stromovou reprezentaci sekvencí a abstrahovanou reprezentaci instrukcí. K~těmto účelům slouží dále uvedené balíčky. Výpis nalezených sekvencí zajišťuje třída \texttt{PatternsWriter}. Výstupem jsou četnosti sekvencí, jejich délky a řetězová reprezentace instrukcí v~sekvencích. Výstup není nijak seřazený.
+Nástroj \texttt{PatternsAnalyzer} z balíčku \texttt{jbyco.analysis.patterns} umožňuje vyhledat typické sekvence instrukcí. Dle návrhu potřebuje ke své práci stromovou reprezentaci sekvencí a abstrahovanou reprezentaci instrukcí. K~těmto účelům slouží dále uvedené balíčky. Výpis nalezených sekvencí zajišťuje třída \texttt{PatternsWriter}. Výstupem jsou délky sekvencí, jejich absolutní a relativní četnosti výskytu a řetězové reprezentace sekvencí. Výstup není nijak seřazený.
+
+Hledání typických sekvencí probíhá ve třídě \texttt{PatternsAnalyzer} následovně. Každý \texttt{class} soubor je převeden na stromovou reprezentaci knihovny ASM. Seznam instrukcí každé metody je doplněn o~návěští označující začátek a konec metody. Z těchto seznamů se postupně vygenerují všechny sekvence instrukcí dané délky. Ze sekvencí mohou být následně generované sekvence s~daným počtem divokých karet. Každá vygenerovaná sekvence je pomocí třídy \texttt{Abstractor} převedena na sekvenci abstrahovaných instrukcí typu \texttt{AbstractInstruction}. Abstrahované instrukce jsou prostřednictvím třídy \texttt{Cache} nahrazeny instrukcemi typu \texttt{CachedInstruction}. Výsledná sekvence se předá instanci třídy \texttt{TreeBuilder} a vloží do vytvářeného stromu. Po zpracování každého souboru se zkontroluje dostupná paměť a případně provede ořezání stromu. Nakonec se prostřednictvím třídy \texttt{PatternsWriter} vypíšou nalezené sekvence a jejich četnosti.
 
 \subsubsection{Reprezentace sekvencí instrukcí}
 
@@ -105,7 +111,7 @@ Balíček \texttt{jbyco.analysis.patterns.instructions} obsahuje rozhraní a tř
 
 \subsubsection{Reprezentace a abstrakce návěští}
 
-V~balíčku \texttt{jbyco.analysis.patterns.labels} jsou rozhraní a třídy pro práci s~návěštími. Abstrahované návěští je reprezentované rozhraním \texttt{AbstractLabel}. Abstrakci návěští popisuje rozhraní \texttt{AbstractLabelFactory}. Implementacemi těchto rozhraní jsou třídy \texttt{NumberedLabel}, \texttt{NamedLable} a \texttt{RelativeLabelFactory}. Třída \texttt{RelativeLabelFactory} každému návěští přiřazuje relativní identifikátor. Návěštím pro začátek a konec metody budou přiřazeny objekty typu \texttt{NamedLable} s~identifikátory \texttt{begin} a \texttt{end}. Zbývajícím návěštím budou přiřazeny číselné identifikátory. Tyto identifikátory jsou relativní. Znamená to, že jsou jedinečné pouze v~rámci aktuální sekvence. Třída \texttt{ActiveLabelsFinder} implementuje návštěvníka metody z~knihovny ASM a slouží k~získání množiny návěští, na která se skáče z~nějaké instrukce dané metody nebo v~rámci zpracování výjimek. Taková návěští dále označuji za aktivní.
+V~balíčku \texttt{jbyco.analysis.patterns.labels} jsou rozhraní a třídy pro práci s~návěštími. Abstrahované návěští je reprezentované rozhraním \texttt{AbstractLabel}. Abstrakci návěští popisuje rozhraní \texttt{AbstractLabelFactory}. Implementacemi těchto rozhraní jsou třídy \texttt{NumberedLabel}, \texttt{NamedLable} a \texttt{RelativeLabelFactory}. Třída \texttt{RelativeLabelFactory} každému návěští přiřazuje relativní identifikátor. Návěštím pro začátek a konec metody budou přiřazeny objekty typu \texttt{NamedLable} s~identifikátory \texttt{begin} a \texttt{end}. Zbývajícím návěštím budou přiřazeny číselné identifikátory. Tyto identifikátory jsou relativní. Znamená to, že jsou jedinečné pouze v~rámci aktuální sekvence.
 
 \subsubsection{Reprezentace a abstrakce operačních kódů}
 
