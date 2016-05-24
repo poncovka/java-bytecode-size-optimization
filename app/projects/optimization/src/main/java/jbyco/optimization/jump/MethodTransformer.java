@@ -1,4 +1,4 @@
-package jbyco.optimization.common;
+package jbyco.optimization.jump;
 
 import org.objectweb.asm.tree.MethodNode;
 

@@ -1,4 +1,4 @@
-package jbyco.optimization.reductions;
+package jbyco.optimization.reduction;
 
 import jbyco.optimization.Statistics;
 import org.objectweb.asm.Label;

@@ -2,10 +2,10 @@ package jbyco.optimization;
 
 import jbyco.optimization.expansion.DuplicationExpansion;
 import jbyco.optimization.jump.*;
-import jbyco.optimization.reductions.*;
+import jbyco.optimization.reduction.*;
 import jbyco.optimization.peephole.*;
-import jbyco.optimization.simplifications.*;
-import jbyco.optimization.common.ClassTransformer;
+import jbyco.optimization.simplification.*;
+import jbyco.optimization.jump.ClassTransformer;
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.CheckClassAdapter;

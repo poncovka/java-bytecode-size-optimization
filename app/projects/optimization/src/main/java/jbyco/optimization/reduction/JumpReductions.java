@@ -1,13 +1,11 @@
-package jbyco.optimization.reductions;
+package jbyco.optimization.reduction;
 
 import jbyco.optimization.jump.*;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * A library of frame and label actions.

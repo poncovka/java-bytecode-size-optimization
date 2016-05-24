@@ -1,7 +1,7 @@
 package jbyco.analysis;
 
 import jbyco.analysis.content.BytecodePrinter;
-import jbyco.analysis.maximums.MaximumsAnalyzer;
+import jbyco.analysis.max.MaxAnalyzer;
 import jbyco.analysis.patterns.PatternsAnalyzer;
 import jbyco.analysis.size.SizeAnalyzer;
 import jbyco.analysis.statistics.StatisticsCollector;
@@ -49,7 +49,7 @@ public class Application {
                     StatisticsCollector.main(arguments);
                     break;
                 case ANALYZE_MAXS:
-                    MaximumsAnalyzer.main(arguments);
+                    MaxAnalyzer.main(arguments);
                     break;
                 case ANALYZE_VARIABLES:
                     VariablesAnalyzer.main(arguments);

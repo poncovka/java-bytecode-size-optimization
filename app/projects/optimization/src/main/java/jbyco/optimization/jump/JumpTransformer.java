@@ -1,14 +1,10 @@
 package jbyco.optimization.jump;
 
 import jbyco.optimization.Statistics;
-import jbyco.optimization.common.ClassTransformer;
-import jbyco.optimization.common.MethodTransformer;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**

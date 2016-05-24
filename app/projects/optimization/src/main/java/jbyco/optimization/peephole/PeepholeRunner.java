@@ -64,14 +64,14 @@ public class PeepholeRunner {
     }
 
     public void findAndReplace(ClassNode cn) {
-        System.err.println(">>> Class:" + cn.name);
+        //System.err.println(">>> Class:" + cn.name);
         for (Object mn : cn.methods) {
             findAndReplace(((MethodNode)mn));
         }
     }
 
     public void findAndReplace(MethodNode mn) {
-        System.err.println(">>> Method:" + mn.name);
+        //System.err.println(">>> Method:" + mn.name);
         findAndReplace(mn.instructions);
     }
 
@@ -150,12 +150,12 @@ public class PeepholeRunner {
         }
 
         if (result) {
-            System.err.println(">>> Action: " + fsm);
-            System.err.println(">>> Matched:");
-            InsnUtils.debug(fsm.getMatchedInput());
-            System.err.println(">>> Result:");
-            InsnUtils.debug(list);
-            System.err.println();
+            //System.err.println(">>> Action: " + fsm);
+            //System.err.println(">>> Matched:");
+            //InsnUtils.debug(fsm.getMatchedInput());
+            //System.err.println(">>> Result:");
+            //InsnUtils.debug(list);
+            //System.err.println();
         }
 
         // return the result

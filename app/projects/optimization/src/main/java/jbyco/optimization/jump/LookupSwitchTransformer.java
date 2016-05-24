@@ -3,11 +3,9 @@ package jbyco.optimization.jump;
 import jbyco.lib.Utils;
 import jbyco.optimization.Statistics;
 import jbyco.optimization.common.ActionLoader;
-import jbyco.optimization.common.MethodTransformer;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.LookupSwitchInsnNode;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TableSwitchInsnNode;
 
 import java.util.ArrayList;
 import java.util.Collection;

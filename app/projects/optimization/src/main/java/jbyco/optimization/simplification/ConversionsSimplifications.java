@@ -1,4 +1,4 @@
-package jbyco.optimization.simplifications;
+package jbyco.optimization.simplification;
 
 import jbyco.optimization.common.InsnUtils;
 import jbyco.optimization.peephole.Pattern;

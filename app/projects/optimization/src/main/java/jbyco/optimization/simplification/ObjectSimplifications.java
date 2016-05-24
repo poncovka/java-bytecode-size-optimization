@@ -1,4 +1,4 @@
-package jbyco.optimization.simplifications;
+package jbyco.optimization.simplification;
 
 import jbyco.optimization.peephole.Pattern;
 import jbyco.optimization.peephole.PeepholeAction;

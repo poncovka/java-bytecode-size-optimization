@@ -1,7 +1,6 @@
-package jbyco.analysis.maximums;
+package jbyco.analysis.max;
 
 import jbyco.analysis.Analyzer;
-import jbyco.analysis.variables.VariablesAnalyzer;
 import jbyco.io.BytecodeFilesIterator;
 import jbyco.io.CommonFile;
 import jbyco.io.TemporaryFiles;
@@ -15,14 +14,13 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
 /**
  * A class for analysing maximal numbers of locals and maximal depths of stacks.
  */
-public class MaximumsAnalyzer implements Analyzer {
+public class MaxAnalyzer implements Analyzer {
 
     Map<Integer, Integer> stacks = new TreeMap<>();
     Map<Integer, Integer> locals = new TreeMap<>();
@@ -104,7 +102,7 @@ public class MaximumsAnalyzer implements Analyzer {
     public static void main(String[] args) throws IOException {
 
         // init analyzer
-        Analyzer analyzer = new MaximumsAnalyzer();
+        Analyzer analyzer = new MaxAnalyzer();
 
         // create temporary directory
         Path workingDirectory = TemporaryFiles.createDirectory();

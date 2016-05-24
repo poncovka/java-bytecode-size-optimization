@@ -1,4 +1,4 @@
-package jbyco.optimization.reductions;
+package jbyco.optimization.reduction;
 
 import jbyco.lib.Utils;
 import jbyco.optimization.Statistics;
