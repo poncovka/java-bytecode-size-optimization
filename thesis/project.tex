@@ -5,14 +5,10 @@
 %============================================================================
 % kodovaní: UTF-8 (zmena prikazem iconv, recode nebo cstocs)
 %----------------------------------------------------------------------------
-% zpracování: make, make pdf, make desky, make clean
+% zpracování: make, make pdf, make clean
 %============================================================================
 % Šablonu upravil: Ing. Jaroslav Dytrych, idytrych@fit.vutbr.cz
 %============================================================================
-
-%nezpracovava se pomoci pdflatex
-%\let\pdfoutput\undefined
-
 \documentclass[zadani,print]{fitthesis} % bez zadání - pro začátek práce, aby nebyl problém s překladem
 %\documentclass[zadani]{fitthesis} % odevzdani do wisu - odkazy jsou barevné
 %\documentclass[zadani,print]{fitthesis} % pro tisk - odkazy jsou černé
@@ -20,10 +16,13 @@
 % * Je-li prace psana v anglickem jazyce, je zapotrebi u tridy pouzit 
 %   parametr english nasledovne:
 %      \documentclass[english]{fitthesis}
+% * Je-li prace psana ve slovenskem jazyce, je zapotrebi u tridy pouzit 
+%   parametr slovak nasledovne:
+%      \documentclass[slovak]{fitthesis}
 
-\usepackage[czech,english]{babel}
+\usepackage[czech,slovak,english]{babel}
 \usepackage[utf8]{inputenc} %kodovani
-\usepackage[T1, IL2]{fontenc}
+\usepackage[T1]{fontenc}
 \usepackage{cmap}
 \usepackage{url}
 \DeclareUrlCommand\url{\def\UrlLeft{<}\def\UrlRight{>} \urlstyle{tt}}
@@ -84,12 +83,7 @@
   \usepackage{ae}
 \fi
 
-%---rm---------------
-%\renewcommand{\rmdefault}{lmr}%zavede Latin Modern Roman jako rm
-%---sf---------------
-%\renewcommand{\sfdefault}{qhv}%zavede TeX Gyre Heros jako sf
-%---tt------------
-%\renewcommand{\ttdefault}{lmtt}% zavede Latin Modern tt jako tt
+\input{fonts.tex}
 
 % vypne funkci nové šablony, která automaticky nahrazuje uvozovky,
 % aby nebyly prováděny nevhodné náhrady v popisech API apod.
@@ -133,26 +127,30 @@
   year=2016,             %rok
   date=\today,           %datum odevzdani
   %Nazev prace
-  title.cs={Optimalizace velikosti bajtkódu Javy},  %nazev prace v cestine
+  title.cs={Optimalizace velikosti bajtkódu Javy},  %nazev prace v cestine ci slovenstine (dle zadani)
   title.en={Java Bytecode Size Optimization}, %nazev prace v anglictine
   %Autor
-  author={Vendula Poncová},   %jmeno prijmeni autora
+  author={Vendula Poncová},   %cele jmeno a prijmeni autora
+  author.name={Vendula},   %jmeno autora (pro citaci)
+  author.surname={Poncová},   %prijmeni autora (pro citaci)
   author.title.p=Bc., %titul pred jmenem (nepovinne)
   %author.title.a=PhD, %titul za jmenem (nepovinne)
   %Ustav
-  department=UITS, % doplnte prislusnou zkratku: UPSY/UIFS/UITS/UPGM
+  department=UITS, % doplnte prislusnou zkratku dle ustavu na zadani: UPSY/UIFS/UITS/UPGM
   %Skolitel
-  supervisor=Radek Kočí, %jmeno prijmeni skolitele
+  supervisor={Radek Kočí}, %cele jmeno a prijmeni skolitele
+  supervisor.name={Radek},   %jmeno skolitele (pro citaci)
+  supervisor.surname={Kočí},   %prijmeni skolitele (pro citaci)
   supervisor.title.p=Ing.,   %titul pred jmenem (nepovinne)
   supervisor.title.a={Ph.D.},    %titul za jmenem (nepovinne)
   %Klicova slova, abstrakty, prohlaseni a podekovani je mozne definovat 
   %bud pomoci nasledujicich parametru nebo pomoci vyhrazenych maker (viz dale)
   %===========================================================================
   %Klicova slova
-  %keywords.cs={Klíčová slova v českém jazyce.}, %klicova slova v ceskem jazyce
+  %keywords.cs={Klíčová slova v českém jazyce.}, %klicova slova v ceskem ci slovenskem jazyce
   %keywords.en={Klíčová slova v anglickém jazyce.}, %klicova slova v anglickem jazyce
   %Abstract
-  %abstract.cs={Výtah (abstrakt) práce v českém jazyce.}, % abstrakt v ceskem jazyce
+  %abstract.cs={Výtah (abstrakt) práce v českém jazyce.}, % abstrakt v ceskem ci slovenskem jazyce
   %abstract.en={Výtah (abstrakt) práce v anglickém jazyce.}, % abstrakt v anglickem jazyce
   %Prohlaseni
   %declaration={Prohlašuji, že jsem tuto bakalářskou práci vypracoval samostatně pod vedením pana ...},
@@ -160,18 +158,22 @@
   %acknowledgment={Zde je možné uvést poděkování vedoucímu práce a těm, kteří poskytli odbornou pomoc.} % nepovinne
 }
 
-%Abstrakt (cesky, anglicky)
+%Abstrakt (cesky, slovensky ci anglicky)
 \abstract[cs]{Tato práce se zabývá bajtkódem jazyka Java z~hlediska jeho velikosti. Popisuje virtuální stroj Javy a formát jeho instrukčního souboru a uvádí přehled některých knihoven pro manipulaci s~bajtkódem. S~pomocí těchto knihoven byla provedena analýza vybraného vzorku dat a nalezeny sekvence instrukcí, které by bylo možné optimalizovat. Na základě výsledků analýzy byly navrhnuty a implementovány metody pro optimalizaci velikosti bajtkódu. Velikost bajtkódu zkoumaného vzorku dat se po aplikaci metod snížila o~zhruba 25\%.}
 \abstract[en]{This paper deals with the Java bytecode in terms of its size. It describes the Java Virtual Machine and the Java class file format. It also presents some tools for the bytecode manipulation. Using these tools, I~have analyzed selected data and found sequences of instructions, that could be optimized. Based on the results of the analysis, I~have designed and implemented methods for bytecode size optimization. The bytecode size of the selected data was reduced by roughly 25\%.}
 
-%Klicova slova (cesky, anglicky)
+%Klicova slova (cesky, slovensky ci anglicky)
 \keywords[cs]{Java, JVM, bajtkód, ASM, BCEL, Javassist, optimalizace velikosti, peephole optimalizace}
 \keywords[en]{Java, JVM, bytecode, ASM, BCEL, Javassist, size optimization, peephole optimization}
 
-%Prohlaseni
+%Prohlaseni (u anglicky psane prace anglicky, u slovensky psane prace slovensky)
 \declaration{Prohlašuji, že jsem tuto semestrální práci vypracovala samostatně pod vedením pana Ing. Radka Kočího, Ph.D. a pana Ing. Pavla Tišnovského, Ph.D. Uvedla jsem všechny literární prameny a publikace, ze kterých jsem čerpala.}
 
-%Podekovani
+% \declaration{Hereby I declare that this bachelor's thesis was prepared as an original author’s work under the supervision of Mr. X
+% The supplementary information was provided by Mr. Y
+% All the relevant information sources, which were used during preparation of this thesis, are properly cited and included in the list of references.}
+
+%Podekovani (nepovinne, nejlepe v jazyce prace)
 \acknowledgment{Děkuji panu Ing. Radkovi Kočímu za odborné vedení a pomoc při zpracování této práce. Mé poděkování patří též panu Ing. Pavlu Tišnovskému za cenné rady a připomínky.}
 
 \begin{document}
@@ -186,29 +188,44 @@
 \ifczech
   \renewcommand\listfigurename{Seznam obrázků}
 \fi
+\ifslovak
+  \renewcommand\listfigurename{Zoznam obrázkov}
+\fi
+
   % \listoffigures
 \ifczech
   \renewcommand\listtablename{Seznam tabulek}
 \fi
+\ifslovak
+  \renewcommand\listtablename{Zoznam tabuliek}
+\fi
+
   % \listoftables 
 
   % Text prace
   % ----------------------------------------------
- \input{content} % viz. content.tex
+  \input{content} % viz. content.tex
 
   % Pouzita literatura
   % ----------------------------------------------
-\ifczech
+\ifslovak
   \makeatletter
-  \def\@openbib@code{\addcontentsline{toc}{chapter}{Literatura}}
+  \def\@openbib@code{\addcontentsline{toc}{chapter}{Literatúra}}
   \makeatother
   \bibliographystyle{czechiso}
-\else 
-  \makeatletter
-  \def\@openbib@code{\addcontentsline{toc}{chapter}{Literature}}
-  \makeatother
-  \bibliographystyle{plain}
-%  \bibliographystyle{alpha}
+\else
+  \ifczech
+    \makeatletter
+    \def\@openbib@code{\addcontentsline{toc}{chapter}{Literatura}}
+    \makeatother
+    \bibliographystyle{czechiso}
+  \else 
+    \makeatletter
+    \def\@openbib@code{\addcontentsline{toc}{chapter}{Bibliography}}
+    \makeatother
+    \bibliographystyle{englishiso}
+  %  \bibliographystyle{alpha}
+  \fi
 \fi
   \begin{flushleft}
   \bibliography{literature} % viz. literature.bib
@@ -222,13 +239,24 @@
   \renewcommand{\appendixtocname}{Přílohy}
   \renewcommand{\appendixname}{Příloha}
 \fi
+\ifslovak
+  \renewcommand{\appendixpagename}{Prílohy}
+  \renewcommand{\appendixtocname}{Prílohy}
+  \renewcommand{\appendixname}{Príloha}
+\fi
   \appendixpage
-\ifczech
-  \section*{Seznam příloh}
-  \addcontentsline{toc}{section}{Seznam příloh}
+
+\ifslovak
+  \section*{Zoznam príloh}
+  \addcontentsline{toc}{section}{Zoznam príloh}
 \else
-  \section*{List of Appendices}
-  \addcontentsline{toc}{section}{List of Appendices}
+  \ifczech
+    \section*{Seznam příloh}
+    \addcontentsline{toc}{section}{Seznam příloh}
+  \else
+    \section*{List of Appendices}
+    \addcontentsline{toc}{section}{List of Appendices}
+  \fi
 \fi
   \startcontents[chapters]
   \printcontents[chapters]{l}{0}{\setcounter{tocdepth}{2}}

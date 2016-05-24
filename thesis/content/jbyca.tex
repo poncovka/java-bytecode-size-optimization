@@ -121,9 +121,8 @@ Třídy balíčku \texttt{jbyco.analysis.patterns.wildcards} slouží k~vytvář
 
 \section{Překlad a spuštění}\label{Jbyca:Run}
 
-Nástroj \texttt{jbyca} je implementován v~programovacím jazyce Java 8, proto je pro jeho překlad a spuštění vyžadovaná instalace Java JDK 8 a JRE 8.
-Překlad a instalaci zajišťuje skript \texttt{gradlew} vygenerovaný nástrojem Gradle. Nápovědu k~tomuto skriptu lze vypsat příkazem \texttt{./gradlew tasks}. 
-Zdrojové soubory nástroje \texttt{jbyca} jsou součástí projektu \texttt{analysis}, zatímco knihovny pro práci se soubory a argumenty příkazové řádky jsou umístěné v~projektu \texttt{common}. Projekt \texttt{examples} je užitečný pro generování testovacích \texttt{class} souborů.
+Nástroj \texttt{jbyca} je implementován v~programovacím jazyce Java 8, proto je pro jeho překlad a spuštění vyžadovaná instalace Java JDK 8 a Java JRE 8.
+Zdrojové soubory jsou rozdělené do několika projektů. Soubory nástroje \texttt{jbyca} jsou součástí projektu \texttt{analysis}, zatímco knihovny pro práci se soubory a argumenty příkazové řádky jsou umístěné v~projektu \texttt{common}. Projekt \texttt{examples} je užitečný pro generování testovacích \texttt{class} souborů. Překlad a instalaci těchto projektů zajišťuje skript \texttt{gradlew} vygenerovaný nástrojem Gradle. Nápovědu k~tomuto skriptu lze vypsat příkazem \texttt{./gradlew tasks}. 
 
 Příkaz \texttt{./gradlew build} ve všech projektech do jejich adresářů \texttt{build} přeloží zdrojové soubory, stáhne potřebné knihovny a sestaví a zabalí výsledné distribuce. Po zadání příkazu \texttt{./gradlew installDist} se distribuce nainstalují do adresářů \texttt{build/install}. Výsledkem instalace projektu \texttt{analysis} je adresář \texttt{jbyca} se dvěma podadresáři \texttt{bin} a \texttt{lib} pro spustitelné soubory a knihovny. Nástroj lze spustit příkazem \texttt{./jbyca} z~adresáře \texttt{bin}. Nápověda k~nástroji se vypíše po uvedení přepínače \texttt{---help}. Dokumentaci k~programovému rozhraní lze vygenerovat příkazem \texttt{./gradlew javadoc}. Dokumentace bude k~dispozici v~adresáři \texttt{build/docs}.
 

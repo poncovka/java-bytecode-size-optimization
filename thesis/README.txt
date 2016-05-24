@@ -9,7 +9,7 @@ Changelog původní šablony z roku 2009:
 - prevedeno do utf-8 (v linuxu je to default vsech editoru, windowsaci si nejak poradi)
 - do komentare bylo pridane \listoffigures a \listoftables
 
-sablona2015 má oproti původní šabloně z roku 2009:
+sablona2016 má oproti původní šabloně z roku 2009:
 - dokončenu změnu kódování na UTF8,
 - doplněné vkládání zadání,
 - úpravy, aby z PDF bylo možné kopírovat text,
@@ -22,13 +22,26 @@ sablona2015 má oproti původní šabloně z roku 2009:
 - literatura je v obsahu
 - "školitel" pro disertační práci
 - odstraněné desky (nově v IS FIT)
+- vylepšené přepínání do angličtiny
+- opravenou bibliografickou citaci
+- podporu slovenštiny
 
-alternativaBib obsahuje alternativní styl pro BibTeX od Radima Loskota a příklad jeho použití.
+U anglické či slovenské práce je nutné přeložit prohlášení, poděkování apod. do angličtiny či slovenštiny.
+
+Šablona obsahuje i experimentální funkce pro implementaci JVS VUT. JVS bude nařízen až od příštího roku a stále 
+se dolaďuje. Tyto funkce jsou v šabloně vyřazeny a je velmi důrazně doporučeno je nevyužívat. Odkomentování 
+a zprovoznění je na vlastní nebezpečí. V takovém případě je na titulní list doporučeno využít tučné písmo Open Sans 
+(šedivou barvu nepoužívat - zakázáno) a pro zbytek textu nelze nic doporučit (jakákoliv varianta je z určitého 
+pohledu nevhodná). Barevné logo se nesmí tisknout černobíle. Veškerá využitá písma z JVS musí být obsažena 
+ve výstupním pdf (bude li výstup příkazu "pdffonts projekt.pdf" obsahovat "no", je to hrubé porušení pravidel 
+a oponent jej může nezanedbatelně postihovat).
+
+alternativaBib obsahuje alternativní styl pro BibTeX od Radima Loskota a příklad jeho použití a alternativní styl pro BibTeX od Radka Pyšného (http://www.fit.vutbr.cz/study/DP/BP.php?id=7848).
 
 Nascanované zadání je potřeba pojmenovat zadani.pdf - bude automaticky vloženo na správné místo.
 
 Pro odevzdání do WISu má být v projekt.tex odkomentovaný řádek:
-\documentclass[zadani,cover]{fitthesis}
+\documentclass[zadani]{fitthesis}
 pro tisk řádek
 \documentclass[zadani,print]{fitthesis}
 
@@ -39,6 +52,18 @@ Pozor na zradu s číslováním stránek!!!
 - Možná toho problému lze dosáhnout i jinak - vždy je před odevzdáním lepší překontrolovat číslování stran!
 
 Nezapomeňte, že vlna neřeší všechny nezalomitelné mezery. Vždy je třeba manuální kontrola, zda na konci řádku nezůstalo něco nevhodného - viz http://prirucka.ujc.cas.cz/?id=880 Na koncích řádků nevypadají dobře ani jednoslabičné spojky a předložky jako "do", "od", "po" apod. - dříve to bylo uvedeno na stejné stránce, ale protože se jedná o typografické doporučení a nikoliv o jazykovou zásadu, nyní to tam již není. Nicméně lze to najít v různých pokynech k vypracování maturitních, bakalářských, diplomových a jiných kvalifikačních prací a následně i v posudcích oponentů.
+
+Oboustranný tisk:
+- Oboustranný tisk je povolený, ale stále není preferovaný.
+- Je-li práce tištěna oboustranně a její tloušťka je menší než tloušťka desek, nevypadá to dobře (při obvyklém rozsahu práce bez příloh je preferovaný jednostranný tisk).
+- Šablona oboustranný tisk neumí - lze jej doplnit takto:
+-- Doplníme parametr třídy: \LoadClass[pdftex,a4paper,twoside,onecolumn,11pt]{report}
+-- Opravíme rozměry sazebního obrazce - jinak pro titulní list a jinak pro zbytek (lze využít balík geometry).
+-- Po vytištění oboustranného listu zontrolujeme, zda je při prosvícení sazební obrazec na obou stranách na stejné pozici (může ovlivnit i tiskárna).
+-- Na 2. straně titulního listu odstraníme číslování (\pagestyle{empty}\null% a za ní \pagestyle{plain})
+-- Za titulním listem, obsahem, literaturou, úvodním listem příloh, seznamem příloh a případnými dalšími seznamy je třeba nechat volnou stránku, aby následující část začínala na liché stránce (\cleardoublepage).
+-- Výsledek je třeba pečlivě překontrolovat.
+
 
 Užitečné balíčky pro LaTeX
 --------------------------
@@ -55,6 +80,7 @@ Umístění obrázků:
 
 Úpravy vlastností Verbatim:
 \usepackage{fancyvrb}
+\usepackage{alltt}
 
 Rozšíření možností tabulek:
 \usepackage{makecell}
@@ -62,3 +88,27 @@ Rozšíření možností tabulek:
 
 Úpravy dělení slov:
 \usepackage{hyphenat}
+
+Přímé kreslení obrázků:
+\usepackage{picture}
+\usepackage{epic}
+\usepackage{eepic}
+
+
+Užitečná nastavení:
+-------------------
+
+Úprava zalamování řádků a stránek (aby z odstavce nepřetekl 1 řádek na další stránku apod.)
+- nevyzkoušené - možná nutno doladit:
+\clubpenalty 10000
+\widowpenalty 10000
+\sloppy
+
+Makra pro sazbu matematiky (nevyzkoušeno):
+\newcommand{\ud}{\,\mathrm{d}}
+\newcommand{\e}{\mathrm{e}}
+\newcommand{\lb}{\left(}
+\newcommand{\rb}{\right)}
+\newcommand{\la}{\left\langle}
+\newcommand{\ra}{\right\rangle}
+

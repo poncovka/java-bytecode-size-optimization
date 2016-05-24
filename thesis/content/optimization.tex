@@ -19,7 +19,8 @@ Zkoumání instrukcí z~hlediska jejich velikosti ukázalo, že prvních pět ne
 
 \subsection{Užití lokálních proměnných a parametrů metody}
 
-Data popisující užití parametrů a lokálních proměnných jsou znázorněna v~grafech \ref{fig:params} a \ref{fig:vars}. Z~dat vyplývá, že z~lokálních proměnných obsahujících argumenty metody se tyto hodnoty načtou průměrně jedenkrát a dále se s~nimi nepracuje. S~nižším indexem proměnné počet načítání roste až k~hodnotě 2,5 pro index 0. V~tomto indexu se u~nestatických metod předává reference na aktuální objekt (\texttt{this}). S~lokálními proměnnými, které neslouží k~předávání parametrů, se průměrně provádí 4,2 operací načítání, 1,8 operací vkládání a 0,3 operací inkrementace.
+Data popisující užití parametrů a lokálních proměnných jsou znázorněna v~grafech \ref{fig:params} a \ref{fig:vars}. Grafy znázorňují, kolikrát průměrná metoda pracuje se svým parametrem, respektive svojí lokální proměnnou na daném indexu. 
+Z~dat vyplývá, že z~parametrů metody se jejich hodnoty načtou průměrně jedenkrát a dále se s~nimi nepracuje. To lze z~grafu vyčíst tak, že křivka pro instrukci \texttt{load} se téměř vždy překrývá s~křivkou pro všechny typy instrukcí. Pro lokální proměnné platí, že s~nižším indexem proměnné roste počet načítání jeho hodnoty až k~počtu 2,5 pro index 0. V~tomto indexu se u~nestatických metod předává reference na aktuální objekt (\texttt{this}). S~lokálními proměnnými, které neslouží k~předávání parametrů, se průměrně provádí 4,2 operací načítání (\texttt{load}), 1,8 operací vkládání (\texttt{store}) a 0,3 operací inkrementace (\texttt{inc}).
 
 \begin{figure}[h!]
 \centering
@@ -63,8 +64,9 @@ Celkem 39 317 ze 504 741 zkoumaných metod bylo abstraktních nebo byly metodami
 
 \subsubsection{Zajímavé sekvence instrukcí}
 
-Z~výstupů analýzy typických sekvencí instrukcí jsem vybrala některé zajímavé sekvence, ze kterých lze vycházet při návrhu metod pro optimalizaci velikosti bajtkódu. 
-Například vybrané sekvence pro práci se zásobníkem z~tabulky \ref{tab:examples:stack} poukazují na instrukce, které lze snadno odstranit, a na nedostatečné používání specializovaných instrukcí pro manipulaci se zásobníkem.
+Z~výstupů analýzy typických sekvencí instrukcí jsem vybrala některé zajímavé sekvence, ze kterých lze vycházet při návrhu metod pro optimalizaci velikosti bajtkódu. Společně s~jejich popisem a četnostmi výskytu jsou uvedeny v~několika následujících tabulkách.
+
+Vybrané sekvence pro práci se zásobníkem z~tabulky \ref{tab:examples:stack} poukazují na případy, kdy lze některou z~instrukcí odstranit. Navíc se ukazuje, že se nedostatečně využívají specializované instrukce pro manipulaci se zásobníkem.
 
 \begin{table}%[ht]
 \begin{texamples}
@@ -217,7 +219,7 @@ Modifikace struktury programu nemusí být vždy žádoucí. Je třeba zvážit 
 Více než polovinu z~celkové velikosti souborů tvoří řetězce. Mezi tyto řetězce patří mimo jiné řetězcové konstanty, názvy atributů, tříd, metod, proměnných a popisy typů. Součástí popisu typu pak mohou být opět názvy tříd. Jako vhodnou optimalizací se v~této oblasti proto nabízí přejmenování balíčků, tříd, metod a členských proměnných za použití co nejkratších názvů. Tato forma optimalizace je obvykle vedlejším efektem obfuskace kódu \cite{Chan:Obfuscation}.
 
 \subsubsection{Vkládání metod}
-Pokud je volání metody z~hlediska velikosti dražší než provedení těla metody, pak je vhodné toto volání nahradit instrukcemi z~těla metody. Pokud se následně tato metoda nikde nevolá, je žádoucí její definici z~příslušného \texttt{class} souboru zcela odstranit. Vkládání metod do kódu je často prováděno virtuálním strojem \cite{Oracle:JVM}.
+Z~analýzy typických těl metod vyplývá, že nezanedbatelná část metod má velmi primitivní funkcionalitu, jako je okamžitý návrat z~metody či vrácení konstantní hodnoty. Volání takových metod je plýtvání časovými i paměťovými zdroji. Pokud je volání metody z~hlediska velikosti dražší než provedení těla metody, pak je vhodné toto volání nahradit instrukcemi z~těla metody. Pokud se následně tato metoda nikde nevolá, je žádoucí její definici z~příslušného \texttt{class} souboru zcela odstranit. Vkládání metod do kódu je často prováděno virtuálním strojem \cite{Oracle:JVM}.
 
 % TODO popsat vkládání členských proměnných, odstranění
 % zmínit další možné optimalizace, rozsah optimalizací
@@ -328,7 +330,7 @@ Sekvence instrukcí, ve kterých se manipuluje jen s~jednou lokální proměnnou
 %=========================================================================
 \subsubsection{Optimalizace práce s~objekty}
 
-Práci s~objekty nelze bez hlubší analýzy příliš optimalizovat. Reference na objekt může být uchovávána ve více proměnných, s~objekty může současně manipulovat více vláken programu a instrukce pro práci s~objekty mohou vyhazovat výjimky. Navržené metody popsané v~tabulce \ref{tab:objects} jsou proto pouze ty nejjednodušší.
+Práci s~objekty nelze bez hlubší analýzy příliš optimalizovat. Reference na objekt může být uchovávána ve více proměnných, s~objekty může současně manipulovat více vláken programu a instrukce pro práci s~objekty mohou generovat výjimky. Navržené metody popsané v~tabulce \ref{tab:objects} jsou proto pouze ty nejjednodušší.
 
 \begin{table}%[ht]
 \begin{tpatterns}

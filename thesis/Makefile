@@ -2,7 +2,6 @@
 # (c) 2008 Michal Bidlo
 # E-mail: bidlom AT fit vutbr cz
 #===========================================
-# asi budete chtit prejmenovat:
 PROJ=project
 PRES=presentation
 CONT=content
@@ -32,9 +31,6 @@ $(PROJ).pdf: clean
 	pdflatex $(PROJ)
 	pdflatex $(PROJ)
 
-counting: $(PROJ).pdf
-	bash counter.sh
-
 wave: clean
 	vlna -l -m -n *.tex $(BIB).bib $(CONT)/*.tex
 
@@ -44,5 +40,11 @@ clean:
 	rm -f *~ ./$(CONT)/*~
 
 pack:
-	tar czvf dp-xponco00.tar.gz *.tex *.bib *.bst ./$(CONT)/*.tex ./fig/* ./cls/* zadani.pdf $(PROJ).pdf Makefile Changelog
+	tar czvf dp-xponco00.tar.gz *.tex *.bib *.bst ./$(CONT)/*.tex ./fig/* ./cls/* assignment.pdf cover.pdf $(PROJ).pdf Makefile
+
+counting: $(PROJ).pdf
+	bash counter.sh
+
+counting2:
+	echo "scale=2; `detex -n obsah | wc -c`/1800;" | bc
 
