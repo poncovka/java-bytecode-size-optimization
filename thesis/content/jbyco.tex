@@ -64,7 +64,9 @@ Konečný návrh na pořadí optimalizačních metod je následující:
 
 \section{Popis implementace}
 
-Program jsem implementovala v~jazyce Java 8 za použití knihovny ASM 5.0\footnote{\texttt{http://asm.ow2.org/}} a tříd, které vznikly v~rámci implementace nástroje \texttt{jbyca}. Překlad a instalaci zajišťuje knihovna Gradle 2.7\footnote{\texttt{http://gradle.org/}}. V~balíčku \texttt{jbyco.optimization} je umístěná třída \texttt{Application} s~hlavní metodou \texttt{main}. Tato metoda zpracuje parametry a pro každý \texttt{class} soubor vrácený iterátorem \texttt{BytecodeFilesIterator} z~balíčku \texttt{jbyco.io} zavolá metodu \texttt{optimizeClassFile} třídy \texttt{Optimizer}. Ve třídě \texttt{Optimizer} jsou implementované všechny fáze optimalizace batjkódu. Ke sběru informací o~provedených optimalizacích slouží třída \texttt{Statistics}. Třídy implementující optimalizační metody pro expanzi kódu jsou umístěné v~podbalíčku \texttt{expansion}, třídy pro zjednodušení kódu jsou v~podbalíčku \texttt{simplification} a třídy pro redukci kódu jsou obsažené v~podbalíčku \texttt{reduction}. Různé obecné nástroje a třídy jsou umístěné v~podbalíčku \texttt{common}.
+Program jsem implementovala v~jazyce Java 8 za použití knihovny ASM 5.0\footnote{\texttt{http://asm.ow2.org/}} a tříd, které vznikly v~rámci implementace nástroje \texttt{jbyca}. Překlad a instalaci zajišťuje knihovna Gradle 2.7\footnote{\texttt{http://gradle.org/}}. Program nepodporuje vytváření \texttt{jar} souborů z optimalizovaných souborů a kopírování souborů, které nejsou typu \texttt{class}, do výstupní struktury.
+
+V~balíčku \texttt{jbyco.optimization} je umístěná třída \texttt{Application} s~hlavní metodou \texttt{main}. Tato metoda zpracuje parametry a vstupní soubor předá iterátoru \texttt{BytecodeFilesIterator} z~balíčku \texttt{jbyco.io}. Pro každý nalezený \texttt{class} soubor se zavolá metoda \texttt{optimizeClassFile} třídy \texttt{Optimizer}. Ve třídě \texttt{Optimizer} jsou implementované všechny fáze optimalizace batjkódu. Ke sběru informací o~provedených optimalizacích slouží třída \texttt{Statistics}. Třídy implementující optimalizační metody pro expanzi kódu jsou umístěné v~podbalíčku \texttt{expansion}, třídy pro zjednodušení kódu jsou v~podbalíčku \texttt{simplification} a třídy pro redukci kódu jsou obsažené v~podbalíčku \texttt{reduction}. Různé obecné nástroje a třídy jsou umístěné v~podbalíčku \texttt{common}. 
 
 \subsubsection{Reprezentace vzorových sekvencí a akcí}
 
@@ -133,3 +135,23 @@ Všechny optimalizace bez expanze duplikací			&	46 888 858			&	24,627			\\\hlin
 \label{tab:sizes}
 \end{figure}
           
+Optimalizované \texttt{class} soubory jsem znovu analyzovala nástrojem \texttt{jbyca}. Optimalizace nijak výrazně neovlivnila maximální hloubky zásobníků operandů ani maximální počty lokálních proměnných. Na využití parametrů metody se optimalizace též nijak zásadně neprojevila. Zaznamenatelná změna však nastala u využití lokálních proměnných. Graf \ref{fig:cmp_locals} zobrazuje, kolik operací se v metodách průměrně provedlo s lokální proměnnou na daném indexu před a po optimalizaci. Obecně lze říci, že počet operací s proměnnými klesl, neboť proměnné na indexech větších než 80 využívá méně než 10 metod. Zvýšení počtu operací u některých proměnných s indexy v rozsahu 80 až 120 lze vysvětlit nahrazením instrukce \texttt{tableswitch} nebo \texttt{lookupswitch} za sekvenci podmíněných skoků, kde se porovnávaná hodnota opakovaně načítá z lokální proměnné. 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.9]{fig/locals_comparison}
+\caption{Využití lokálních proměnných před a po optimalizaci.}\label{fig:cmp_locals}
+\end{figure}
+
+Na grafu \ref{fig:cmp_size} je znázorněna změna celkových velikostí položek ve zpracovaných \texttt{class} souborech. Graf potvrzuje, že optimalizace měla největší vliv na velikost atributů. Celkem se ušetřilo 44,7 MiB ze 181,6 MiB.
+
+Dosažené výsledky nejsou zanedbatelné, ale rozšířením optimalizačních metod by se mohlo dosáhnout ještě větší úspory paměti. Výhodou nástroje \texttt{jbyco} je však zachování původních struktur programů a snadná optimalizace souborů bez složité konfigurace. Jiné nástroje pro optimalizaci velikosti \cite{ProGuard} navíc ke své činnosti vyžadují vyřešené všechny závislosti mezi soubory, což nástroj \texttt{jbyco} nevyžaduje.
+
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.9]{fig/size_comparison}
+\caption{Velikosti položek \texttt{class} souborů před a po optimalizaci.}\label{fig:cmp_size}
+\end{figure}
+
+

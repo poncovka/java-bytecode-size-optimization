@@ -17,6 +17,16 @@ Při bližším pohledu na velikosti konstant se ukázalo, že 89\% z~celkové v
 
 Zkoumání instrukcí z~hlediska jejich velikosti ukázalo, že prvních pět nejobjemnějších instrukcí tvoří 40\% z~celkové velikosti instrukcí. Jsou to instrukce pro volání metod, načtení hodnoty z~členské proměnné a načtení reference na objekt z~lokální proměnné s~indexem 0. Na této pozici se často vyskytuje reference na aktuální objekt. Z~instrukcí s~proměnnou délkou má instrukce \texttt{tableswitch} v~průměru velikost 107 B a instrukce \texttt{lookupswitch} velikost 43 B.
 
+\subsection{Počet lokálních proměnných a hloubka zásobníku}
+
+Průměrná maximální hloubka zásobníku operandů je 2,67. Průměrný maximální počet lokálních proměnných a parametrů metod je 2,71. Největší nalezená hloubka zásobníku pak byla 59 a největší nalezený počet lokálních proměnných 250. Data jsou znázorněna v grafu \ref{fig:maxs}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.9]{fig/maxs}
+\caption{Maximální hloubky zásobníku operandů a maximální počty lokálních proměnných v metodách.}\label{fig:maxs}
+\end{figure}
+
 \subsection{Užití lokálních proměnných a parametrů metody}
 
 Data popisující užití parametrů a lokálních proměnných jsou znázorněna v~grafech \ref{fig:params} a \ref{fig:vars}. Grafy znázorňují, kolikrát průměrná metoda pracuje se svým parametrem, respektive svojí lokální proměnnou na daném indexu. 

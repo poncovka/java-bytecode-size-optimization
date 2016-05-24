@@ -18,7 +18,6 @@ Znaky a řetězce jsou v~Javě kódované podle standardu Unicode v~kódování 
 
 Typ \texttt{reference} označuje referenční datový typ a reprezentuje referenci na dynamicky vytvořený objekt. Podle toho, zda objekt je instancí třídy, pole nebo instancí třídy či pole, které implementují nějaké rozhraní, se rozlišuje typ reference. Hodnotou typu \texttt{reference} může být též speciální hodnota \texttt{null}, tedy reference na žádný objekt. 
 
-% TODO vylepšit, ošklivé
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.8]{fig/types}
@@ -43,7 +42,7 @@ Lokální proměnná v~poli lokálních proměnných je 32-bitová hodnota. Prom
 
 \subsection{Kontrola instrukčního souboru}
 
-Při načítání \texttt{class} souboru je ověřeno správné formátování tak, jak je popsáno v~kapitole \ref{Bytecode:Format}. Jsou zkontrolovány první čtyři bajty souboru, předdefinované atributy musí být správné délky, názvy a typy tříd, rozhraní, metod a proměnných musí být validní, indexy do tabulky konstant musí adresovat správný typ položky. Dále jsou kladena jistá omezení na kód metod. Mimo jiné, argumenty instrukcí musí mít správný typ a musí být správného počtu, integrita hodnot typu \texttt{long} a \texttt{double} nemůže být nikdy narušena, k~hodnotě lokální proměnné se nesmí přistupovat před inicializací proměnné a nesmí dojít k~načtení hodnoty z~prázdného zásobníku operandů, či překročení jeho maximální velikosti. Metody musí byt ukončené některou z~instrukcí pro návrat z~metody. Součástí verifikace těchto omezení je typová kontrola nebo typová inference. Díky kontrole instrukčního souboru se omezení nemusí kontrolovat za běhu programu.
+Při načítání \texttt{class} souboru je ověřeno správné formátování tak, jak je popsáno v~kapitole \ref{Bytecode:Format}. Jsou zkontrolovány první čtyři bajty souboru, předdefinované atributy musí být správné délky, názvy a typy tříd, rozhraní, metod a proměnných musí být validní, indexy do tabulky konstant musí adresovat správný typ položky. Dále jsou kladena jistá omezení na kód metod. Mimo jiné, argumenty instrukcí musí mít správný typ a musí být správného počtu, integrita hodnot typu \texttt{long} a \texttt{double} nemůže být nikdy narušena, k~hodnotě lokální proměnné se nesmí přistupovat před inicializací proměnné a nesmí dojít k~načtení hodnoty z~prázdného zásobníku operandů, či překročení jeho maximální velikosti. Metody musí být ukončené některou z~instrukcí pro návrat z~metody. Součástí verifikace těchto omezení je typová kontrola nebo typová inference. Díky kontrole instrukčního souboru se omezení nemusí kontrolovat za běhu programu.
 
 %=========================================================================
 

@@ -45,6 +45,3 @@ pack:
 counting: $(PROJ).pdf
 	bash counter.sh
 
-counting2:
-	echo "scale=2; `detex -n obsah | wc -c`/1800;" | bc
-
