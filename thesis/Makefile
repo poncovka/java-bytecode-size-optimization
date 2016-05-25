@@ -40,7 +40,7 @@ clean:
 	rm -f *~ ./$(CONT)/*~
 
 pack:
-	tar czvf dp-xponco00.tar.gz *.tex *.bib *.bst ./$(CONT)/*.tex ./fig/* ./cls/* assignment.pdf cover.pdf $(PROJ).pdf Makefile
+	tar czvf dp-xponco00.tar.gz *.tex *.bib *.bst *.cls counter.sh ./$(CONT)/*.tex ./fig/* assignment.pdf cover.pdf $(PROJ).pdf Makefile
 
 counting: $(PROJ).pdf
 	bash counter.sh
