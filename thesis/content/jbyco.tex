@@ -1,9 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Nástroj pro optimalizaci velikosti bajtkódu}\label{Jbyco}
 
-% TODO 
-% * zmínit, že záleží na pořadí, a že každá optimalizace produkuje další možnosti k optimalizaci, mebo taky ne
-
 V~této kapitole popisuji návrh a implementaci nástroje \texttt{jbyco} nebo-li Java Bytecode Optimizer určeného k~optimalizaci velikosti \texttt{class} souborů. Nástroj implementuje optimalizační metody, které jsem navrhla v~předchozí kapitole. Efektivita těchto metod je na základě výstupů programu vyhodnocena v~kapitole \ref{Jbyco:Results}.
 
 \section{Požadavky na program}\label{Jbyco:Requirements}
@@ -13,9 +10,9 @@ Vstupem programu může být \texttt{class} soubor, \texttt{jar} soubor nebo adr
 
 \section{Návrh programu}\label{Jbyco:Design}
 
-Kapitola \ref{Optimization:Methods} je ve velké míře věnovaná optimalizačním metodám založeným na náhradě sekvencí instrukcí. Rozhodla jsem se proto na tyto metody zaměřit i při implementaci. Metody lze rozdělit na tzv. peephole optimalizace a optimalizace toku programu. Peephole optimalizacím se dále věnuji v~kapitole \ref{Jbyco:Design:Peephole}, zatímco optimalizacím toku programu v~kapitole \ref{Jbyco:Design:Flow}. 
+Kapitola \ref{Optimization:Methods} je ve velké míře věnovaná optimalizačním metodám založeným na náhradě sekvencí instrukcí. Rozhodla jsem se proto na tyto metody zaměřit i při implementaci. Metody lze rozdělit na tzv. peephole optimalizace a optimalizace řízení toku programu. Peephole optimalizacím se dále věnuji v~kapitole \ref{Jbyco:Design:Peephole}, zatímco optimalizacím řízení toku programu v~kapitole \ref{Jbyco:Design:Flow}. 
 
-K~implementaci jsem se rozhodla použít knihovnu ASM. Avšak s~ohledem na to, jakým způsobem je v~knihovně bajtkód reprezentován, je výhodné hned na počátku optimalizací odstranit informativní atributy. Tyto atributy by jinak byly součástí seznamů instrukcí, což by zkomplikovalo vykovávání dalších optimalizací. 
+K~implementaci jsem se rozhodla použít knihovnu ASM. Avšak s~ohledem na to, jakým způsobem je v~knihovně bajtkód reprezentován, je výhodné hned na počátku optimalizací odstranit informativní atributy. Tyto atributy by jinak byly součástí seznamů instrukcí, což by zkomplikovalo vykonávání dalších optimalizací. 
 
 Dále jsem se rozhodla ve zjednodušené formě aplikovat realokaci lokálních proměnných. Toto zjednodušení spočívá v~přečíslení indexů lokálních proměnných tak, aby byly proměnné očíslovány v~pořadí prvního užití v~instrukcích. Tímto přeskupením může vzniknout kompaktnější pole lokálních proměnných. Takový nástroj navíc poskytuje přímo knihovna ASM. Nad celkovým pořadím žádaných optimalizací se zamýšlím v~kapitole \ref{Jbyco:Design:Ordering}.
 
@@ -32,7 +29,7 @@ Většinu vzorových sekvencí v~navržených optimalizačních metodách tvoř�
 Každá peephole optimalizace je tedy definována posloupností symbolů, které reprezentují množiny operačních kódů, a akcí, které provádí dodatečné kontroly a optimalizaci. Jedním z~výstupů akce je informace o~tom, zda se optimalizace provedla či neprovedla.
 Rozpoznávání posloupností symbolů lze realizovat jednoduchým konečným automatem, jehož stavy jsou indexy do posloupnosti symbolů. Počátečním stavem je nula a koncovým stavem je délka posloupnosti. Pokud operační kód instrukce na vstupu patří do množiny reprezentované symbolem na indexu určeném aktuálním stavem, automat provede přechod na následující index. Pokud automat přejde do koncového stavu, provede se pro nalezenou sekvenci instrukcí odpovídající akce.
 
-\subsection{Optimalizace toku programu}\label{Jbyco:Design:Flow}
+\subsection{Optimalizace řízení toku programu}\label{Jbyco:Design:Flow}
 
 Některé z~navržených metod pro optimalizaci podmíněných a nepodmíněných skoků nelze implementovat pomocí peephole optimalizací, neboť vyžadují dodatečné informace o~návěštích a adresách instrukcí. Některé z~těchto optimalizací navíc mohou tyto informace zneplatnit, a proto je třeba je při každé možné změně aktualizovat. 
 Adresy instrukcí stačí určit za použití heuristiky, kdy se adresy počítají pomocí největších možných velikostí instrukcí. Získané adresy tak popisují nejhorší možný případ.
@@ -64,13 +61,13 @@ Konečný návrh na pořadí optimalizačních metod je následující:
 
 \section{Popis implementace}
 
-Program jsem implementovala v~jazyce Java 8 za použití knihovny ASM 5.0\footnote{\texttt{http://asm.ow2.org/}} a tříd, které vznikly v~rámci implementace nástroje \texttt{jbyca}. Překlad a instalaci zajišťuje knihovna Gradle 2.7\footnote{\texttt{http://gradle.org/}}. Program nepodporuje vytváření \texttt{jar} souborů z optimalizovaných souborů a kopírování souborů, které nejsou typu \texttt{class}, do výstupní struktury.
+Program jsem implementovala v~jazyce Java 8 za použití knihovny ASM 5.0\footnote{\texttt{http://asm.ow2.org/}} a tříd, které vznikly v~rámci implementace nástroje \texttt{jbyca}. Překlad a instalaci zajišťuje knihovna Gradle 2.7\footnote{\texttt{http://gradle.org/}}. Program nepodporuje vytváření \texttt{jar} souborů z~optimalizovaných souborů a kopírování souborů, které nejsou typu \texttt{class}, do výstupní struktury.
 
 V~balíčku \texttt{jbyco.optimization} je umístěná třída \texttt{Application} s~hlavní metodou \texttt{main}. Tato metoda zpracuje parametry a vstupní soubor předá iterátoru \texttt{BytecodeFilesIterator} z~balíčku \texttt{jbyco.io}. Pro každý nalezený \texttt{class} soubor se zavolá metoda \texttt{optimizeClassFile} třídy \texttt{Optimizer}. Ve třídě \texttt{Optimizer} jsou implementované všechny fáze optimalizace batjkódu. Ke sběru informací o~provedených optimalizacích slouží třída \texttt{Statistics}. Třídy implementující optimalizační metody pro expanzi kódu jsou umístěné v~podbalíčku \texttt{expansion}, třídy pro zjednodušení kódu jsou v~podbalíčku \texttt{simplification} a třídy pro redukci kódu jsou obsažené v~podbalíčku \texttt{reduction}. Různé obecné nástroje a třídy jsou umístěné v~podbalíčku \texttt{common}. 
 
 \subsubsection{Reprezentace vzorových sekvencí a akcí}
 
-Balíček \texttt{jbyco.optimization.peephole} obsahuje třídy pro implementaci a aplikaci peephole optimalizací. Rozhraní \texttt{Symbol} pro symboly reprezentuje množinu operačních kódů. Má jedinou metodu \texttt{match} s~parametrem \texttt{AbstractInsnNode} z~knihovny ASM, která vrací \texttt{true}, pokud operační kód dané instrukce patří do množiny reprezentované symbolem, jinak \texttt{false}. Toto rozhraní je implementováno výčtem \texttt{Symbols}, kde každý operační kód je reprezentován jedním symbolem a další symboly reprezentují skupiny operačních kódů se stejnými vlastnostmi. Vzorovou sekvenci lze definovat pomocí anotace \texttt{Pattern}, která obsahuje pole symbolů typu \texttt{Symbol}. Akce je reprezentovaná třídou implementující funkční rozhraní \texttt{PeepholeAction} a anotovanou anotací \texttt{Pattern}. Každá akce definuje metodu \texttt{replace} s~paramery: seznam instrukcí typu \texttt{InsnList} z~knihovny ASM a pole instrukcí typu \texttt{AbstractInsnNode}. Seznam instrukcí je aktuální reprezentací těla zpracovávané metody. Pole instrukcí pak obsahuje instrukce ze seznamu instrukcí a tvoří nalezenou sekvenci instrukcí. Pomocí prvků tohoto pole lze snadno provádět dodatečné kontroly a modifikovat seznam instrukcí. Návratová hodnota je typu \texttt{boolean} a značí, zda došlo k~modifikaci seznamu instrukcí. Třída \texttt{InsnUtils} z~balíčku \texttt{jbyco.optimization.common} slouží akcím jako knihovna užitečných funkcí.
+Balíček \texttt{jbyco.optimization.peephole} obsahuje třídy pro implementaci a aplikaci peephole optimalizací. Rozhraní \texttt{Symbol} pro symboly reprezentuje množinu operačních kódů. Má jedinou metodu \texttt{match} s~parametrem \texttt{AbstractInsnNode} z~knihovny ASM, která vrací \texttt{true}, pokud operační kód dané instrukce patří do množiny reprezentované symbolem, jinak \texttt{false}. Toto rozhraní je implementováno výčtem \texttt{Symbols}, kde každý operační kód je reprezentován jedním symbolem a další symboly reprezentují skupiny operačních kódů se stejnými vlastnostmi. Vzorovou sekvenci lze definovat pomocí anotace \texttt{Pattern}, která obsahuje pole symbolů typu \texttt{Symbol}. Akce je reprezentovaná třídou implementující funkční rozhraní \texttt{PeepholeAction} a anotovanou anotací \texttt{Pattern}. Každá akce definuje metodu \texttt{replace} s~parametry seznam instrukcí typu \texttt{InsnList} z~knihovny ASM a pole instrukcí typu \texttt{AbstractInsnNode}. Seznam instrukcí je aktuální reprezentací těla zpracovávané metody. Pole instrukcí pak obsahuje instrukce ze seznamu instrukcí a tvoří nalezenou sekvenci instrukcí. Pomocí prvků tohoto pole lze snadno provádět dodatečné kontroly a modifikovat seznam instrukcí. Návratová hodnota je typu \texttt{boolean} a značí, zda došlo k~modifikaci seznamu instrukcí. Třída \texttt{InsnUtils} z~balíčku \texttt{jbyco.optimization.common} slouží akcím jako knihovna užitečných funkcí.
 
 \subsubsection{Hledání vzorových sekvencí a aplikace akcí}
 
@@ -78,17 +75,15 @@ Třída \texttt{PeepholeRunner} z~balíčku \texttt{jbyco.optimization.peephole}
 
 Metoda \texttt{findAndReplace} třídy \texttt{PeepholeRunner} slouží k~hledání vzorů a spouštění akcí. Dokud v~daném seznamu instrukcí dochází ke změnám, tak se v~něm opakovaně vyhledává. Pro aktuální instrukci se nejprve ověří, zda nemůže být přečtena některým z~načtených konečných automatů. Pokud ano, je vytvořena kopie tohoto automatu a vložena do fronty běžících automatů. Tato fronta je následně dále zpracovávána. Pokud automat z~fronty běžících automatů přečte aktuální instrukci, pak ve frontě zůstává, a pokud ji nepřečte, je z~fronty odebrán. Přejde-li automat do koncového stavu, spustí se akce, a modifikuje-li akce seznam instrukcí, fronta běžících automatů se vyprázdní a vyhledávání vzorů se restartuje.
 
-\subsubsection{Aplikace optimalizací programového toku}
+\subsubsection{Aplikace optimalizací řízení toku programu}
 
-Třídy pro implementaci a aplikaci optimalizací programového toku jsou umístěné v~balíčku \texttt{jbyco.optimization.jump}. Obdobně jako u~peephole optimalizací jsou optimalizační akce definované pomocí funkčních rozhraní \texttt{LabelAction}, \texttt{FrameAction}, \texttt{TableSwitchAction} a \texttt{LookupSwitchAction}. Tyto akce lze načíst a aplikovat pomocí tříd \texttt{LabelTransformer}, \texttt{FrameTransformer}, \texttt{TableSwitchTransformer} a \texttt{LookupSwitchTransformer} rozšiřujících abstraktní třídu \texttt{MethodTransformer} z balíčku \texttt{jbyco.optimization.common}.
-Bajtkód je optimalizován pomocí zřetězení těchto tříd a třídy \texttt{JumpTransformer}. Tato třída rozšiřuje abstraktní třídu \texttt{ClassTransformer} z balíčku \texttt{jbyco.optimization.common}.
+Třídy pro implementaci a aplikaci optimalizací řízení toku programu jsou umístěné v~balíčku \texttt{jbyco.optimization.jump}. Obdobně jako u~peephole optimalizací jsou optimalizační akce definované pomocí funkčních rozhraní \texttt{LabelAction}, \texttt{FrameAction}, \texttt{TableSwitchAction} a \texttt{LookupSwitchAction}. Tyto akce lze načíst a aplikovat pomocí tříd \texttt{LabelTransformer}, \texttt{FrameTransformer}, \texttt{TableSwitchTransformer} a \texttt{LookupSwitchTransformer} rozšiřujících abstraktní třídu \texttt{MethodTransformer} z~balíčku \texttt{jbyco.optimization.common}.
+Bajtkód je optimalizován pomocí zřetězení těchto tříd a třídy \texttt{JumpTransformer}. Tato třída rozšiřuje abstraktní třídu \texttt{ClassTransformer} z~balíčku \texttt{jbyco.optimization.common}.
 Data nezbytná pro provádění optimalizací se sbírají ve třídě \texttt{JumpCollector}. Informace o~návěštích se uchovávají v~instancích třídy \texttt{LabelNodeInfo} a informace o~rámcích zásobníkových map ve \texttt{FrameNodeInfo}.
 
 \section{Překlad a spuštění}
 
 Nástroj je implementován v~programovacích jazyce Java 8. K~překladu a spuštění proto vyžaduje instalaci Java JDK 8 a Java JRE 8. Zdrojové soubory nástroje \texttt{jbyco} jsou součástí projektu \texttt{optimization}. Projekt lze přeložit a nainstalovat pomocí skriptu \texttt{gradlew} nástroje Gradle stejným způsobem, jako bylo popsáno v~kapitole \ref{Jbyca:Run}. Nástroj lze spustit příkazem \texttt{./jbyco}. Nápovědu vypíše volba \texttt{---help}.
-
-% nástroj pro porovnání dvou souborů
 
 \section{Zhodnocení výstupů programu}\label{Jbyco:Results}
 
@@ -135,7 +130,7 @@ Všechny optimalizace bez expanze duplikací			&	46 888 858			&	24,627			\\\hlin
 \label{tab:sizes}
 \end{figure}
           
-Optimalizované \texttt{class} soubory jsem znovu analyzovala nástrojem \texttt{jbyca}. Optimalizace nijak výrazně neovlivnila maximální hloubky zásobníků operandů ani maximální počty lokálních proměnných. Na využití parametrů metody se optimalizace též nijak zásadně neprojevila. Zaznamenatelná změna však nastala u využití lokálních proměnných. Graf \ref{fig:cmp_locals} zobrazuje, kolik operací se v metodách průměrně provedlo s lokální proměnnou na daném indexu před a po optimalizaci. Obecně lze říci, že počet operací s proměnnými klesl, neboť proměnné na indexech větších než 80 využívá méně než 10 metod. Zvýšení počtu operací u některých proměnných s indexy v rozsahu 80 až 120 lze vysvětlit nahrazením instrukce \texttt{tableswitch} nebo \texttt{lookupswitch} za sekvenci podmíněných skoků, kde se porovnávaná hodnota opakovaně načítá z lokální proměnné. 
+Optimalizované \texttt{class} soubory jsem znovu analyzovala nástrojem \texttt{jbyca}. Optimalizace nijak výrazně neovlivnila maximální hloubky zásobníků operandů ani maximální počty lokálních proměnných. Na využití parametrů metody se optimalizace též nijak zásadně neprojevila. Zaznamenatelná změna však nastala u~využití lokálních proměnných. Graf \ref{fig:cmp_locals} zobrazuje, kolik operací se v~metodách průměrně provedlo s~lokální proměnnou na daném indexu před a po optimalizaci. Obecně lze říci, že počet operací s~proměnnými klesl, neboť proměnné na indexech větších než 80 využívá méně než 10 metod. Zvýšení počtu operací u~některých proměnných s~indexy v~rozsahu 80 až 120 lze vysvětlit nahrazením instrukce \texttt{tableswitch} nebo \texttt{lookupswitch} za sekvenci podmíněných skoků, kde se porovnávaná hodnota opakovaně načítá z~lokální proměnné. 
 
 \begin{figure}[h!]
 \centering

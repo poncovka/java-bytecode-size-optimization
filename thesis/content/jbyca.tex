@@ -1,15 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Nástroj pro analýzu bajtkódu}\label{Jbyca}
 
-% TODO 
-% * dostatečně
-% * obrázek s instrukcemi a stromem
-% * příklady zobecnění instrukcí 
-% * základní blok
-% * kombinatoriky
-% * abstrahování - zobecnění
-% * kešování
-
 K~získání dostatečně obecných dat, ze kterých bych mohla čerpat při návrhu metod pro optimalizaci velikosti bajtkódu, bylo potřeba zpracovat a analyzovat velké množství \texttt{class} souborů. Bylo proto výhodné navrhnout a implementovat nástroj, který tyto činnosti umožňuje zautomatizovat. Výslednému nástroji \texttt{jbyca} nebo-li Java Bytecode Analyzer je věnovaná tato kapitola.
 
 \section{Požadavky na program}\label{Jbyca:Requirements}
@@ -22,7 +13,7 @@ Ty by měly umět zodpovědět následující otázky:
 \setlength{\parskip}{0pt}
 \item Kolik souborů, bajtů, tříd, metod a členských proměnných se zpracovalo? 
 \item Jaké jsou velikosti jednotlivých položek v~souborech? 
-\item Jaká je maximální hloubka zásobníku v metodách?
+\item Jaká je maximální hloubka zásobníku v~metodách?
 \item Kolik lokálních proměnných metody používají?
 \item Jaké je využití lokálních proměnných? 
 \item Jaké jsou typické sekvence instrukcí v~souborech?
@@ -38,7 +29,7 @@ Většinu potřebných dat lze získat jednoduše pomocí knihoven ASM a BCEL. V
 
 \subsection{Reprezentace sekvencí instrukcí}
 
-Získání typických sekvencí instrukcí vyžaduje uchovávat v~paměti všechny nalezené různé sekvence ze všech zpracovaných metod s~četnostmi jejich výskytu. Každou novou sekvenci je pak třeba porovnat s~ostatními, a buď upravit četnost shodné sekvence, nebo vložit novou sekvenci mezi ostatní. To představuje velkou časovou a paměťovou zátěž a nelze zaručit, že program skončí dřív než dojde k~nedostatku paměti. Z~těchto důvodů bylo třeba vymyslet úspornou datovou strukturu reprezentující sekvence a způsob zotavení se z~nedostatku paměti.
+Získání typických sekvencí instrukcí vyžaduje uchovávat v~paměti všechny nalezené různé sekvence ze všech zpracovaných metod s~četnostmi jejich výskytu. Každou novou sekvenci je pak třeba porovnat s~ostatními, a buď upravit četnost shodné sekvence, nebo vložit novou sekvenci mezi ostatní. To představuje velkou časovou a paměťovou zátěž a nelze zaručit, že program skončí dřív, než dojde k~nedostatku paměti. Z~těchto důvodů bylo třeba vymyslet úspornou datovou strukturu reprezentující sekvence a způsob zotavení se z~nedostatku paměti.
 
 Jako vhodná datová struktura se pro sekvence instrukcí nabízí strom. Kořenem stromu by byl prázdný uzel, uzly jednotlivé instrukce a žádný uzel by nesměl mít dva bezprostřední následníky se stejnou instrukcí. Každá cesta z~kořene do nějakého uzlu stromu by představovala jednu sekvenci a poslední uzel této cesty by pak obsahoval hodnotu četnosti výskytu sekvence. Tuto stromovou strukturu lze vytvořit z~postfixů seznamů instrukcí metod. 
 Po vložení takového postfixu jsou z~kořene stromu dostupné všechny jeho prefixy. Prefixy všech postfixů pak tvoří množinu všech sufixů, což jsou všechny různé sekvence seznamu instrukcí.
@@ -78,29 +69,29 @@ Nástroje pro analýzu bajtkódu jsou umístěné v~balíčku \texttt{jbyco.anal
 
 \subsection{Výpis textové reprezentace bajtkódu}
 
-Převedení obsahu \texttt{class} souboru do textové reprezentace a její výpis na standardní výstup zajišťuje nástroj \texttt{BytecodePrinter} z balíčku \texttt{jbyco.analysis.content}. Tabulku konstant vypisuje prostřednictvím třídy \texttt{ConstantPoolWriter}.  
+Převedení obsahu \texttt{class} souboru do textové reprezentace a její výpis na standardní výstup zajišťuje nástroj \texttt{BytecodePrinter} z~balíčku \texttt{jbyco.analysis.content}. Tabulku konstant vypisuje prostřednictvím třídy \texttt{ConstantPoolWriter}.  
 
 \subsection{Sběr statistik}
 
-Nástroj pro získání souhrnných informací o~zpracovaných \texttt{class} souborech je implementovaný ve třídě \texttt{StatisticsCollector} z balíčku \texttt{jbyco.analysis.statistics}. Nástroj prochází jednotlivé položky souboru a  počty těchto položek aktualizuje v~instanci třídy \texttt{StatisticsMap}. Po zpracování všech souborů se vypíše tabulka s~typem položky, celkovým počtem výskytů tohoto typu a počtem výskytů přepočteným na jeden soubor. 
+Nástroj pro získání souhrnných informací o~zpracovaných \texttt{class} souborech je implementovaný ve třídě \texttt{StatisticsCollector} z~balíčku \texttt{jbyco.analysis.statistics}. Nástroj prochází jednotlivé položky souboru a  počty těchto položek aktualizuje v~instanci třídy \texttt{StatisticsMap}. Po zpracování všech souborů se vypíše tabulka s~typem položky, celkovým počtem výskytů tohoto typu a počtem výskytů přepočteným na jeden soubor. 
 
 \subsection{Analýza velikosti}
 
-Přehled o~velikostech jednotlivých položek v~souborech poskytuje nástroj \texttt{SizeAnalyzer} z balíčku \texttt{jbyco.analysis.size}. Nástroj určuje velikosti zpracovávaných položek a informace o~jejich velikostech udržuje v~instanci třídy \texttt{SizeMap}. Výstupem je tabulka s~typem položky, celkovou velikostí položek tohoto typu v~souborech, průměrnou velikostí jedné položky tohoto typu a relativní celkovou velikostí vzhledem k~celkové velikosti zpracovaných souborů. 
+Přehled o~velikostech jednotlivých položek v~souborech poskytuje nástroj \texttt{SizeAnalyzer} z~balíčku \texttt{jbyco.analysis.size}. Nástroj určuje velikosti zpracovávaných položek a informace o~jejich velikostech udržuje v~instanci třídy \texttt{SizeMap}. Výstupem je tabulka s~typem položky, celkovou velikostí položek tohoto typu v~souborech, průměrnou velikostí jedné položky tohoto typu a relativní celkovou velikostí vzhledem k~celkové velikosti zpracovaných souborů. 
 
 \subsection{Analýza lokálních proměnných}
 
-Data o~využití lokálních proměnných jsou dostupná s~nástrojem \texttt{VariablesAnalyzer} z balíčku \texttt{jbyco.analysis.variables}. Nástroj s~pomocí třídy \texttt{VariablesMap} zaznamenává pro každou metodu počet formálních parametrů a lokálních proměnných a jejich použití v~instrukcích metod. Výstupem tohoto nástroje jsou dvě tabulky: jedna pro formální parametry metody a jedna pro lokální proměnné. Každá z~tabulek obsahuje index do tabulky lokálních proměnných, počet metod, které s~danou proměnnou pracují, počet instrukcí pro načítání, ukládání a inkrementaci, součet všech instrukcí a průměrné hodnoty.
+Data o~využití lokálních proměnných jsou dostupná s~nástrojem \texttt{VariablesAnalyzer} z~balíčku \texttt{jbyco.analysis.variables}. Nástroj s~pomocí třídy \texttt{VariablesMap} zaznamenává pro každou metodu počet formálních parametrů a lokálních proměnných a jejich použití v~instrukcích metod. Výstupem tohoto nástroje jsou dvě tabulky: jedna pro formální parametry metody a jedna pro lokální proměnné. Každá z~tabulek obsahuje index do tabulky lokálních proměnných, počet metod, které s~danou proměnnou pracují, počet instrukcí pro načítání, ukládání a inkrementaci, součet všech instrukcí a průměrné hodnoty.
 
 \subsection{Analýza maxim}
 
-Ve třídě \texttt{MaxAnalyzer} z balíčku \texttt{jbyco.analysis.max} je implementovaný nástroj pro analýzu maximálního počtu lokálních proměnných a maximální hloubky zásobníku operandů v metodách. Nástroj zkoumá maxima v položkách \textit{max\_stack} a \textit{max\_variables} v atributech \texttt{Code}. Výstupem jsou tabulky s četnostmi těchto maxim ve zkoumaných metodách.
+Ve třídě \texttt{MaxAnalyzer} z~balíčku \texttt{jbyco.analysis.max} je implementovaný nástroj pro analýzu maximálního počtu lokálních proměnných a maximální hloubky zásobníku operandů v~metodách. Nástroj zkoumá maxima v~položkách \textit{max\_stack} a \textit{max\_variables} v~atributech \texttt{Code}. Výstupem jsou tabulky s~četnostmi těchto maxim ve zkoumaných metodách.
 
 \subsection{Analýza typických sekvencí instrukcí}
 
-Nástroj \texttt{PatternsAnalyzer} z balíčku \texttt{jbyco.analysis.patterns} umožňuje vyhledat typické sekvence instrukcí. Dle návrhu potřebuje ke své práci stromovou reprezentaci sekvencí a abstrahovanou reprezentaci instrukcí. K~těmto účelům slouží dále uvedené balíčky. Výpis nalezených sekvencí zajišťuje třída \texttt{PatternsWriter}. Výstupem jsou délky sekvencí, jejich absolutní a relativní četnosti výskytu a řetězové reprezentace sekvencí. Výstup není nijak seřazený.
+Nástroj \texttt{PatternsAnalyzer} z~balíčku \texttt{jbyco.analysis.patterns} umožňuje vyhledat typické sekvence instrukcí. Dle návrhu potřebuje ke své práci stromovou reprezentaci sekvencí a abstrahovanou reprezentaci instrukcí. K~těmto účelům slouží dále uvedené balíčky. Výpis nalezených sekvencí zajišťuje třída \texttt{PatternsWriter}. Výstupem jsou délky sekvencí, jejich absolutní a relativní četnosti výskytu a řetězové reprezentace sekvencí. Výstup není nijak seřazený.
 
-Hledání typických sekvencí probíhá ve třídě \texttt{PatternsAnalyzer} následovně. Každý \texttt{class} soubor je převeden na stromovou reprezentaci knihovny ASM. Seznam instrukcí každé metody je doplněn o~návěští označující začátek a konec metody. Z těchto seznamů se postupně vygenerují všechny sekvence instrukcí dané délky. Ze sekvencí mohou být následně generované sekvence s~daným počtem divokých karet. Každá vygenerovaná sekvence je pomocí třídy \texttt{Abstractor} převedena na sekvenci abstrahovaných instrukcí typu \texttt{AbstractInstruction}. Abstrahované instrukce jsou prostřednictvím třídy \texttt{Cache} nahrazeny instrukcemi typu \texttt{CachedInstruction}. Výsledná sekvence se předá instanci třídy \texttt{TreeBuilder} a vloží do vytvářeného stromu. Po zpracování každého souboru se zkontroluje dostupná paměť a případně provede ořezání stromu. Nakonec se prostřednictvím třídy \texttt{PatternsWriter} vypíšou nalezené sekvence a jejich četnosti.
+Hledání typických sekvencí probíhá ve třídě \texttt{PatternsAnalyzer} následovně. Každý \texttt{class} soubor je převeden na stromovou reprezentaci knihovny ASM. Seznam instrukcí každé metody je doplněn o~návěští označující začátek a konec metody. Z~těchto seznamů se postupně vygenerují všechny sekvence instrukcí dané délky. Ze sekvencí mohou být následně generované sekvence s~daným počtem divokých karet. Každá vygenerovaná sekvence je pomocí třídy \texttt{Abstractor} převedena na sekvenci abstrahovaných instrukcí typu \texttt{AbstractInstruction}. Abstrahované instrukce jsou prostřednictvím třídy \texttt{Cache} nahrazeny instrukcemi typu \texttt{CachedInstruction}. Výsledná sekvence se předá instanci třídy \texttt{TreeBuilder} a vloží do vytvářeného stromu. Po zpracování každého souboru se zkontroluje dostupná paměť a případně provede ořezání stromu. Nakonec se prostřednictvím třídy \texttt{PatternsWriter} vypíšou nalezené sekvence a jejich četnosti.
 
 \subsubsection{Reprezentace sekvencí instrukcí}
 
