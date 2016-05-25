@@ -96,6 +96,7 @@ public class CommonFilesIterator implements Iterator<CommonFile>, Iterable<Commo
      *
      * @param parent the parent file
      * @param name   the name of file
+     * @param isFile is it name of the file?
      * @return the relative path to the file
      * @throws IOException Signals that an I/O exception has occurred.
      */

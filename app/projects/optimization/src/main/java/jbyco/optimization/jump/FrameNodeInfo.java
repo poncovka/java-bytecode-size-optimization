@@ -7,13 +7,25 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Created by vendy on 17.5.16.
+ * Info about frame.
  */
 public class FrameNodeInfo {
 
+    /**
+     * Frame node.
+     */
     public final FrameNode frame;
+
+    /**
+     * Label that labels the frame.
+     */
     public LabelNode label;
+
+    /**
+     * Collections of labels that are used in a frame.
+     */
     public Collection<LabelNode> labels;
+
 
     public FrameNodeInfo(FrameNode node) {
 

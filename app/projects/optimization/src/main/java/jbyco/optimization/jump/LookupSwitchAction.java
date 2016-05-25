@@ -9,9 +9,17 @@ import org.objectweb.asm.tree.TableSwitchInsnNode;
 import java.util.Map;
 
 /**
- * Created by vendy on 20.5.16.
+ * An interface for optimization action that uses lookupswitch.
  */
 @FunctionalInterface
 public interface LookupSwitchAction extends Action {
+
+    /**
+     * Replace instructions in a list based on lookupswitch instruction and addresses.
+     * @param list      list of instructions
+     * @param node      lookupswitch instruction
+     * @param addresses addresses of instructions
+     * @return is list changed?
+     */
     boolean replace(InsnList list, LookupSwitchInsnNode node, Map<AbstractInsnNode, Integer> addresses);
 }

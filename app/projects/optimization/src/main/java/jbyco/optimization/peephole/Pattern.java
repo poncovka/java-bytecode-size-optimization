@@ -3,7 +3,7 @@ package jbyco.optimization.peephole;
 import java.lang.annotation.*;
 
 /**
- * Created by vendy on 2.5.16.
+ * An annotation for pattern.
  */
 
 @Documented

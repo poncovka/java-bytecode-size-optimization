@@ -9,9 +9,17 @@ import org.objectweb.asm.tree.TableSwitchInsnNode;
 import java.util.Map;
 
 /**
- * Created by vendy on 20.5.16.
+ * An interface for tableswitch optimization actions.
  */
 @FunctionalInterface
 public interface TableSwitchAction extends Action{
+
+    /**
+     * Replaces the instruction in a list base on the tableswitch node and addresses.
+     * @param list      list of instructions
+     * @param node      tableswitch node
+     * @param addresses addresses of instructions
+     * @return is list changed?
+     */
     boolean replace(InsnList list, TableSwitchInsnNode node, Map<AbstractInsnNode, Integer> addresses);
 }

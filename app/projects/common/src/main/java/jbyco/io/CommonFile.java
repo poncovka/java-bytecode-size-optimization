@@ -30,6 +30,7 @@ public class CommonFile {
      *
      * @param file     the path to the existing file
      * @param relative the relative path to the file
+     * @param extracted was the file extracted?
      */
     public CommonFile(File file, Path relative, boolean extracted) {
         this.file = file;

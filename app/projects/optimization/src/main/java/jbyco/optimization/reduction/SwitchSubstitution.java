@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Created by vendy on 12.5.16.
+ * A library of actions for switch substitution.
  */
 public class SwitchSubstitution {
 

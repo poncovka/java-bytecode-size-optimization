@@ -6,7 +6,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 /**
- * The method adapters
+ * The method adapter for constant numbers substitution.
  */
 public class ConstantNumbersSubstitution extends MethodVisitor {
 

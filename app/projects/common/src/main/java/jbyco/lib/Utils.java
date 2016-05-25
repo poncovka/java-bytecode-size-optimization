@@ -152,6 +152,7 @@ public class Utils {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T getClassInstance(Class<?> klass) {
         try {
             return (T) klass.newInstance();

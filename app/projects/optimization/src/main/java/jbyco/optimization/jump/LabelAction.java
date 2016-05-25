@@ -9,9 +9,17 @@ import java.util.Arrays;
 import java.util.Map;
 
 /**
- * Created by vendy on 17.5.16.
+ * An action for optimizations based on labels.
  */
 @FunctionalInterface
 public interface LabelAction extends Action {
+
+    /**
+     * Replaces instructions in a list based od label info and addresses.
+     * @param list          list of instructions
+     * @param labelInfo     information about a label
+     * @param addresses     adresses of instructions
+     * @return  is the list changed?
+     */
     boolean replace(InsnList list, LabelNodeInfo labelInfo, Map<AbstractInsnNode, Integer> addresses);
 }

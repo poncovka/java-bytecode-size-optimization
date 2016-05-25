@@ -8,7 +8,7 @@ import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 
 /**
- * Created by vendy on 2.5.16.
+ * A library of symbols to use in patterns.
  */
 public enum Symbols implements Symbol {
 

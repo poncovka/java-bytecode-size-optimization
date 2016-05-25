@@ -1,6 +1,8 @@
 package jbyco.optimization.jump;
 
 import jbyco.optimization.Statistics;
+import jbyco.optimization.common.ClassTransformer;
+import jbyco.optimization.common.MethodTransformer;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodNode;
@@ -8,7 +10,7 @@ import org.objectweb.asm.tree.MethodNode;
 import java.util.List;
 
 /**
- * Created by vendy on 19.5.16.
+ * A transformer that applies a chain of method transformers.
  */
 public class JumpTransformer extends ClassTransformer {
 

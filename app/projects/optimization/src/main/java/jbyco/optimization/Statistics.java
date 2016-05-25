@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 import java.util.*;
 
 /**
- * Created by vendy on 12.5.16.
+ * A class for collecting statistics about optimizations.
  */
 public class Statistics {
 

@@ -1,4 +1,4 @@
-package jbyco.optimization.jump;
+package jbyco.optimization.common;
 
 import org.objectweb.asm.tree.ClassNode;
 
@@ -30,9 +30,10 @@ public abstract class ClassTransformer {
     }
 
     /**
-     * Transform the given class frame.
+     * Transform the given class node.
      *
-     * @param cn the class frame
+     * @param cn the class node
+     * @return is the class node transformed?
      */
     public boolean transform(ClassNode cn) {
         if (ct != null) {

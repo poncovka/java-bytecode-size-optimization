@@ -6,7 +6,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 /**
- * Created by vendy on 20.5.16.
+ * A method visitor to remove useless try catch blocks.
  */
 public class TryCatchBlockRemoval extends MethodVisitor {
 

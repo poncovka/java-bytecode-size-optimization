@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Created by vendy on 3.5.16.
+ * A main class of the package.
  */
 public class Application {
 

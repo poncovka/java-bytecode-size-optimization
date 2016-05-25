@@ -3,6 +3,7 @@ package jbyco.optimization.jump;
 import jbyco.lib.Utils;
 import jbyco.optimization.Statistics;
 import jbyco.optimization.common.ActionLoader;
+import jbyco.optimization.common.MethodTransformer;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Created by vendy on 19.5.16.
+ * A transformer that loads and applies the frame actions.
  */
 public class FrameTransformer extends MethodTransformer implements ActionLoader<FrameAction> {
 

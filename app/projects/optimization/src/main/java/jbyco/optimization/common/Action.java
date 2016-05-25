@@ -1,7 +1,7 @@
 package jbyco.optimization.common;
 
 /**
- * Created by vendy on 19.5.16.
+ * An interface for optimizating action.
  */
 public interface Action {
     default String getName() {

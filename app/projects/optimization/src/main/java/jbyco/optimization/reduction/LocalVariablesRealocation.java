@@ -6,7 +6,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 
 /**
- * Created by vendy on 19.5.16.
+ * A method visitor for local variables realocation.
  */
 public class LocalVariablesRealocation extends LocalVariablesSorter {
 

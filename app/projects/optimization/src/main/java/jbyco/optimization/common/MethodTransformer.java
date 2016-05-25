@@ -1,4 +1,4 @@
-package jbyco.optimization.jump;
+package jbyco.optimization.common;
 
 import org.objectweb.asm.tree.MethodNode;
 
@@ -30,9 +30,10 @@ public abstract class MethodTransformer {
     }
 
     /**
-     * Transform the given method frame.
+     * Transform the given method node.
      *
-     * @param mn the method frame
+     * @param mn the method node
+     * @return is the method node transformed?
      */
     public boolean transform(MethodNode mn) {
         if (mt != null) {

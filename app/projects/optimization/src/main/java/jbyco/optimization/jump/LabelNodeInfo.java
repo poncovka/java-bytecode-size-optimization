@@ -7,17 +7,43 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 /**
- * Created by vendy on 16.5.16.
+ * Information about a label.
  */
 public class LabelNodeInfo {
 
+    /**
+     * Label node.
+     */
     public final LabelNode label;
+
+    /**
+     * Frame labeled by this label.
+     */
     public FrameNode frame;
+
+    /**
+     * Instruction labeled by this label.
+     */
     public AbstractInsnNode insn;
 
+    /**
+     * Collection of frames with this labels.
+     */
     public Collection<FrameNode> frames;
+
+    /**
+     * Collection of instructions that jump at this lable.
+     */
     public Collection<AbstractInsnNode> jumps;
+
+    /**
+     * Collection of try catch blocks that are defined by this label.
+     */
     public Collection<TryCatchBlockNode> tryCatchBlocks;
+
+    /**
+     * Collection of annotations that contain this label.
+     */
     public Collection<LocalVariableAnnotationNode> annotations;
 
     public LabelNodeInfo(LabelNode label) {

@@ -5,14 +5,14 @@ import org.objectweb.asm.*;
 
 /**
  * A class adapters for removing attributes with debugging information.
- * <p>
+ *
  * Removed attributes are:
- * SourceFile - class
- * SourceDebugExtension - class
- * Deprecated - class, field, method
- * LineNumberTable - code
- * LocalVariableTable - code
- * LocalVariableTypeTable - code
+ * SourceFile - class,
+ * SourceDebugExtension - class,
+ * Deprecated - class, field, method,
+ * LineNumberTable - code,
+ * LocalVariableTable - code,
+ * LocalVariableTypeTable - code.
  */
 public class InfoAttributesRemoval extends ClassVisitor {
 
@@ -20,6 +20,7 @@ public class InfoAttributesRemoval extends ClassVisitor {
      * Instantiates a new class visitor for info attributes removal.
      *
      * @param cv the class visitor
+     * @param stats the statistics
      */
     public InfoAttributesRemoval(ClassVisitor cv, Statistics stats) {
         super(Opcodes.ASM5, cv);

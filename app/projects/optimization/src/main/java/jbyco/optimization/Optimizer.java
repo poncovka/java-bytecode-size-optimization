@@ -5,7 +5,7 @@ import jbyco.optimization.jump.*;
 import jbyco.optimization.reduction.*;
 import jbyco.optimization.peephole.*;
 import jbyco.optimization.simplification.*;
-import jbyco.optimization.jump.ClassTransformer;
+import jbyco.optimization.common.ClassTransformer;
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.CheckClassAdapter;
@@ -13,7 +13,7 @@ import org.objectweb.asm.util.CheckClassAdapter;
 import java.io.IOException;
 
 /**
- * Created by vendy on 3.5.16.
+ * A class for java bytecode optimization.
  */
 public class Optimizer {
 

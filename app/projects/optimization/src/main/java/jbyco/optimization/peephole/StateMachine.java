@@ -11,10 +11,24 @@ import java.util.Arrays;
  */
 public class StateMachine {
 
+    /**
+     * Pattern of the state machine.
+     */
     Symbols[] pattern;
+
+    /**
+     * Action, that is done, when the pattern is found.
+     */
     PeepholeAction action;
 
+    /**
+     * State of the state machine is index to the pattern.
+     */
     int state;
+
+    /**
+     * Array of  instructions that match the pattern.
+     */
     AbstractInsnNode[] matched;
 
     public StateMachine(PeepholeAction action, Symbols[] pattern) {

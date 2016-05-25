@@ -7,7 +7,7 @@ import org.objectweb.asm.tree.*;
 import java.util.*;
 
 /**
- * Created by vendy on 16.5.16.
+ * A collector of control flow data.
  */
 public class JumpCollector {
 

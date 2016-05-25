@@ -11,7 +11,7 @@ import org.objectweb.asm.util.TraceMethodVisitor;
 import java.io.PrintWriter;
 
 /**
- * Created by vendy on 3.5.16.
+ * A library of useful functions for peephole actions.
  */
 public class InsnUtils {
 

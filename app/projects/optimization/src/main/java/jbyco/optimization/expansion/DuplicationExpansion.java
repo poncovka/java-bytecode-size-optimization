@@ -7,7 +7,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
 
 /**
- * Created by vendy on 12.5.16.
+ * A library of peephole actions for duplication expansion.
  */
 public class DuplicationExpansion {
 
