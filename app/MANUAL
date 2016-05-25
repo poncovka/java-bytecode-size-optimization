@@ -1,0 +1,159 @@
+# utf-8
+-------------------------------------------------------------------------------
+Nástroje pro analýzu class souborů a optimalizaci jejich velikosti
+-------------------------------------------------------------------------------
+Manuál pro spuštění
+
+Autor: Vendula Poncová, xponco00@stud.fit.vutbr.cz
+Datum: 20.5.2016
+-------------------------------------------------------------------------------
+
+===============================================================================
+jbyca = Java Bytecode Analyzer
+===============================================================================
+
+Nástroj jbyca slouží k analýze bajtkódu.
+
+-------------------------------------------------------------------------------
+Užití: ./jbyca ANALÝZA [NASTAVENÍ] SOUBORY
+-------------------------------------------------------------------------------
+
+Vstupem mohou být class soubory, jar soubory a adresáře. Jar soubor se rozbalí
+a prohledává se dál jako adresář. Adresář se rekurzivně prochází a hledají se
+v něm class soubory a jar soubory.
+
+Výstupem jsou výsledky analýzy.
+
+-------------------------------------------------------------------------------
+ANALÝZA
+
+První úroveň přepínačů slouží pro volby typu analýzy.
+Nástroj jbyca lze spustit s právě jedním z těchto přepínačů.
+
+> jbyca -h
+
+--size               Vypíše velikosti položek v class souborech.
+--maximums           Vypíše četnosti hodnot položek max_stack a max_locals v metodách.
+--variables          Provede analýzu užití lokálních proměnných a parametrů metody.
+--patterns           Provede analýzu typických sekvencí instrukcí.
+--statistics         Vypíše základní statistiky o class souborech.
+--print              Vypíše textovou reprezentaci class souborů.
+-h, --help           Vypíše nápovědu pro první úroveň.
+
+-------------------------------------------------------------------------------
+NASTAVENÍ
+
+Druhá úroveň přepínačů je dostupná pouze pro volby --patterns a --print.
+
+Přepínače umožňují nastavit parametry pro vyhledávání typických sekvencí instrukcí.
+Z přepínačů pro volbu abstrakce parametrů a operačních kódů, lze při spuštění zadat jen
+jeden z dané skupiny.
+
+> jbyca --patterns -h
+
+--max-length N                 Nastaví maximální délku typické sekvence. Výchozí hodnota: 10.
+--min-frequency N              Nastaví minimální četnost výskytu typické sekvence. Výchozí hodnota: 100.
+--delimiter S                  Nastaví řetězec pro oddělování instrukcí v sekvencích. Výchozí hodnota: '; '.
+-o1, --general-operations      Použije zobecněné operační kódy.
+-o2, --typed-operations        Použije operační kódy se zachováním typů. Výchozí volba.
+-p1, --general-parameters      Použije zobecněné parametry.
+-p2, --numbered-parameters     Použije očíslované parametry.
+-p3, --full-parameters         Použije konkrétní parametry. Výchozí volba.
+-w, --wildcards N              Nastaví počet divokých karet v typických sekvencích. Výchozí hodnota: 0.
+--no-progress                  Přestane ukazovat, kolik souborů se zpracovalo.
+-h, --help                     Vypíše nápovědu.
+
+Další skupina přepínačů slouží ke specifikování tisknu řetězcové reprezentace class souborů.
+
+> jbyca --print -h
+
+--basic                        Tiskne bez kódů metod.
+--debug                        Tiskne ladící informace v bajtkódu.
+--frames                       Tiskne rámce zásobníkových map.
+--expanded-frames              Tiskne rozšířené rámce zásobníkových map.
+--pool                         Tiskne tabulku konstant.
+-h, --help                     Vypíše nápovědu.
+
+-------------------------------------------------------------------------------
+Nástroj jbyca-experiment
+============================
+
+Skript pro spouštění série analýz pro zadané vstupní soubory.
+
+Užití: ./jbyca-experiment INPUT OUTPUT
+
+INPUT        Vstupní soubory, které budou analyzované.
+OUTPUT       Adresář pro výsledky analýz.
+
+Výstupem analýz typických sekvencí instrukcí jsou soubory:
+patterns_O_P_W_L.out, kde
+O označuje zobecnění operačních kódů,
+P označuje úroveň zobecnění parametrů instrukcí,
+W označuje počet divokých karet v sekvencích,
+L označuje maximální délku typické sekvence.
+
+-------------------------------------------------------------------------------
+Nástroj jbyca-postprocessing
+============================
+
+Skript, který sjednotí a upraví výsledky vygenerované nástrojem jbyca-experiment.
+
+Užití: ./jbyca-postprocessing INPUT OUTPUT
+
+INPUT       Adresář s výsledky analýz.
+OUTPUT      Adresář pro zpracované výsledky analýz.
+
+Výstupy analýz typických sekvencí jsou sjednoceny do souborů:
+patterns_0_P_W.cls
+O označuje zobecnění operačních kódů,
+P označuje úroveň zobecnění parametrů instrukcí,
+W označuje, zda v souboru nejsou žádné sekvence s divokými kartami (x),
+nebo jsou v souboru pouze sekvence s divokými kartami (w),
+nebo jsou v souboru obojí typy sekvencí (a).
+
+Nástroj také provádí základní filtrování výsledků a generuje
+adresáře se soubory, které obsahují předpřipravené výsledky ke zkoumání
+specifických jevů.
+
+===============================================================================
+jbyco = Java Bytecode Optimizer
+===============================================================================
+
+Nástroj jbyco slouží k optimalizaci velikosti class souborů.
+
+-------------------------------------------------------------------------------
+Užití: ./jbyco [NASTAVENÍ] SOUBORY
+-------------------------------------------------------------------------------
+
+Vstupem mohou být class soubory, jar soubory a adresáře. Jar soubor se rozbalí
+a prohledává se dál jako adresář. Adresář se rekurzivně prochází a hledají se
+v něm class soubory a jar soubory.
+
+Výstupem jsou optimalizované class soubory, pokud je zadán přepínač --outdir.
+Ve výstupním adresáři je zachovaná původní struktura adresářů. Soubory z jar
+souborů jsou umístěné v adresářích s názvy jar souborů.
+
+-------------------------------------------------------------------------------
+NASTAVENÍ
+
+Volby umožňují zobrazit informace o provedených optimalizacích a specifikovat
+adresář pro výstupní soubory.
+
+> jbyco -h
+
+-o, --outdir DIR      Optimalizované soubory bude ukládat do daného výstupního adresáře.
+--statistics          Zobrazí informace o provedených optimalizacích.
+-h, --help            Vypíše nápovědu.
+
+-------------------------------------------------------------------------------
+Nástroj ./jbyco-diff input
+============================
+
+Skript, který optimalizuje daný class soubor a porovná jej s původním souborem.
+Umožňuje rychlý náhled na změny.
+
+Užití: ./jbyco-diff INPUT
+INPUT   Soubor typu class.
+
+-------------------------------------------------------------------------------
+konec souboru

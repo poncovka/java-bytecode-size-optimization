@@ -1,0 +1,92 @@
+# utf-8
+-------------------------------------------------------------------------------
+Nástroje pro analýzu class souborů a optimalizaci jejich velikosti
+-------------------------------------------------------------------------------
+Manuál pro instalaci
+
+Autor: Vendula Poncová, xponco00@stud.fit.vutbr.cz
+Datum: 20.5.2016
+-------------------------------------------------------------------------------
+Popis souborů:
+
+./INSTALL                                   Tento soubor s manuálem pro instalaci.
+./MANUAL                                    Manuál pro nástroje jbyca a jbyco.
+./gradlew                                   Spustitelný skript nástroje Gradle.
+./gradlew.bat                               Spustitelný skript nástroje Gradle typu bat.
+./settings.gradle                           Konfigurační soubor nástroje Gradle s nastavením.
+./build.gradle                              Konfigurační soubor nástroje Gradle.
+./gradle                                    Soubory nástroje Gradle.
+
+./projects                                  Složka projektů.
+./projects/common                           Projekt common s knihovnami jbyco.io a jbyco.lib.
+./projects/common/build.gradle              Konfigurační soubor nástroje Gradle.
+./projects/common/src                       Zdrojové soubory projektu.
+./projects/analysis                         Projekt analysis s nástrojem jbyca.
+./projects/analysis/build.gradle            Konfigurační soubor nástroje Gradle.
+./projects/analysis/src                     Zdrojové soubory projektu.
+./projects/optimization                     Projekt optimization s nástrojem jbyca.
+./projects/optimization/build.gradle        Konfigurační soubor nástroje Gradle.
+./projects/optimization/src                 Zdrojové soubory projektu.
+./projects/examples                         Projekt examples pro vytváření class souborů.
+./projects/examples/build.gradle            Konfigurační soubor nástroje Gradle.
+./projects/examples/src                     Zdrojové soubory projektu.
+
+-------------------------------------------------------------------------------
+Požadavky pro překlad a instalaci:
+
+Aplikace jsou psané v Java SE 8, pro překlad je tedy třeba instalace Java JDK SE 8.
+
+-------------------------------------------------------------------------------
+Překlad:
+
+Při překladu se v každém projektu vytvoří složka build, do které se uloží přeložené
+soubory. Projekty lze přeložit příkazem:
+
+> ./gradlew build
+
+-------------------------------------------------------------------------------
+Instalace:
+
+Přeložené soubory projektů lze instalovat do adresářů projektů build/install
+příkazem:
+
+> ./gradlew installDist
+
+-------------------------------------------------------------------------------
+Vygenerování dokumentace:
+
+Programovou dokumentaci lze vygenerovat do adresářů projektů build/doc
+
+> ./gradlew javadoc
+
+-------------------------------------------------------------------------------
+Sestavení výsledné distribuce:
+
+Přeložené soubory a vytvořené skripty lze shromáždit v adresáři ./build/application
+následujícím příkazem:
+
+> ./gradlew app
+
+Vygenerovaná struktura bude následující:
+
+./build                                      Adresář pro vygenerované soubory.
+./build/application                          Adresář s výslednou distribucí,
+./build/application/jbyco
+./build/application/jbyco/bin                Spustitelné skripty nástrojů.
+./build/application/jbyco/bin/jbyca          Spustitelný skript pro nástroj jbyca.
+./build/application/jbyco/bin/jbyca.bat
+./build/application/jbyco/bin/jbyco          Spustitelný skript pro nástroj jbyco.
+./build/application/jbyco/bin/jbyco.bat
+./build/application/jbyco/tools/             Nástroje pro experimentování s jbyca.
+./build/application/jbyco/examples           Vygenerované class soubory.
+./build/application/jbyco/lib                Knihovny.
+
+-------------------------------------------------------------------------------
+Úklid:
+
+Všechny vygenerované soubory lze smazat příkazem.
+
+> ./gradlew clean
+
+-------------------------------------------------------------------------------
+konec souboru

@@ -28,9 +28,16 @@ subprojects {
     }
 }
 
+
+task collectManual(type: Copy) {
+    from('MANUAL')
+    into "${buildDir}/application/jbyco/"
+}
+
 // builds the project
-task buildApplication {
-    dependsOn(['collectBinaries'])
+task app {
+    dependsOn(getTasksByName('collectBinaries', true))
+    dependsOn(['collectManual'])
 }
 
 // clean the project

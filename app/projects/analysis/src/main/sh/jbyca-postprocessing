@@ -8,8 +8,8 @@
 #   ./jbyca-postprocessing input output max
 #
 # Parameters:
-#   input   A file or a directory of .class and .jar files.
-#   output  A directory for results of analysis.
+#   input   A directory for results of analysis.
+#   output  A directory for processed results of analysis.
 #   max     Maximal number of summarized patterns of the same length.
 
 #---------------------------------------------------------- settings

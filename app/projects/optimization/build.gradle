@@ -25,6 +25,9 @@ dependencies {
 distributions {
     main {
         baseName = archivesBaseName
+        contents {
+            from('src/main/sh') { into 'tools' }
+        }
     }
 }
 
@@ -39,4 +42,5 @@ run {
     // Run with arguments: gradle run -Dappargs="arg1 arg2 arg3"
     args System.getProperty("appargs", "").split()
 }
+
 
